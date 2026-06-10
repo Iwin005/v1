@@ -4312,10 +4312,10 @@
 
         const trackingState = getTrackingState(bus);
         const journey = getFirebaseJourney(bus);
-
         const actualTimesDataExists = journey && journey.data && journey.data.actualTimes;
 
-        const stopsHtml = stops.map((stop, index) => {
+        // 1. Resolve actual times and delays initially
+        const resolvedStops = stops.map((stop, index) => {
             const stopName = stop.name || stop.stopName || 'Stop ' + (index + 1);
             const scheduledTime = stop.scheduledTime || stop.time || '';
             
@@ -4348,6 +4348,46 @@
                 actualTime = stop.actual || (trackingState === 'COMPLETED' ? 'Not Reached' : 'Waiting');
                 delayText = stop.delay || '';
             }
+            
+            return {
+                stopName,
+                scheduledTime,
+                actualTime,
+                delayText
+            };
+        });
+
+        // 2. Backward pass: if a stop is pending but any subsequent stop is reached, show scheduled time and delay text 'Passed'
+        for (let i = resolvedStops.length - 2; i >= 0; i--) {
+            const isCurrentPending = resolvedStops[i].actualTime === 'Pending' || 
+                                     resolvedStops[i].actualTime === 'Waiting' || 
+                                     resolvedStops[i].actualTime === 'Not Reached';
+            if (isCurrentPending) {
+                // Check if any subsequent stop (j > i) has a valid actual time
+                let hasSubsequentReached = false;
+                for (let j = i + 1; j < resolvedStops.length; j++) {
+                    const isSubPending = resolvedStops[j].actualTime === 'Pending' || 
+                                         resolvedStops[j].actualTime === 'Waiting' || 
+                                         resolvedStops[j].actualTime === 'Not Reached';
+                    if (!isSubPending && resolvedStops[j].actualTime) {
+                        hasSubsequentReached = true;
+                        break;
+                    }
+                }
+                
+                if (hasSubsequentReached) {
+                    resolvedStops[i].actualTime = resolvedStops[i].scheduledTime;
+                    resolvedStops[i].delayText = 'Passed';
+                }
+            }
+        }
+
+        // 3. Render HTML
+        const stopsHtml = resolvedStops.map((stop, index) => {
+            const stopName = stop.stopName;
+            const scheduledTime = stop.scheduledTime;
+            const actualTime = stop.actualTime;
+            const delayText = stop.delayText;
             
             const isPending = actualTime === 'Waiting' || actualTime === 'Not Reached' || actualTime === 'Pending';
             
@@ -5026,6 +5066,32 @@
     // PREMIUM JOURNEY HISTORY RENDERER
     // ============================================================
 
+    function applyBackwardPass(story) {
+      if (!Array.isArray(story)) return story;
+      for (let i = story.length - 2; i >= 0; i--) {
+        const isCurrentPending = !story[i].actualTime && (story[i].status === 'pending' || story[i].status === 'Waiting');
+        if (isCurrentPending) {
+          let hasSubsequentReached = false;
+          for (let j = i + 1; j < story.length; j++) {
+            if (story[j].actualTime && story[j].actualTime !== 'Pending' && story[j].actualTime !== 'Waiting' && story[j].actualTime !== 'Not Reached') {
+              hasSubsequentReached = true;
+              break;
+            }
+            if (story[j].status === 'Passed') {
+              hasSubsequentReached = true;
+              break;
+            }
+          }
+          if (hasSubsequentReached) {
+            story[i].actualTime = story[i].scheduledTime;
+            story[i].status = 'Passed';
+            story[i].delayMinutes = 0;
+          }
+        }
+      }
+      return story;
+    }
+
     function renderPremiumHistory(busKey, serviceNo, selectedDate) {
       if (!window.selectedHistoryDates) {
         window.selectedHistoryDates = {};
@@ -5085,6 +5151,7 @@
                 status: status
               };
             });
+            story = applyBackwardPass(story);
           } else {
             story = Object.entries(actualTimes).map(([stopKey, data]) => {
               const stopName = stopKey.replace(/_/g, ' ');
@@ -5182,6 +5249,7 @@
                   status: status
                 };
               });
+              story = applyBackwardPass(story);
             } else {
               story = stopEntries.map(([stopKey, data]) => {
                 const stopName = stopKey.replace(/_/g, ' ');
