@@ -12,37 +12,52 @@
   
   <link rel="stylesheet" href="index.css" />
   <style>
+    /* Global Reset - Prevent Overflow */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    
     /* Operations Map Dashboard Styles */
     body, html {
-      height: 100%;
+      height: 100vh;
       width: 100%;
       overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
       position: relative;
+      overflow-x: hidden;
     }
 
     nav.app-nav {
-      position: absolute;
-      top: 0; left: 0; right: 0;
+      position: relative;
       z-index: 1000;
       background: rgba(255, 255, 255, 0.8);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      flex-shrink: 0;
     }
 
     #map {
-      height: 100%;
+      flex: 1;
+      min-height: 0;
       width: 100%;
       z-index: 1;
     }
 
-    /* Floating Left Sidebar Pane */
+    /* Floating Left Sidebar Pane - Desktop */
     .sidebar {
       position: absolute;
       left: 20px;
       top: 84px;
       bottom: 20px;
       width: 360px;
+      max-width: calc(100% - 40px);
       background: var(--surface-white);
       border: 1px solid var(--border-soft);
       border-radius: 24px;
@@ -51,6 +66,7 @@
       flex-direction: column;
       overflow: hidden;
       box-shadow: var(--shadow-soft);
+      transition: transform 0.3s ease;
     }
 
     .sidebar::before {
@@ -69,6 +85,18 @@
       border-bottom: 1px solid var(--border);
       position: relative;
       background: var(--surface-soft);
+      cursor: default;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar-header {
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      .sidebar-header:active {
+        background: rgba(0, 0, 0, 0.02);
+      }
     }
 
     .sidebar-header h2 {
@@ -88,8 +116,57 @@
       color: var(--text-muted);
       margin-top: 4px;
     }
+    
+    /* Sidebar toggle - hidden on desktop */
+    .sidebar-toggle {
+      display: none;
+    }
+    
+    /* Route list and items */
+    .route-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 var(--space-md);
+    }
+    
+    .route-item {
+      padding: 12px var(--space-md);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .route-item:hover {
+      background-color: var(--surface-soft);
+    }
+    
+    .route-item:last-child {
+      border-bottom: none;
+    }
+    
+    .route-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      line-height: 1.4;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      white-space: normal;
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .route-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
 
-    /* Search Filters */
+    /* Search Filters - Constrained width */
     .search-filters {
       padding: var(--space-lg);
       border-bottom: 1px solid var(--border-soft);
@@ -97,6 +174,8 @@
       flex-direction: column;
       gap: var(--space-sm);
       background: var(--surface-soft);
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .filter-group {
@@ -108,6 +187,10 @@
       border-radius: 12px;
       padding: 10px 14px;
       transition: var(--transition);
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      min-width: 0;
     }
 
     .filter-group:focus-within {
@@ -118,6 +201,7 @@
     .filter-group i {
       color: var(--brand-gold);
       font-size: 14px;
+      flex-shrink: 0;
     }
 
     .filter-group select,
@@ -129,6 +213,24 @@
       color: var(--text-primary);
       outline: none;
       font-family: inherit;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      text-overflow: ellipsis;
+    }
+    
+    /* Route dropdown - constrain width */
+    #routeFilter {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+    
+    /* Route options text wrapping */
+    #routeFilter option {
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
 
     /* Bus List Items */
@@ -337,11 +439,170 @@
       color: var(--text-muted);
     }
 
+    /* ============================================================
+       MOBILE BREAKPOINT (< 768px) - Collapsible Bottom Sheet
+       ============================================================ */
     @media (max-width: 768px) {
+      /* Header mobile adjustments */
+      nav.app-nav {
+        min-height: 56px;
+        padding: 0 12px;
+      }
+      
+      /* Map responsive height - fluid */
+      #map {
+        height: 100%;
+        min-height: 0;
+      }
+      
+      /* Sidebar becomes collapsible bottom sheet touching viewport bottom */
       .sidebar {
-        left: 10px; right: 10px; bottom: 10px;
-        width: auto; height: 220px;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
         top: auto;
+        width: 100%;
+        max-width: none;
+        height: 60vh;
+        max-height: 80vh;
+        border-radius: 24px 24px 0 0;
+        z-index: 1000;
+        transform: translateY(calc(100% - 64px));
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.15);
+      }
+      
+      .sidebar.expanded {
+        transform: translateY(0);
+      }
+      
+      /* Bottom sheet handle visual indicator */
+      .sidebar::after {
+        content: "";
+        position: absolute;
+        top: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 36px;
+        height: 4px;
+        background: #cbd5e1;
+        border-radius: 2px;
+        z-index: 1010;
+      }
+      
+      .sidebar-header {
+        height: 64px;
+        padding: 10px 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-soft);
+        position: relative;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      .sidebar-header:active {
+        background: rgba(0, 0, 0, 0.02);
+      }
+      
+      .sidebar-header h2 {
+        font-size: 16px;
+        margin: 0;
+        margin-right: 40px;
+      }
+      
+      .sidebar-header p {
+        font-size: 11px;
+        margin: 4px 0 0 0;
+        margin-right: 40px;
+      }
+      
+      /* Expand/collapse indicator */
+      .sidebar-toggle {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--surface-soft);
+        color: var(--text-muted);
+        font-size: 14px;
+        transition: transform 0.3s ease;
+      }
+      
+      .sidebar.expanded .sidebar-toggle {
+        transform: translateY(-50%) rotate(180deg);
+      }
+      
+      /* Route items - ensure text wraps */
+      .route-item {
+        padding: 14px 16px;
+        min-height: 44px;
+      }
+      
+      .route-name {
+        font-size: 14px;
+        line-height: 1.4;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        white-space: normal;
+        flex: 1;
+        min-width: 0;
+      }
+      
+      .route-meta {
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      
+      /* Leaflet controls reposition */
+      .leaflet-control-zoom {
+        margin-top: 20px !important;
+        margin-right: 10px !important;
+      }
+      
+      .leaflet-control-layers {
+        margin-right: 10px !important;
+      }
+
+      /* Make active buses list fill bottom sheet and scroll */
+      .bus-list {
+        max-height: none;
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+    
+    /* Tablet breakpoint */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      #map {
+        height: 100%;
+      }
+      
+      .sidebar {
+        width: 320px;
+        left: 16px;
+        top: 76px;
+        bottom: 16px;
+      }
+    }
+    
+    /* Desktop breakpoint */
+    @media (min-width: 1025px) {
+      #map {
+        height: 100%;
+        min-height: 0;
       }
     }
 
@@ -358,6 +619,148 @@
     .status.offline {
         color: #ef4444;
         font-weight: 600;
+    }
+
+    /* Mobile Navigation Styles */
+    .mobile-menu-btn {
+      display: none !important;
+    }
+    .mobile-nav-overlay,
+    .mobile-nav-drawer {
+      display: none !important;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-menu-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        color: #d84e55;
+        margin-left: var(--space-sm);
+      }
+      .mobile-menu-btn:active {
+        transform: scale(0.95);
+      }
+      .mobile-nav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 10000;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .mobile-nav-overlay.active {
+        display: block !important;
+        opacity: 1;
+      }
+      .mobile-nav-drawer {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: auto;
+        width: 80vw;
+        max-width: 300px;
+        height: 100vh;
+        background: #ffffff;
+        z-index: 10001;
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.25);
+        transform: translate3d(-100%, 0, 0);
+        transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+        flex-direction: column;
+        will-change: transform;
+      }
+      .mobile-nav-drawer.active {
+        transform: translate3d(0, 0, 0);
+      }
+      .mobile-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-lg) var(--space-md);
+        background: linear-gradient(135deg, #d84e55 0%, #c73e4c 100%);
+        color: #ffffff;
+        flex-shrink: 0;
+      }
+      .mobile-nav-brand {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .mobile-nav-brand i {
+        font-size: 22px;
+      }
+      .mobile-nav-close {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        border-radius: 10px;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease;
+        min-width: 44px;
+        min-height: 44px;
+      }
+      .mobile-nav-close:hover,
+      .mobile-nav-close:active {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .mobile-nav-links {
+        padding: var(--space-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-xs);
+        overflow-y: auto;
+        flex: 1;
+      }
+      .mobile-nav-link {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        padding: var(--space-md);
+        color: #334155;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 15px;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        min-height: 48px;
+      }
+      .mobile-nav-link i {
+        width: 28px;
+        text-align: center;
+        color: #d84e55;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+      .mobile-nav-link span {
+        flex: 1;
+      }
+      .mobile-nav-link:hover,
+      .mobile-nav-link.active {
+        background: #fff5f5;
+        color: #d84e55;
+      }
     }
   </style>
 </head>
@@ -381,13 +784,55 @@
     <span id="connection-status" class="status connecting">
         Connecting
     </span>
+    <button class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavDrawer" id="mobileMenuBtn">
+      <i class="fa-solid fa-bars" aria-hidden="true"></i>
+    </button>
   </nav>
 
+  <!-- Mobile Side Drawer -->
+  <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileNav()" aria-hidden="true"></div>
+  <div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-labelledby="mobileNavTitle">
+    <div class="mobile-nav-header">
+      <div class="mobile-nav-brand" id="mobileNavTitle">
+        <i class="fa-solid fa-bus" aria-hidden="true"></i>
+        <span>WinBus Tracker</span>
+      </div>
+      <button class="mobile-nav-close" onclick="closeMobileNav()" aria-label="Close navigation menu">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <nav class="mobile-nav-links" aria-label="Mobile navigation">
+      <a href="index.html" class="mobile-nav-link">
+        <i class="fa-solid fa-house" aria-hidden="true"></i>
+        <span>Home</span>
+      </a>
+      <a href="routes.html" class="mobile-nav-link">
+        <i class="fa-solid fa-route" aria-hidden="true"></i>
+        <span>Routes</span>
+      </a>
+      <a href="operators.html" class="mobile-nav-link">
+        <i class="fa-solid fa-building" aria-hidden="true"></i>
+        <span>Operators</span>
+      </a>
+      <a href="live-buses.html" class="mobile-nav-link active" aria-current="page">
+        <i class="fa-solid fa-satellite-dish" aria-hidden="true"></i>
+        <span>Live Buses</span>
+      </a>
+      <a href="agent-login.html" class="mobile-nav-link">
+        <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+        <span>Agent Login</span>
+      </a>
+    </nav>
+  </div>
+
   <!-- Left Sidebar Panel -->
-  <div class="sidebar">
-    <div class="sidebar-header">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header" onclick="toggleSidebar()">
       <h2><i class="fa-solid fa-satellite-dish"></i> Live Fleet</h2>
       <p id="fleetCount">0 active buses tracking</p>
+      <div class="sidebar-toggle">
+        <i class="fa-solid fa-chevron-up"></i>
+      </div>
     </div>
 
     <!-- Search Filters -->
@@ -492,9 +937,9 @@
       // First fetch
       fetchLiveBuses();
 
-      // Poll every 3 seconds
+      // Poll every 15 seconds
       if (trackingInterval) clearInterval(trackingInterval);
-      trackingInterval = setInterval(fetchLiveBuses, 3000);
+      trackingInterval = setInterval(fetchLiveBuses, 15000);
     }
 
     async function fetchLiveBuses() {
@@ -565,12 +1010,7 @@
         }
     }
 
-    fetchLiveBuses();
-
-    setInterval(
-        fetchLiveBuses,
-        3000
-    );
+    // Live tracking is controlled exclusively by DOMContentLoaded and startLiveTracking()
 
     // Clear all markers and state
     function clearAllMarkers() {
@@ -1046,6 +1486,62 @@
         }
       });
     }, 1000);
+  </script>
+
+  <!-- Mobile Navigation Script -->
+  <script>
+    // Sidebar Toggle Function
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) {
+        sidebar.classList.toggle('expanded');
+        // Smooth transition layout invalidate Leaflet size
+        setTimeout(() => {
+          if (typeof map !== 'undefined' && map.invalidateSize) {
+            map.invalidateSize();
+          }
+        }, 350);
+      }
+    }
+    
+    // Mobile Navigation Functions
+    function toggleMobileNav() {
+      const overlay = document.getElementById('mobileNavOverlay');
+      const drawer = document.getElementById('mobileNavDrawer');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      overlay.classList.add('active');
+      drawer.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      if (menuBtn) {
+        menuBtn.setAttribute('aria-expanded', 'true');
+      }
+      setTimeout(() => {
+        const firstLink = drawer.querySelector('.mobile-nav-link');
+        if (firstLink) firstLink.focus();
+      }, 100);
+    }
+
+    function closeMobileNav() {
+      const overlay = document.getElementById('mobileNavOverlay');
+      const drawer = document.getElementById('mobileNavDrawer');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      overlay.classList.remove('active');
+      drawer.classList.remove('active');
+      document.body.style.overflow = '';
+      if (menuBtn) {
+        menuBtn.setAttribute('aria-expanded', 'false');
+        menuBtn.focus();
+      }
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const drawer = document.getElementById('mobileNavDrawer');
+        if (drawer && drawer.classList.contains('active')) {
+          closeMobileNav();
+        }
+      }
+    });
   </script>
 </body>
 </html>

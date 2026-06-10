@@ -10,14 +10,37 @@
   <link rel="stylesheet" href="index.css" />
   <style>
     /* Route Page Specific Styling */
+    /* Main container - responsive width */
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .page-content {
+      flex: 1;
+      width: 100%;
+      max-width: 100%;
+    }
+    
+    /* Ensure routes grid is visible */
+    .routes-grid {
+      min-height: 200px;
+    }
+    
     .page-header {
       text-align: center;
-      padding: var(--space-3xl) var(--space-lg) var(--space-xl);
+      padding: 48px 16px 32px;
+      max-width: min(100%, 1200px);
+      margin: 0 auto;
     }
     
     .page-header h1 {
-      margin-bottom: var(--space-md);
-      font-size: clamp(32px, 5vw, 40px);
+      margin-bottom: 12px;
+      font-size: clamp(28px, 5vw, 40px);
+      font-weight: 800;
     }
     
     .page-header p {
@@ -25,27 +48,54 @@
       max-width: 600px;
       margin: 0 auto;
       line-height: 1.6;
+      font-size: 16px;
     }
     
+    /* Responsive Routes Grid - Mobile First */
     .routes-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: var(--space-xl);
-      max-width: 1100px;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      width: min(100%, 1200px);
       margin: 0 auto;
-      padding: 0 var(--space-lg) var(--space-3xl);
+      padding: 0 16px 48px;
+    }
+    
+    /* Tablet - 2 cards per row */
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .routes-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 0 24px 48px;
+      }
+    }
+    
+    /* Desktop - 3 or 4 cards per row */
+    @media (min-width: 1025px) {
+      .routes-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        padding: 0 32px 48px;
+      }
+    }
+    
+    @media (min-width: 1280px) {
+      .routes-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
     }
     
     .route-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: var(--radius-md);
+      border-radius: 16px;
       overflow: hidden;
       text-decoration: none;
       display: flex;
       flex-direction: column;
       box-shadow: var(--shadow-sm);
       transition: var(--transition);
+      width: 100%;
     }
     
     .route-card:hover {
@@ -54,36 +104,71 @@
       border-color: var(--accent);
     }
     
+    .route-card:active {
+      transform: scale(0.98);
+    }
+    
     .route-image {
       width: 100%;
-      height: 180px;
+      height: 160px;
       object-fit: cover;
       border-bottom: 1px solid var(--border);
       background: #f1f5f9;
     }
     
+    @media (min-width: 768px) {
+      .route-image {
+        height: 180px;
+      }
+    }
+    
     .route-content {
-      padding: var(--space-xl);
+      padding: 20px;
       display: flex;
       flex-direction: column;
       flex-grow: 1;
     }
     
+    @media (min-width: 768px) {
+      .route-content {
+        padding: 24px;
+      }
+    }
+    
     .route-title {
-      font-size: var(--font-m);
+      font-size: 18px;
       font-weight: 700;
       color: var(--primary);
-      margin-bottom: var(--space-sm);
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
-      gap: var(--space-sm);
+      gap: 10px;
+      line-height: 1.3;
+    }
+    
+    @media (min-width: 768px) {
+      .route-title {
+        font-size: 20px;
+      }
+    }
+    
+    .route-title i {
+      color: var(--accent);
+      font-size: 18px;
     }
     
     .route-desc {
-      font-size: var(--font-body);
+      font-size: 14px;
       color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: var(--space-xl);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    
+    @media (min-width: 768px) {
+      .route-desc {
+        font-size: 15px;
+        margin-bottom: 24px;
+      }
     }
     
     .route-meta {
@@ -91,39 +176,346 @@
       justify-content: space-between;
       align-items: center;
       margin-top: auto;
-      padding-top: var(--space-md);
+      padding-top: 16px;
       border-top: 1px dashed var(--border);
+      gap: 12px;
     }
     
     .bus-count {
       display: flex;
       align-items: center;
-      gap: var(--space-sm);
-      font-size: var(--font-meta);
+      gap: 8px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--accent);
       background: var(--accent-light);
-      padding: 6px 12px;
+      padding: 8px 14px;
       border-radius: 50px;
+      white-space: nowrap;
+    }
+    
+    .bus-count i {
+      font-size: 14px;
     }
     
     .view-btn {
       color: var(--primary);
       font-weight: 600;
-      font-size: var(--font-body);
+      font-size: 14px;
       display: flex;
       align-items: center;
-      gap: var(--space-xs);
+      gap: 6px;
       transition: var(--transition);
+      padding: 8px 12px;
+      border-radius: 8px;
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    .view-btn i {
+      font-size: 14px;
     }
     
     .route-card:hover .view-btn {
       color: var(--accent);
+      background: var(--accent-light);
+    }
+    
+    /* Touch-friendly improvements */
+    @media (pointer: coarse) {
+      .route-card {
+        min-height: 280px;
+      }
+      
+      .view-btn {
+        padding: 12px 16px;
+        font-size: 15px;
+      }
     }
     
     @media (max-width: 640px) {
       .routes-grid {
         gap: var(--space-lg);
+      }
+    }
+
+    /* Mobile Navigation Styles */
+    .mobile-menu-btn {
+      display: none !important;
+    }
+    .mobile-nav-overlay,
+    .mobile-nav-drawer {
+      display: none !important;
+    }
+
+    /* ============================================================
+       MOBILE BREAKPOINT (< 768px)
+       ============================================================ */
+    @media (max-width: 768px) {
+      /* Header adjustments for mobile */
+      .app-nav {
+        min-height: 64px;
+        padding: 0 12px;
+      }
+      
+      .nav-brand {
+        font-size: 18px;
+      }
+      
+      .nav-brand i {
+        font-size: 28px;
+      }
+      
+      /* Mobile Menu Button - 44x44px touch target */
+      .mobile-menu-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        color: #d84e55;
+        margin-left: 8px;
+      }
+      
+      .mobile-menu-btn i {
+        font-size: 20px;
+      }
+      
+      .mobile-menu-btn:active {
+        transform: scale(0.95);
+        background: rgba(255, 255, 255, 1);
+      }
+      .mobile-nav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 10000;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .mobile-nav-overlay.active {
+        display: block !important;
+        opacity: 1;
+      }
+      .mobile-nav-drawer {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: auto;
+        width: 80vw;
+        max-width: 300px;
+        height: 100vh;
+        background: #ffffff;
+        z-index: 10001;
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.25);
+        transform: translate3d(-100%, 0, 0);
+        transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+        flex-direction: column;
+        will-change: transform;
+      }
+      .mobile-nav-drawer.active {
+        transform: translate3d(0, 0, 0);
+      }
+      .mobile-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-lg) var(--space-md);
+        background: linear-gradient(135deg, #d84e55 0%, #c73e4c 100%);
+        color: #ffffff;
+        flex-shrink: 0;
+      }
+      .mobile-nav-brand {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .mobile-nav-brand i {
+        font-size: 22px;
+      }
+      .mobile-nav-close {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        border-radius: 10px;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease;
+        min-width: 44px;
+        min-height: 44px;
+      }
+      .mobile-nav-close:hover,
+      .mobile-nav-close:active {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .mobile-nav-links {
+        padding: var(--space-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-xs);
+        overflow-y: auto;
+        flex: 1;
+      }
+      .mobile-nav-link {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        padding: var(--space-md);
+        color: #334155;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 15px;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        min-height: 48px;
+      }
+      .mobile-nav-link i {
+        width: 28px;
+        text-align: center;
+        color: #d84e55;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+      .mobile-nav-link span {
+        flex: 1;
+      }
+      .mobile-nav-link:hover,
+      .mobile-nav-link.active {
+        background: #fff5f5;
+        color: #d84e55;
+      }
+    }
+
+    /* ============================================================
+       FOOTER - Full width responsive
+       ============================================================ */
+    .app-footer {
+      width: 100%;
+      max-width: none;
+      margin-top: auto;
+      padding: 40px 16px 20px;
+      background: var(--navy);
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      max-width: min(100%, 1200px);
+      margin: 0 auto;
+      padding: 0 0 24px;
+    }
+    
+    @media (min-width: 640px) {
+      .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .footer-grid {
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+        gap: 32px;
+      }
+    }
+    
+    .footer-col h4 {
+      color: #FFFFFF;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .footer-col ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .footer-col li {
+      margin-bottom: 8px;
+    }
+    
+    .footer-col a {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s ease;
+      display: inline-block;
+      min-height: 24px;
+    }
+    
+    .footer-col a:hover {
+      color: var(--primary);
+    }
+    
+    .footer-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 13px;
+      max-width: min(100%, 1200px);
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    @media (min-width: 640px) {
+      .footer-bottom {
+        flex-direction: row;
+        gap: 16px;
+      }
+    }
+    
+    .footer-bottom a {
+      color: #94A3B8;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    
+    .footer-bottom a:hover {
+      color: #ffffff;
+    }
+    
+    .footer-links {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .footer-links a {
+      margin-right: 0;
+    }
+    
+    /* Remove redundant old media query */
+    @media (max-width: 640px) {
+      .routes-grid {
+        gap: 16px;
       }
     }
   </style>
@@ -143,21 +535,62 @@
       <a href="agent-login.html" class="nav-link">Agent Login</a>
     </div>
     <div class="nav-time" id="realTimeClock">--:--:--</div>
+    <button class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavDrawer" id="mobileMenuBtn">
+      <i class="fa-solid fa-bars" aria-hidden="true"></i>
+    </button>
   </nav>
 
-  <section class="page-header">
-    <h1>Popular Routes</h1>
-    <p>Discover our most frequently travelled corridors across Tamil Nadu. Select a route to view all currently active and scheduled buses in real-time.</p>
-  </section>
+  <!-- Mobile Side Drawer -->
+  <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileNav()" aria-hidden="true"></div>
+  <div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-labelledby="mobileNavTitle">
+    <div class="mobile-nav-header">
+      <div class="mobile-nav-brand" id="mobileNavTitle">
+        <i class="fa-solid fa-bus" aria-hidden="true"></i>
+        <span>WinBus Tracker</span>
+      </div>
+      <button class="mobile-nav-close" onclick="closeMobileNav()" aria-label="Close navigation menu">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <nav class="mobile-nav-links" aria-label="Mobile navigation">
+      <a href="index.html" class="mobile-nav-link">
+        <i class="fa-solid fa-house" aria-hidden="true"></i>
+        <span>Home</span>
+      </a>
+      <a href="routes.html" class="mobile-nav-link active" aria-current="page">
+        <i class="fa-solid fa-route" aria-hidden="true"></i>
+        <span>Routes</span>
+      </a>
+      <a href="operators.html" class="mobile-nav-link">
+        <i class="fa-solid fa-building" aria-hidden="true"></i>
+        <span>Operators</span>
+      </a>
+      <a href="live-buses.html" class="mobile-nav-link">
+        <i class="fa-solid fa-satellite-dish" aria-hidden="true"></i>
+        <span>Live Buses</span>
+      </a>
+      <a href="agent-login.html" class="mobile-nav-link">
+        <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+        <span>Agent Login</span>
+      </a>
+    </nav>
+  </div>
 
-  <div class="routes-grid">
-    <!-- Dynamically loaded from Firebase -->
+  <div class="page-content">
+    <section class="page-header">
+      <h1>Popular Routes</h1>
+      <p>Discover our most frequently travelled corridors across Tamil Nadu. Select a route to view all currently active and scheduled buses in real-time.</p>
+    </section>
+
+    <div class="routes-grid">
+      <!-- Dynamically loaded from Firebase -->
+    </div>
   </div>
 
   <footer class="app-footer">
     <div class="footer-grid">
       <div class="footer-col">
-        <h4 style="color: #FFFFFF; font-size: 16px; font-weight: 700; margin-bottom: 16px;">WinBus Tracker</h4>
+        <h4>WinBus Tracker</h4>
         <p>Real-time private bus tracking platform engineered for commuters across Tamil Nadu. Live locations, schedules, and operators in one place.</p>
       </div>
       <div class="footer-col">
@@ -194,9 +627,9 @@
     </div>
     <div class="footer-bottom">
       <div>&copy; 2026 WinBus Tracker. Designed for Tamil Nadu Commuters. All rights reserved.</div>
-      <div>
-        <a href="#" style="color:#94A3B8; text-decoration:none; margin-right:16px;">Terms</a>
-        <a href="#" style="color:#94A3B8; text-decoration:none;">Privacy</a>
+      <div class="footer-links">
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
       </div>
     </div>
   </footer>
@@ -228,6 +661,45 @@
     }
     setInterval(updateClock, 1000);
     updateClock();
+
+    // Mobile Navigation Functions
+    function toggleMobileNav() {
+      const overlay = document.getElementById('mobileNavOverlay');
+      const drawer = document.getElementById('mobileNavDrawer');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      overlay.classList.add('active');
+      drawer.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      if (menuBtn) {
+        menuBtn.setAttribute('aria-expanded', 'true');
+      }
+      setTimeout(() => {
+        const firstLink = drawer.querySelector('.mobile-nav-link');
+        if (firstLink) firstLink.focus();
+      }, 100);
+    }
+
+    function closeMobileNav() {
+      const overlay = document.getElementById('mobileNavOverlay');
+      const drawer = document.getElementById('mobileNavDrawer');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      overlay.classList.remove('active');
+      drawer.classList.remove('active');
+      document.body.style.overflow = '';
+      if (menuBtn) {
+        menuBtn.setAttribute('aria-expanded', 'false');
+        menuBtn.focus();
+      }
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const drawer = document.getElementById('mobileNavDrawer');
+        if (drawer && drawer.classList.contains('active')) {
+          closeMobileNav();
+        }
+      }
+    });
   </script>
   <script>
     // ── Firebase data (loaded via firebase-data.js module below) ──
@@ -247,7 +719,18 @@
     function renderRoutes() {
       const grid = document.querySelector('.routes-grid');
       if (!grid) return;
-      grid.innerHTML = '';
+      
+      // Show loading state
+      grid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; color: var(--text-muted);">
+          <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 32px; margin-bottom: 12px; color: var(--accent);"></i>
+          <p style="font-size: 14px;">Loading routes...</p>
+        </div>
+      `;
+      
+      // Small delay to show loading animation
+      setTimeout(() => {
+        grid.innerHTML = '';
 
       const routes = cachedRoutes || [];
       const buses = cachedBuses || [];
@@ -310,6 +793,7 @@
         `;
         grid.appendChild(card);
       });
+      }, 100); // Close setTimeout
     }
 
     document.addEventListener("DOMContentLoaded", () => {

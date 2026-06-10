@@ -24,42 +24,292 @@
       background: linear-gradient(180deg, rgba(37, 99, 235, 0.03) 0%, rgba(248, 250, 252, 0) 100%);
     }
 
-    /* Filter Grid */
-    .search-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: var(--space-xl);
+    /* RedBus Style Search Container */
+    .search-card.redbus-style {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 24px;
+      padding: 0;
       width: 100%;
       max-width: 1200px;
-      box-shadow: var(--shadow-md);
-      margin-bottom: var(--space-xl);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+      position: relative;
+      margin-bottom: 36px;
+      overflow: visible;
+      z-index: 1500;
     }
 
-    .search-title-saas {
-      font-size: var(--font-body);
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: var(--space-md);
+    .redbus-search-bar {
       display: flex;
       align-items: center;
-      gap: var(--space-sm);
+      background: #ffffff;
+      border-radius: 24px;
+      position: relative;
+      height: 90px;
+      width: 100%;
     }
 
-    .saas-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: var(--space-md);
-      align-items: flex-end;
+    .redbus-inputs-wrap {
+      display: flex;
+      flex: 1;
+      height: 100%;
+      position: relative;
     }
 
-    @media (max-width: 1024px) {
-      .saas-grid { grid-template-columns: repeat(2, 1fr); }
-      .saas-grid .form-group:last-child { grid-column: span 2; }
+    .redbus-field {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      position: relative;
     }
-    @media (max-width: 640px) {
-      .saas-grid { grid-template-columns: 1fr; }
-      .saas-grid .form-group:last-child { grid-column: span 1; }
+
+    .redbus-field:first-of-type {
+      border-right: 1px solid #e5e7eb;
+    }
+
+    .redbus-icon {
+      font-size: 20px;
+      color: #94a3b8;
+      margin-right: 16px;
+    }
+
+    .field-content {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      text-align: left;
+    }
+
+    .field-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .redbus-field input {
+      border: none !important;
+      background: transparent !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      color: #1e293b !important;
+      width: 100% !important;
+      outline: none !important;
+      box-shadow: none !important;
+      height: auto !important;
+    }
+
+    .redbus-field input::placeholder {
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 4px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .clear-btn:hover {
+      color: #64748b;
+    }
+
+    .redbus-swap-btn {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      color: #d84e55;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
+    }
+
+    .redbus-swap-btn:hover {
+      border-color: #d84e55;
+      background: #fff5f5;
+      transform: translate(-50%, -50%) rotate(180deg);
+    }
+
+    .redbus-search-btn {
+      height: 100%;
+      background: #d84e55;
+      color: #ffffff;
+      border: none;
+      border-top-right-radius: 24px;
+      border-bottom-right-radius: 24px;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 0 45px;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(216, 78, 85, 0.25);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .redbus-search-btn:hover {
+      background: #c13e44;
+      box-shadow: 0 10px 30px rgba(216, 78, 85, 0.35);
+    }
+
+    /* Layout Wrapper: Sidebar Filters + Main Results */
+    .results-layout-wrapper {
+      display: flex;
+      gap: 28px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      align-items: flex-start;
+    }
+
+    .sidebar-filters {
+      width: 300px;
+      flex-shrink: 0;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+      z-index: 10;
+    }
+
+    .results-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    @media (max-width: 900px) {
+      .results-layout-wrapper {
+        flex-direction: column;
+        gap: 20px;
+      }
+      .sidebar-filters {
+        width: 100%;
+        position: relative;
+        top: 0;
+      }
+      .redbus-search-bar {
+        flex-direction: column;
+        height: auto;
+        border-radius: 24px;
+        padding: 16px 0;
+      }
+      .redbus-inputs-wrap {
+        flex-direction: column;
+        width: 100%;
+      }
+      .redbus-field {
+        border-right: none !important;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 16px 24px;
+        width: 100%;
+      }
+      .redbus-swap-btn {
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) rotate(90deg);
+      }
+      .redbus-swap-btn:hover {
+        transform: translate(-50%, -50%) rotate(270deg);
+      }
+      .redbus-search-btn {
+        width: 100%;
+        border-radius: 0 0 24px 24px;
+        padding: 16px;
+        margin-top: 12px;
+      }
+    }
+
+    /* Custom Premium Autocomplete Dropdown styling */
+    .autocomplete-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .custom-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 16px;
+      margin-top: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
+      display: none;
+    }
+
+    .custom-dropdown-item {
+      padding: 14px 18px;
+      font-size: 14px;
+      color: var(--primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .custom-dropdown-item:hover {
+      background: var(--brand-yellow-light);
+      color: var(--brand-gold);
+      font-weight: 600;
+    }
+
+    .custom-dropdown-item i {
+      color: var(--accent);
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    /* Elegant Custom Scrollbar */
+    .custom-dropdown::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-dropdown::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-dropdown::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.12);
+      border-radius: 10px;
     }
 
     .form-group label {
@@ -365,16 +615,298 @@
     /* ── Responsive Stack ── */
     @media (max-width: 1024px) {
     }
+    
+    /* Hide mobile filter button and modal on desktop */
+    .mobile-filter-btn,
+    .filter-modal-overlay,
+    .filter-modal-content,
+    .mobile-menu-btn,
+    .mobile-nav-overlay,
+    .mobile-nav-drawer {
+      display: none !important;
+    }
 
     @media (max-width: 768px) {
+      /* Mobile Navigation Menu Button */
+      .mobile-menu-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        color: #d84e55;
+        margin-left: var(--space-sm);
+      }
+      .mobile-menu-btn:active {
+        transform: scale(0.95);
+      }
+      .mobile-nav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 10000;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .mobile-nav-overlay.active {
+        display: block !important;
+        opacity: 1;
+      }
+      .mobile-nav-drawer {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: auto;
+        width: 80vw;
+        max-width: 300px;
+        height: 100vh;
+        background: #ffffff;
+        z-index: 10001;
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.25);
+        transform: translate3d(-100%, 0, 0);
+        transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+        flex-direction: column;
+        will-change: transform;
+      }
+      .mobile-nav-drawer.active {
+        transform: translate3d(0, 0, 0);
+      }
+      .mobile-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-lg) var(--space-md);
+        background: linear-gradient(135deg, #d84e55 0%, #c73e4c 100%);
+        color: #ffffff;
+        flex-shrink: 0;
+      }
+      .mobile-nav-brand {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .mobile-nav-brand i {
+        font-size: 22px;
+      }
+      .mobile-nav-close {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        border-radius: 10px;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease;
+        min-width: 44px;
+        min-height: 44px;
+      }
+      .mobile-nav-close:hover,
+      .mobile-nav-close:active {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .mobile-nav-links {
+        padding: var(--space-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-xs);
+        overflow-y: auto;
+        flex: 1;
+      }
+      .mobile-nav-link {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        padding: var(--space-md);
+        color: #334155;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 15px;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        min-height: 48px;
+      }
+      .mobile-nav-link i {
+        width: 28px;
+        text-align: center;
+        color: #d84e55;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+      .mobile-nav-link span {
+        flex: 1;
+      }
+      .mobile-nav-link:hover,
+      .mobile-nav-link.active {
+        background: #fff5f5;
+        color: #d84e55;
+      }
+
+      /* Mobile Filter Button */
+      .mobile-filter-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #334155;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 16px;
+        width: 100%;
+      }
+      
+      .mobile-filter-btn i {
+        color: #d84e55;
+        font-size: 16px;
+      }
+      
+      .mobile-filter-btn:active {
+        transform: scale(0.98);
+      }
+      
+      /* Hide sidebar filters on mobile by default */
+      .sidebar-filters {
+        display: none;
+      }
+      
+      /* Mobile Filter Modal Overlay - override desktop display:none */
+      .filter-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        backdrop-filter: blur(4px);
+      }
+      
+      .filter-modal-overlay.active {
+        display: flex !important;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      
+      /* Mobile Filter Modal Content - override desktop display:none */
+      .filter-modal-content {
+        display: block !important;
+        background: #ffffff;
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 24px 20px 40px 20px;
+        animation: slideUp 0.3s ease-out;
+      }
+      
+      @keyframes slideUp {
+        from {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      
+      .filter-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      
+      .filter-modal-header h3 {
+        font-size: 18px;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .filter-modal-header h3 i {
+        color: #d84e55;
+      }
+      
+      .filter-modal-close {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: #f1f5f9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        color: #64748b;
+      }
+      
+      .filter-modal-footer {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #f1f5f9;
+      }
+      
+      .filter-modal-footer button {
+        flex: 1;
+        height: 48px;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+      }
+      
+      .btn-clear {
+        background: #f1f5f9;
+        color: #64748b;
+      }
+      
+      .btn-apply {
+        background: #d84e55;
+        color: #ffffff;
+      }
+      
     }
 
     /* ── Footer ── */
     footer {
       background: var(--navy);
       color: rgba(255, 255, 255, 0.6);
-      text-align: center;
-      padding: 24px 20px;
+      text-align: left;
+      padding: 48px 40px 24px;
       font-size: 0.85rem;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
       margin-top: auto;
@@ -383,6 +915,121 @@
     footer span {
       color: var(--primary);
       font-weight: 600;
+    }
+
+    .app-footer {
+      width: 100%;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+      gap: 32px;
+      max-width: 1200px;
+      margin: 0 auto 32px;
+      align-items: start;
+    }
+
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .footer-col h4 {
+      color: #FFFFFF;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-col ul li {
+      margin-bottom: 10px;
+    }
+
+    .footer-col ul li a {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .footer-col ul li a:hover {
+      color: #FFFFFF;
+    }
+
+    .footer-col p {
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 13px;
+    }
+
+    @media (max-width: 1024px) {
+      .footer-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 24px;
+      }
+      .footer-col:first-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      footer {
+        padding: 32px 20px 24px;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+      .footer-col:first-child {
+        grid-column: 1 / -1;
+      }
+      .footer-bottom {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+    }
+
+    .footer-links a {
+      color: #94A3B8;
+      text-decoration: none;
+      margin-right: 16px;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:last-child {
+      margin-right: 0;
+    }
+
+    .footer-links a:hover {
+      color: #FFFFFF;
+    }
+
+    .footer-brand h4 {
+      color: #FFFFFF;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
     }
 
     /* ── Modal Overlay ── */
@@ -1329,6 +1976,75 @@
       .ibc-footer { flex-direction: column; gap: 16px; }
       .ibc-foot-line { width: 100%; border-top: none; border-left: 3px dotted #cbd5e1; height: 30px; margin: 8px 0; }
       .ibc-foot-item { width: 100%; justify-content: center; }
+      
+      /* Mobile intermediate stops timeline */
+      .ibc-stops-sec {
+        overflow-x: hidden;
+        padding-bottom: 8px;
+      }
+      
+      .ibc-timeline {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0;
+        gap: 0;
+        min-width: auto;
+      }
+      
+      .ibc-timeline::before {
+        top: 0;
+        bottom: 0;
+        left: 16px;
+        right: auto;
+        width: 3px;
+        height: auto;
+      }
+      
+      .ibc-stop {
+        flex-direction: row;
+        align-items: center;
+        text-align: left;
+        width: 100%;
+        padding: 12px 0;
+        gap: 12px;
+      }
+      
+      .ibc-stop:first-child {
+        padding-top: 0;
+      }
+      
+      .ibc-stop:last-child {
+        padding-bottom: 0;
+      }
+      
+      .ibc-pin {
+        margin-bottom: 0;
+        flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+        box-shadow: 0 0 0 4px #ffffff;
+      }
+      
+      .ibc-stop-name {
+        flex: 1;
+        margin-bottom: 0;
+        height: auto;
+        font-size: 14px;
+        min-width: 0;
+      }
+      
+      .ibc-stop-time {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        padding: 8px 12px;
+        min-width: 100px;
+      }
+      
+      .ibc-stop-time span {
+        justify-content: flex-end !important;
+      }
     }
 
     .collapsible {
@@ -1374,6 +2090,68 @@
     .completion-summary .late { color: #ef4444; }
     .completion-summary .early { color: #10b981; }
 
+    /* Loading Skeleton for Cards - Prevents Layout Shift */
+    .bus-card-skeleton {
+      background: #fff;
+      border-radius: 24px;
+      padding: 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      border: 1px solid #f1f5f9;
+      position: relative;
+      overflow: hidden;
+    }
+    .bus-card-skeleton::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+    .skeleton-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .skeleton-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: #e2e8f0;
+    }
+    .skeleton-title {
+      flex: 1;
+      height: 20px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    .skeleton-subtitle {
+      width: 60%;
+      height: 14px;
+      background: #e2e8f0;
+      border-radius: 4px;
+    }
+    .skeleton-body {
+      height: 80px;
+      background: #f1f5f9;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .skeleton-button {
+      height: 48px;
+      background: #e2e8f0;
+      border-radius: 12px;
+    }
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
     .modern-bus-card {
       background: #fff;
       border-radius: 24px;
@@ -1381,14 +2159,38 @@
       margin-bottom: 28px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.03);
       border: 1px solid #f1f5f9;
+      border-left: 6px solid #cbd5e1;
       display: flex;
       flex-direction: column;
       gap: 16px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+      position: relative;
+      contain: layout style paint;
     }
     .modern-bus-card:hover {
-      box-shadow: 0 12px 30px rgba(255, 193, 7, 0.08), 0 4px 12px rgba(0,0,0,0.02);
-      border-color: rgba(255, 193, 7, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.06);
+    }
+    .modern-bus-card.card-state-live {
+      border-left-color: #10b981;
+    }
+    .modern-bus-card.card-state-live:hover {
+      box-shadow: 0 20px 40px rgba(16, 185, 129, 0.12), 0 4px 12px rgba(0, 0, 0, 0.02);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    .modern-bus-card.card-state-pre {
+      border-left-color: #f59e0b;
+    }
+    .modern-bus-card.card-state-pre:hover {
+      box-shadow: 0 20px 40px rgba(245, 158, 11, 0.12), 0 4px 12px rgba(0, 0, 0, 0.02);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .modern-bus-card.card-state-completed {
+      border-left-color: #6366f1;
+    }
+    .modern-bus-card.card-state-completed:hover {
+      box-shadow: 0 20px 40px rgba(99, 102, 241, 0.12), 0 4px 12px rgba(0, 0, 0, 0.02);
+      border-color: rgba(99, 102, 241, 0.3);
     }
     .card-main-row {
       display: flex;
@@ -1416,13 +2218,40 @@
       flex: 1;
       min-width: 180px;
       margin-top: 0;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
     }
     .modern-bus-card .card-actions button {
       margin-top: 0 !important;
+      min-height: 48px;
+      height: auto;
+      white-space: nowrap;
     }
     .card-actions-placeholder {
       flex: 1;
       min-width: 180px;
+      min-height: 56px;
+    }
+    /* Track button - Fixed dimensions to prevent layout shift */
+    .ibc-track-btn {
+      width: 100%;
+      height: 48px;
+      min-height: 48px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .tracking-countdown {
+      width: 100%;
+      height: 0;
+      min-height: 0;
     }
     .live-mini-card {
       display: grid;
@@ -1463,6 +2292,145 @@
         flex: none;
       }
     }
+    
+    /* Compact Mobile Bus Card Styles */
+    @media (max-width: 768px) {
+      .modern-bus-card {
+        padding: 14px;
+        border-radius: 14px;
+        margin-bottom: 10px;
+      }
+      .modern-bus-card .card-main-row {
+        gap: 12px;
+      }
+      .modern-bus-card .ibc-header {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 0;
+      }
+      .modern-bus-card .ibc-icon-wrap {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+      .modern-bus-card .ibc-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .modern-bus-card .ibc-title {
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .modern-bus-card .route-main {
+        font-size: 12px !important;
+        margin-top: 2px !important;
+      }
+      .modern-bus-card .ibc-badge {
+        font-size: 10px;
+        padding: 3px 6px;
+        margin-top: 4px !important;
+        display: inline-flex;
+      }
+      .modern-bus-card .tracking-state-badge {
+        font-size: 9px;
+        padding: 2px 5px;
+      }
+      .card-mid-col {
+        padding: 10px;
+        gap: 10px;
+        background: #f8fafc;
+        border-radius: 10px;
+      }
+      .card-mid-col .trip-times {
+        display: flex;
+        justify-content: space-between;
+        padding: 0;
+        gap: 8px;
+      }
+      .card-mid-col .trip-times > div {
+        text-align: center;
+        flex: 1;
+      }
+      .card-mid-col .trip-times label {
+        font-size: 9px;
+        margin-bottom: 2px;
+      }
+      .card-mid-col .trip-times strong {
+        font-size: 12px;
+      }
+      .live-mini-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 8px;
+      }
+      .live-mini-card span {
+        font-size: 9px;
+        margin-bottom: 2px;
+      }
+      .live-mini-card strong {
+        font-size: 11px;
+      }
+      .completion-summary {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 0;
+      }
+      .completion-summary > div {
+        text-align: center;
+        flex: 1;
+      }
+      .completion-summary span {
+        font-size: 9px;
+        display: block;
+        margin-bottom: 2px;
+      }
+      .completion-summary strong {
+        font-size: 11px;
+      }
+      .modern-bus-card .card-actions {
+        margin-top: 0;
+        min-height: 44px;
+        width: 100%;
+      }
+      .modern-bus-card .card-actions button {
+        height: 40px;
+        min-height: 40px;
+        font-size: 13px;
+        margin-top: 0 !important;
+        border-radius: 10px;
+        white-space: nowrap;
+      }
+      .stops-toggle-btn,
+      .history-toggle-btn {
+        padding: 8px 10px;
+        font-size: 11px;
+        border-radius: 8px;
+      }
+      .modern-bus-card small {
+        font-size: 9px !important;
+        margin-top: 1px !important;
+      }
+      .ibc-stop-time {
+        min-width: 80px;
+        padding: 6px 8px;
+      }
+      .ibc-stop-time span {
+        font-size: 11px;
+      }
+      .ibc-stop-name {
+        font-size: 12px;
+      }
+    }
+    
     /* Calendar Modal CSS */
     .cal-modal-overlay {
       position: fixed;
@@ -1675,87 +2643,188 @@
     <div class="nav-time" id="realTimeClock">
       --:--:--
     </div>
+    <button class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavDrawer" id="mobileMenuBtn">
+      <i class="fa-solid fa-bars" aria-hidden="true"></i>
+    </button>
   </nav>
+
+  <!-- Mobile Side Drawer -->
+  <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileNav()" aria-hidden="true"></div>
+  <div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-labelledby="mobileNavTitle">
+    <div class="mobile-nav-header">
+      <div class="mobile-nav-brand" id="mobileNavTitle">
+        <i class="fa-solid fa-bus" aria-hidden="true"></i>
+        <span>WinBus Tracker</span>
+      </div>
+      <button class="mobile-nav-close" onclick="closeMobileNav()" aria-label="Close navigation menu">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <nav class="mobile-nav-links" aria-label="Mobile navigation">
+      <a href="index.html" class="mobile-nav-link">
+        <i class="fa-solid fa-house" aria-hidden="true"></i>
+        <span>Home</span>
+      </a>
+      <a href="routes.html" class="mobile-nav-link">
+        <i class="fa-solid fa-route" aria-hidden="true"></i>
+        <span>Routes</span>
+      </a>
+      <a href="operators.html" class="mobile-nav-link">
+        <i class="fa-solid fa-building" aria-hidden="true"></i>
+        <span>Operators</span>
+      </a>
+      <a href="live-buses.html" class="mobile-nav-link">
+        <i class="fa-solid fa-satellite-dish" aria-hidden="true"></i>
+        <span>Live Buses</span>
+      </a>
+      <a href="agent-login.html" class="mobile-nav-link">
+        <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+        <span>Agent Login</span>
+      </a>
+    </nav>
+  </div>
 
   <!-- Hero / Dashboard View -->
   <section class="hero">
 
-    <!-- SaaS style Filter Panel Widget -->
-    <div class="search-card" id="searchSection">
-      <div class="search-title-saas">
-        <i class="fa-solid fa-sliders"></i> Search & Filter Buses
+    <div class="search-card redbus-style" id="searchSection">
+      <div class="redbus-search-bar">
+        <div class="redbus-inputs-wrap">
+          <div class="redbus-field">
+            <i class="fa-solid fa-bus-simple redbus-icon"></i>
+            <div class="field-content">
+              <span class="field-label">From</span>
+              <input id="boardingInput" type="text" placeholder="Enter boarding point" autocomplete="off" />
+              <button class="clear-btn" id="clearBoarding" onclick="clearInput('boardingInput', 'clearBoarding')">&times;</button>
+              <div class="custom-dropdown" id="boardingDropdown" style="z-index: 99999 !important;"></div>
+            </div>
+          </div>
+          <div class="redbus-swap-btn" onclick="swapLocations()">
+            <i class="fa-solid fa-right-left"></i>
+          </div>
+          <div class="redbus-field">
+            <i class="fa-solid fa-bus-simple redbus-icon"></i>
+            <div class="field-content">
+              <span class="field-label">To</span>
+              <input id="droppingInput" type="text" placeholder="Enter dropping point" autocomplete="off" />
+              <button class="clear-btn" id="clearDropping" onclick="clearInput('droppingInput', 'clearDropping')">&times;</button>
+              <div class="custom-dropdown" id="droppingDropdown" style="z-index: 99999 !important;"></div>
+            </div>
+          </div>
+        </div>
+        <button class="redbus-search-btn" onclick="handleSearch()">
+          <i class="fa-solid fa-magnifying-glass"></i> Search
+        </button>
       </div>
-      <div class="saas-grid">
+    </div><!-- /search-card -->
+
+    <!-- Mobile Filter Button -->
+    <button class="mobile-filter-btn" onclick="toggleFilterModal()">
+      <i class="fa-solid fa-sliders"></i>
+      <span>Filter & Sort</span>
+    </button>
+    
+    <!-- Mobile Filter Modal Overlay -->
+    <div class="filter-modal-overlay" id="filterModalOverlay" onclick="closeFilterModal(event)">
+      <div class="filter-modal-content" onclick="event.stopPropagation()">
+        <div class="filter-modal-header">
+          <h3><i class="fa-solid fa-sliders"></i> Sort & Filter</h3>
+          <button class="filter-modal-close" onclick="closeFilterModal()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        
         <!-- Operator Filter -->
-        <div class="form-group">
-          <label for="operatorInput">Operator</label>
-          <div class="input-wrap">
-            <i class="fa-solid fa-building field-icon"></i>
-            <input id="operatorInput" type="text" placeholder="Any Operator" autocomplete="off" />
+        <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+          <label for="mobileOperatorInput" style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">Operator</label>
+          <div class="input-wrap" style="position: relative;">
+            <i class="fa-solid fa-building field-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px;"></i>
+            <input id="mobileOperatorInput" type="text" placeholder="Any Operator" autocomplete="off" style="width: 100%; height: 44px; padding-left: 40px; padding-right: 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; background: #ffffff;" oninput="syncFilterToDesktop('operator', this.value)" />
           </div>
         </div>
-
-        <!-- Boarding City Filter -->
-        <div class="form-group">
-          <label for="boardingSelect">Boarding City</label>
-          <div class="input-wrap">
-            <i class="fa-solid fa-location-dot field-icon"></i>
-            <select id="boardingSelect">
-              <option value="">[ Select Boarding Point ]</option>
-            </select>
-            <i class="fa-solid fa-chevron-down select-arrow"></i>
-          </div>
-        </div>
-
-        <!-- Dropping City Filter -->
-        <div class="form-group">
-          <label for="droppingSelect">Dropping City</label>
-          <div class="input-wrap">
-            <i class="fa-solid fa-location-crosshairs field-icon"></i>
-            <select id="droppingSelect">
-              <option value="">[ Select Dropping Point ]</option>
-            </select>
-            <i class="fa-solid fa-chevron-down select-arrow"></i>
-          </div>
-        </div>
-
+        
         <!-- Bus Type Filter -->
-        <div class="form-group">
-          <label for="typeSelect">Bus Type</label>
-          <div class="input-wrap">
-            <i class="fa-solid fa-bus-simple field-icon"></i>
-            <select id="typeSelect">
-              <option value="">— All Types —</option>
+        <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+          <label for="mobileTypeSelect" style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">Bus Type</label>
+          <div class="mobile-select-wrap" style="position: relative;">
+            <i class="fa-solid fa-bus field-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px;"></i>
+            <select id="mobileTypeSelect" style="width: 100%; height: 48px; padding-left: 40px; padding-right: 40px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; background: #ffffff; appearance: none; cursor: pointer; color: #334155;" onchange="syncFilterToDesktop('type', this.value)">
+              <option value="">All Bus Types</option>
             </select>
-            <i class="fa-solid fa-chevron-down select-arrow"></i>
+            <i class="fa-solid fa-chevron-down" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #64748b; pointer-events: none; font-size: 12px;"></i>
           </div>
         </div>
-
-        <!-- Sort By Widget -->
-        <div class="form-group">
-          <label>Sort By</label>
-          <div class="sort-toggle">
-            <button class="sort-btn active" id="sortEarly" onclick="setSort(this)">
+        
+        <!-- Sort By -->
+        <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+          <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">Sort By</label>
+          <div class="sort-toggle" style="display: flex; gap: 8px;">
+            <button class="sort-btn" id="mobileSortEarly" onclick="setMobileSort(this, 'early')" style="flex: 1; height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 12px; border: 1px solid #e2e8f0; background: #ffffff; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.2s;">
               <i class="fa-solid fa-arrow-up-from-line"></i> Early
             </button>
-            <button class="sort-btn" id="sortLate" onclick="setSort(this)">
+            <button class="sort-btn" id="mobileSortLate" onclick="setMobileSort(this, 'late')" style="flex: 1; height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 12px; border: 1px solid #e2e8f0; background: #ffffff; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.2s;">
               <i class="fa-solid fa-arrow-down-to-line"></i> Late
             </button>
           </div>
         </div>
-
-        <!-- Search Button Widget -->
-        <div class="form-group">
-          <button class="btn-search" onclick="handleSearch()">
-            <i class="fa-solid fa-magnifying-glass"></i> Search
-          </button>
+        
+        <div class="filter-modal-footer">
+          <button class="btn-clear" onclick="resetMobileFilters()">Clear All</button>
+          <button class="btn-apply" onclick="applyMobileFilters()">Apply</button>
         </div>
       </div>
-    </div><!-- /search-card -->
+    </div>
 
-    <!-- RESULTS SECTION -->
-    <div class="results-container" id="resultsContainer" style="display: none; margin: 0 auto; text-align: center;">
-      <div id="gridContainer" style="text-align: left;">
+    <!-- Layout Wrapper: Sidebar Filters + Main Results -->
+    <div class="results-layout-wrapper">
+      <!-- Sidebar Filters on Left -->
+      <aside class="sidebar-filters">
+        <h3 style="font-size: 15px; font-weight: 800; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-top: 0;">
+          <span><i class="fa-solid fa-sliders" style="margin-right: 8px;"></i> FILTERS</span>
+          <span onclick="resetAllFilters()" style="font-size: 10px; color: #d84e55; cursor: pointer; font-weight: 700; text-transform: uppercase;">Clear All</span>
+        </h3>
+        
+        <!-- Operator Filter -->
+        <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+          <label for="operatorInput" style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">Operator</label>
+          <div class="input-wrap" style="position: relative;">
+            <i class="fa-solid fa-building field-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px;"></i>
+            <input id="operatorInput" type="text" placeholder="Any Operator" autocomplete="off" style="width: 100%; height: 44px; padding-left: 40px; padding-right: 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; background: #ffffff;" />
+          </div>
+        </div>
+        
+        <!-- Bus Type Filter -->
+        <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+          <label for="typeSelect" style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">Bus Type</label>
+          <div class="input-wrap" style="position: relative;">
+            <i class="fa-solid fa-tags field-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px;"></i>
+            <select id="typeSelect" style="width: 100%; height: 44px; padding-left: 40px; padding-right: 32px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; background: #ffffff; appearance: none; cursor: pointer;">
+              <option value="">— All Types —</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; font-size: 12px;"></i>
+          </div>
+        </div>
+        
+        <!-- Sort By Widget -->
+        <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+          <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">Sort By</label>
+          <div class="sort-toggle" style="display: flex; gap: 8px;">
+            <button class="sort-btn active" id="sortEarly" onclick="setSort(this)" style="flex: 1; height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 12px; border: 1px solid #e2e8f0; background: #ffffff; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.2s;">
+              <i class="fa-solid fa-arrow-up-from-line"></i> Early
+            </button>
+            <button class="sort-btn" id="sortLate" onclick="setSort(this)" style="flex: 1; height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 12px; border: 1px solid #e2e8f0; background: #ffffff; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.2s;">
+              <i class="fa-solid fa-arrow-down-to-line"></i> Late
+            </button>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- Main Content on Right -->
+      <div class="results-main">
+        <div class="results-container" id="resultsContainer" style="display: none; width: 100%; margin: 0;">
+          <div id="gridContainer" style="text-align: left; width: 100%;">
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1764,8 +2833,8 @@
   <!-- Footer -->
   <footer class="app-footer">
     <div class="footer-grid">
-      <div class="footer-col">
-        <h4 style="color: #FFFFFF; font-size: 16px; font-weight: 700; margin-bottom: 16px;">WinBus Tracker</h4>
+      <div class="footer-col footer-brand">
+        <h4>WinBus Tracker</h4>
         <p>Real-time private bus tracking platform engineered for commuters across Tamil Nadu. Live locations, schedules, and operators in one place.</p>
       </div>
       <div class="footer-col">
@@ -1802,9 +2871,9 @@
     </div>
     <div class="footer-bottom">
       <div>&copy; 2026 WinBus Tracker. Designed for Tamil Nadu Commuters. All rights reserved.</div>
-      <div>
-        <a href="#" style="color:#94A3B8; text-decoration:none; margin-right:16px;">Terms</a>
-        <a href="#" style="color:#94A3B8; text-decoration:none;">Privacy</a>
+      <div class="footer-links">
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
       </div>
     </div>
   </footer>
@@ -1864,18 +2933,43 @@
     window.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
       if (params.has('op')) document.getElementById('operatorInput').value = params.get('op');
-      if (params.has('boarding')) window.initialBoardingQuery = params.get('boarding');
-      if (params.has('dropping')) window.initialDroppingQuery = params.get('dropping');
+      
+      let boardingVal = "";
+      let droppingVal = "";
+      
+      if (params.has('boarding')) {
+        boardingVal = params.get('boarding');
+      }
+      if (params.has('dropping')) {
+        droppingVal = params.get('dropping');
+      }
+      
+      // Fallback/Legacy support
+      if (params.has('city')) {
+        const city = params.get('city');
+        const pointType = params.get('pointType') || 'boarding';
+        if (pointType === 'boarding') boardingVal = city;
+        else droppingVal = city;
+      }
+      
       if (params.has('route')) {
         const routeParam = params.get('route');
         const routeMap = { 'TCN-CHN': 'Tuticorin-Chennai', 'CHN-TCN': 'Chennai-Tuticorin' };
         const mappedRoute = routeMap[routeParam] || normalizeRouteName(routeParam);
         const parts = mappedRoute.split('-');
         if (parts.length === 2) {
-          window.initialBoardingQuery = parts[0].trim();
-          window.initialDroppingQuery = parts[1].trim();
+          boardingVal = parts[0].trim();
+          droppingVal = parts[1].trim();
         }
       }
+      
+      if (boardingVal) {
+        window.initialBoardingQuery = boardingVal;
+      }
+      if (droppingVal) {
+        window.initialDroppingQuery = droppingVal;
+      }
+
       if (params.has('type')) window.initialTypeQuery = params.get('type');
       if (params.has('sort')) {
         const sortBtn = document.getElementById(params.get('sort'));
@@ -1895,6 +2989,7 @@
     const localHistoryWrites = {};
     const previousTrackingStates = {};
     const activeTripState = JSON.parse(localStorage.getItem('activeTripState') || '{}');
+    let cachedStopGroups = {};
 
     function applyFirebaseData() {
       console.log('[applyFirebaseData] Applying Firebase data to cached variables...');
@@ -1910,9 +3005,11 @@
       cachedOperators = window._fbOperators || [];
       cachedBusTypes  = window._fbTypes     || [];
       cachedBusHistory = window._fbBusHistory || {};
+      cachedStopGroups = window._fbStopGroups || {};
       
       console.log('[applyFirebaseData] cachedBuses set to:', cachedBuses.length);
     }
+    window.applyFirebaseData = applyFirebaseData;
 
     function getDBBuses()     { return cachedBuses;    }
     function getDBOperators() { return cachedOperators; }
@@ -1930,6 +3027,66 @@
     let ybmCustomBuses = [];
     let localYbmBuses = [];
     let customBuses = [];
+
+    // ============================================================
+    // FIREBASE JOURNEY SYNCHRONIZATION HELPERS
+    // ============================================================
+    function getFirebaseJourney(bus) {
+      const busId = extractServiceNo(bus.link);
+      if (!busId) return null;
+      
+      const activeInfo = window._fbActiveJourneys?.[busId];
+      let journeyKey = activeInfo?.journeyKey;
+      
+      if (!journeyKey && window._fbJourneys?.[busId]) {
+        const depDate = getDepartureDate(bus.time);
+        journeyKey = Object.keys(window._fbJourneys[busId]).find(k => k.startsWith(depDate));
+      }
+      
+      if (!journeyKey || !window._fbJourneys?.[busId]?.[journeyKey]) {
+        return null;
+      }
+      
+      return {
+        journeyKey: journeyKey,
+        data: window._fbJourneys[busId][journeyKey],
+        activeStatus: activeInfo?.status || null
+      };
+    }
+
+    function getFirebaseJourneyStatus(bus) {
+      const journey = getFirebaseJourney(bus);
+      if (!journey) return null;
+      
+      const status = journey.activeStatus || journey.data.metadata?.status || null;
+      const actualTimes = journey.data.actualTimes || {};
+      const actualKeys = Object.keys(actualTimes);
+      
+      // Determine if destination stop has been reached
+      let destReached = false;
+      const stops = bus.stopTimes || bus.intermediateStops || [];
+      if (stops.length > 0) {
+        const destStopName = stops[stops.length - 1].name || stops[stops.length - 1].stopName || '';
+        const normDestName = destStopName.toLowerCase().replace(/[\s_]+/g, '');
+        const foundDestKey = actualKeys.find(
+          key => key.toLowerCase().replace(/[\s_]+/g, '') === normDestName
+        );
+        if (foundDestKey && actualTimes[foundDestKey] && actualTimes[foundDestKey].actual) {
+          destReached = true;
+        }
+      }
+      
+      if (status === 'COMPLETED' && (destReached || actualKeys.length === 0)) {
+        return 'COMPLETED';
+      }
+      
+      if (actualKeys.length > 0) {
+        return 'LIVE';
+      }
+      
+      return status;
+    }
+
 
     // ============================================================
     // TRACKING STATE SYSTEM - Production Grade
@@ -1969,14 +3126,13 @@
       let month = now.getMonth();
       let day = now.getDate();
       
-      // Overnight bus logic
-      if (currentMinutes > 1200 && depMinutes < 360) {
+      if (currentMinutes > 720 && depMinutes < 360) {
         const nextDay = new Date(now);
         nextDay.setDate(nextDay.getDate() + 1);
         year = nextDay.getFullYear();
         month = nextDay.getMonth();
         day = nextDay.getDate();
-      } else if (currentMinutes < 360 && depMinutes > 1200) {
+      } else if (currentMinutes < 480 && depMinutes > 540) {
         const prevDay = new Date(now);
         prevDay.setDate(prevDay.getDate() - 1);
         year = prevDay.getFullYear();
@@ -1987,47 +3143,7 @@
       return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     }
 
-    function getTrackingState(bus) {
-      const depTime = bus.time || bus.departureTime || '';
-      const arrTime = bus.arrivalTime || bus.arr || '';
-      
-      if (!depTime) return STATE_WAITING;
-      
-      const now = new Date();
-      const depMinutes = parseTimeToMinutes(depTime);
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-      const depDate = getDepartureDate(depTime);
-      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-      
-      // Calculate day difference
-      const depDateObj = new Date(depDate);
-      const todayObj = new Date(today);
-      const daysDiff = Math.floor((todayObj - depDateObj) / (1000 * 60 * 60 * 24));
-      const effectiveDepMinutes = depMinutes + (daysDiff * 24 * 60);
-      const oneHourBefore = effectiveDepMinutes - 60;
-      
-      // State determination
-      if (currentMinutes < oneHourBefore) {
-        return STATE_WAITING;
-      } else if (currentMinutes >= oneHourBefore && currentMinutes < effectiveDepMinutes + 30) {
-        return STATE_PRELIVE;
-      }
-      
-      // Check completion based on arrival
-      if (arrTime) {
-        const arrMinutes = parseTimeToMinutes(arrTime);
-        const effectiveArrMinutes = arrMinutes + (daysDiff * 24 * 60);
-        const completionTime = effectiveArrMinutes + 180; // +3 hours
-        
-        if (currentMinutes >= completionTime) {
-          return STATE_COMPLETED;
-        } else if (currentMinutes >= effectiveDepMinutes) {
-          return STATE_ACTIVE;
-        }
-      }
-      
-      return currentMinutes >= effectiveDepMinutes ? STATE_ACTIVE : STATE_PRELIVE;
-    }
+    // Overridden by tracking state system below
 
     function getStateDisplayInfo(state) {
       const info = {
@@ -2277,9 +3393,22 @@
     }
 
     function getAvailableHistoryDates(serviceNo) {
-      if (!window._fbBusHistory || !serviceNo) return [];
-      const dates = Object.keys(window._fbBusHistory[serviceNo] || {});
-      return dates.sort().reverse(); // Latest first
+      const dates = new Set();
+      
+      if (window._fbJourneys && window._fbJourneys[serviceNo]) {
+        Object.keys(window._fbJourneys[serviceNo]).forEach(key => {
+          const datePart = key.split('_')[0];
+          if (datePart && datePart.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            dates.add(datePart);
+          }
+        });
+      }
+      
+      if (window._fbBusHistory && window._fbBusHistory[serviceNo]) {
+        Object.keys(window._fbBusHistory[serviceNo]).forEach(d => dates.add(d));
+      }
+      
+      return Array.from(dates).sort().reverse(); // Latest first
     }
 
     // Sanitize a string into a valid key
@@ -2891,6 +4020,16 @@
      *   state: "before-start" | "active" | "expired"
      */
     function getTrackingState(bus) {
+      // 1. Check Firebase status (Source of truth)
+      const fbStatus = getFirebaseJourneyStatus(bus);
+      if (fbStatus) {
+        if (fbStatus === 'WAITING') return 'PRE_DEPARTURE';
+        if (fbStatus === 'LIVE') return 'LIVE';
+        if (fbStatus === 'COMPLETED') return 'COMPLETED';
+        return fbStatus;
+      }
+
+      // 2. Time-based calculation
       const now = new Date();
       const current = now.getHours() * 60 + now.getMinutes();
       const departure = parseTimeToMinutes(bus.time);
@@ -2905,11 +4044,11 @@
 
       // Ensure current wraps around correctly if we are after midnight and departure was before midnight
       let currentNorm = current;
-      if (current < 240 && departure > 1200) {
+      if (current < 480 && departure > 540) {
           currentNorm += 1440; 
       }
       // If we are before midnight and departure is after midnight (pre-departure window)
-      if (current > 1200 && departure < 240) {
+      if (current > 720 && departure < 360) {
           currentNorm -= 1440;
       }
 
@@ -3017,10 +4156,10 @@
     }
 
     function getDisplayRouteInfo(bus) {
-        const bSel = document.getElementById('boardingSelect');
-        const dSel = document.getElementById('droppingSelect');
-        const selectedBoarding = bSel ? bSel.value : '';
-        const selectedDropping = dSel ? dSel.value : '';
+        const citySearch = document.getElementById('citySearchInput');
+        const pointTypeSel = document.getElementById('pointTypeSelect');
+        const searchCity = citySearch ? citySearch.value.trim() : '';
+        const pointType = pointTypeSel ? pointTypeSel.value : 'boarding';
 
         const stops = getBusStops(bus);
         if (!stops.length) {
@@ -3040,15 +4179,20 @@
         }
 
         let bStop = null;
-        if (selectedBoarding) {
-            bStop = stops.find(s => s.city.toLowerCase() === selectedBoarding.toLowerCase());
-        }
-        if (!bStop) bStop = stops[0];
-
         let dStop = null;
-        if (selectedDropping) {
-            dStop = stops.find(s => s.city.toLowerCase() === selectedDropping.toLowerCase());
+
+        if (searchCity) {
+            const matchedStop = stops.find(s => s.city.toLowerCase() === searchCity.toLowerCase());
+            if (matchedStop) {
+                if (pointType === 'boarding') {
+                    bStop = matchedStop;
+                } else {
+                    dStop = matchedStop;
+                }
+            }
         }
+
+        if (!bStop) bStop = stops[0];
         if (!dStop) dStop = stops[stops.length - 1];
 
         return {
@@ -3074,7 +4218,7 @@
         } else if (trackingState === 'COMPLETED') {
             trackingStatusBadgeHtml = `<span class="tracking-state-badge state-completed"><i class="fa-solid fa-check-circle"></i> Trip Completed</span>`;
         } else {
-            trackingStatusBadgeHtml = `<span class="tracking-state-badge state-waiting"><i class="fa-solid fa-clock"></i> Waiting</span>`;
+            trackingStatusBadgeHtml = `<span class="tracking-state-badge state-waiting"><i class="fa-solid fa-clock"></i> Waiting for Departure</span>`;
         }
         
         return `
@@ -3167,15 +4311,45 @@
         const displayStyle = isOpen ? 'block' : 'none';
 
         const trackingState = getTrackingState(bus);
-        const showActual = trackingState === 'LIVE' || trackingState === 'COMPLETED';
+        const journey = getFirebaseJourney(bus);
+
+        const actualTimesDataExists = journey && journey.data && journey.data.actualTimes;
 
         const stopsHtml = stops.map((stop, index) => {
             const stopName = stop.name || stop.stopName || 'Stop ' + (index + 1);
             const scheduledTime = stop.scheduledTime || stop.time || '';
-            const actualTime = stop.actual || (trackingState === 'COMPLETED' ? 'Not Reached' : 'Waiting');
             
-            let delayText = stop.delay || '';
-            const isPending = actualTime === 'Waiting' || actualTime === 'Not Reached';
+            let actualTime = 'Pending';
+            let delayText = '';
+            
+            if (actualTimesDataExists) {
+                const normStopName = stopName.toLowerCase().replace(/[\s_]+/g, '');
+                const actualTimeKey = Object.keys(journey.data.actualTimes).find(
+                    key => key.toLowerCase().replace(/[\s_]+/g, '') === normStopName
+                );
+                
+                if (actualTimeKey) {
+                    const timingData = journey.data.actualTimes[actualTimeKey];
+                    if (timingData && timingData.actual) {
+                        actualTime = timingData.actual;
+                        if (timingData.delayMinutes !== undefined && timingData.delayMinutes !== null) {
+                            delayText = formatDelayStatus(timingData.delayMinutes).text;
+                        } else if (timingData.status) {
+                            delayText = timingData.status;
+                        }
+                    } else {
+                        actualTime = 'Pending';
+                    }
+                } else {
+                    actualTime = 'Pending';
+                }
+            } else {
+                // Fallback: if actualTimes data truly does not exist
+                actualTime = stop.actual || (trackingState === 'COMPLETED' ? 'Not Reached' : 'Waiting');
+                delayText = stop.delay || '';
+            }
+            
+            const isPending = actualTime === 'Waiting' || actualTime === 'Not Reached' || actualTime === 'Pending';
             
             // Live status indicators from YourBus provider
             const normStopName = stopName.toLowerCase().replace(/[\s_]+/g, '');
@@ -3206,7 +4380,7 @@
                 badgeBg = 'rgba(34, 197, 94, 0.15)';
                 badgeColor = '#22c55e';
                 badgeBorder = 'rgba(34, 197, 94, 0.25)';
-            } else if (delayText.includes('-')) {
+            } else if (delayText.includes('-') || delayText === 'Early') {
                 badgeBg = 'rgba(59, 130, 246, 0.15)';
                 badgeColor = '#3b82f6';
                 badgeBorder = 'rgba(59, 130, 246, 0.25)';
@@ -3287,12 +4461,41 @@
     function renderTrackButton(bus) {
         const safeOp = (bus.op || '').replace(/'/g, "\\'");
         const safeLink = (bus.link || '').replace(/'/g, "\\'");
+        // Pre-calculate button state to render with correct dimensions from start
+        const state = getTrackingState(bus);
+        const trackingEnabled = isTrackingEnabled(bus);
+        
+        let btnClass = 'ibc-track-btn';
+        let btnContent = '<div class="live-dot"></div> Track Live';
+        let btnOnclick = `onclick="openMap('${safeLink}','${safeOp}')"`;
+        let btnStyle = '';
+        
+        if (!trackingEnabled) {
+            btnClass += ' track-btn-disabled';
+            btnContent = '<i class="fa-solid fa-ban" style="font-size:14px"></i> Tracking disabled';
+            btnOnclick = 'onclick="event.preventDefault()"';
+            btnStyle = 'background:#f1f5f9;color:#94a3b8;box-shadow:none;cursor:not-allowed;';
+        } else if (state === 'PRE_DEPARTURE') {
+            btnClass += ' track-btn-disabled';
+            btnContent = '<i class="fa-solid fa-clock"></i> Waiting for Departure';
+            btnOnclick = 'onclick="event.preventDefault()"';
+            btnStyle = 'background:#e2e8f0;color:#64748b;box-shadow:none;cursor:not-allowed;';
+        } else if (state === 'COMPLETED') {
+            btnClass += ' track-btn-disabled';
+            btnContent = '<i class="fa-solid fa-circle-check"></i> Trip Completed';
+            btnOnclick = 'onclick="event.preventDefault()"';
+            btnStyle = 'background:#e2e8f0;color:#64748b;box-shadow:none;cursor:not-allowed;';
+        } else {
+            // LIVE state - use default styles
+            btnStyle = 'background:linear-gradient(135deg, #1d4ed8, #1e40af);color:#ffffff;box-shadow:0 0 15px rgba(29, 78, 216, 0.4);';
+        }
+        
         return `
-            <div class="card-actions" data-mode="${getBusCardMode(bus)}" data-dep="${bus.time || ''}" data-arr="${bus.arrivalTime || ''}" data-link="${safeLink}" data-op="${safeOp}" data-tracking-enabled="${isTrackingEnabled(bus)}" data-service-no="${extractServiceNo(bus.link) || ''}">
-                <button class="ibc-track-btn" onclick="openMap('${safeLink}','${safeOp}')" style="width: 100%; border: none; margin-top: 16px;">
-                <div class="live-dot" style="margin-right: 8px;"></div> Track Live
+            <div class="card-actions" data-mode="${getBusCardMode(bus)}" data-dep="${bus.time || ''}" data-arr="${bus.arrivalTime || ''}" data-link="${safeLink}" data-op="${safeOp}" data-tracking-enabled="${trackingEnabled}" data-service-no="${extractServiceNo(bus.link) || ''}">
+                <button class="${btnClass}" ${btnOnclick} style="${btnStyle}">
+                    ${btnContent}
                 </button>
-                <div class="tracking-countdown" style="width: 100%;"></div>
+                <div class="tracking-countdown"></div>
             </div>
         `;
     }
@@ -3306,13 +4509,8 @@
         const isHistoryOpen = window.openHistorySet && window.openHistorySet.has(serviceNo);
         const displayStyle = isHistoryOpen ? 'block' : 'none';
         
-        // Populate dates from both cachedBusHistory and window.actualTimesData
-        const historyData = cachedBusHistory?.[serviceNo] || {};
-        const actualData = window.actualTimesData?.[serviceNo] || {};
-        const allDateKeys = new Set();
-        Object.keys(historyData).forEach(k => allDateKeys.add(k));
-        Object.keys(actualData).forEach(k => allDateKeys.add(k.substring(0, 10)));
-        let dates = Array.from(allDateKeys).sort().reverse();
+        // Populate dates from Firebase Journeys and cachedBusHistory
+        let dates = getAvailableHistoryDates(serviceNo);
         
         const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
         if (!dates.includes(todayDate)) {
@@ -3381,7 +4579,7 @@
     function renderSimpleCard(bus) {
         const serviceNoForCard = extractServiceNo(bus.link);
         return `
-            <div class="modern-bus-card" data-service-no="${serviceNoForCard || ''}">
+            <div class="modern-bus-card card-state-pre" data-service-no="${serviceNoForCard || ''}">
                 <div class="card-main-row">
                     ${renderHeader(bus)}
                     <div class="card-mid-col">
@@ -3398,7 +4596,7 @@
     function renderLiveCard(bus) {
         const serviceNo = extractServiceNo(bus.link);
         return `
-        <div class="modern-bus-card"
+        <div class="modern-bus-card card-state-live"
              data-service-no="${serviceNo || ''}">
             <div class="card-main-row">
                 ${renderHeader(bus)}
@@ -3417,7 +4615,7 @@
     function renderCompletedCard(bus) {
         const serviceNoForCard = extractServiceNo(bus.link);
         return `
-            <div class="modern-bus-card" data-service-no="${serviceNoForCard || ''}">
+            <div class="modern-bus-card card-state-completed" data-service-no="${serviceNoForCard || ''}">
                 <div class="card-main-row">
                     ${renderHeader(bus)}
                     <div class="card-mid-col">
@@ -3432,10 +4630,165 @@
         `;
     }
 
-    function getSortTimeMins(bus, selectedBoarding) {
-      if (selectedBoarding) {
+    function toggleFilters() {
+      const container = document.getElementById('filtersContainer');
+      const caret = document.getElementById('filtersCaret');
+      if (container.style.display === 'none' || !container.style.display) {
+        container.style.display = 'grid';
+        caret.className = 'fa-solid fa-chevron-up';
+      } else {
+        container.style.display = 'none';
+        caret.className = 'fa-solid fa-chevron-down';
+      }
+    }
+    window.toggleFilters = toggleFilters;
+
+    function swapLocations() {
+      const boardingInput = document.getElementById('boardingInput');
+      const droppingInput = document.getElementById('droppingInput');
+      const temp = boardingInput.value;
+      boardingInput.value = droppingInput.value;
+      droppingInput.value = temp;
+      handleSearch();
+    }
+    window.swapLocations = swapLocations;
+
+    window.resetAllFilters = function() {
+      document.getElementById('operatorInput').value = '';
+      document.getElementById('typeSelect').value = '';
+      const sortEarly = document.getElementById('sortEarly');
+      if (sortEarly) setSort(sortEarly);
+      handleSearch();
+    };
+
+    // Mobile Filter Modal Functions
+    window.toggleFilterModal = function() {
+      const overlay = document.getElementById('filterModalOverlay');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Sync mobile filters with desktop values
+      const desktopOperator = document.getElementById('operatorInput');
+      const mobileOperator = document.getElementById('mobileOperatorInput');
+      if (desktopOperator && mobileOperator) {
+        mobileOperator.value = desktopOperator.value;
+      }
+      
+      const desktopType = document.getElementById('typeSelect');
+      
+      // Sync sort buttons
+      const sortEarly = document.getElementById('sortEarly');
+      const mobileSortEarly = document.getElementById('mobileSortEarly');
+      const mobileSortLate = document.getElementById('mobileSortLate');
+      if (sortEarly && mobileSortEarly && mobileSortLate) {
+        if (sortEarly.classList.contains('active')) {
+          mobileSortEarly.classList.add('active');
+          mobileSortEarly.style.background = '#d84e55';
+          mobileSortEarly.style.color = '#ffffff';
+          mobileSortEarly.style.borderColor = '#d84e55';
+          mobileSortLate.classList.remove('active');
+          mobileSortLate.style.background = '#ffffff';
+          mobileSortLate.style.color = '#475569';
+          mobileSortLate.style.borderColor = '#e2e8f0';
+        } else {
+          mobileSortLate.classList.add('active');
+          mobileSortLate.style.background = '#d84e55';
+          mobileSortLate.style.color = '#ffffff';
+          mobileSortLate.style.borderColor = '#d84e55';
+          mobileSortEarly.classList.remove('active');
+          mobileSortEarly.style.background = '#ffffff';
+          mobileSortEarly.style.color = '#475569';
+          mobileSortEarly.style.borderColor = '#e2e8f0';
+        }
+      }
+      
+      // Sync mobile dropdown value
+      const mobileTypeSel = document.getElementById('mobileTypeSelect');
+      if (desktopType && mobileTypeSel) {
+        mobileTypeSel.value = desktopType.value;
+      }
+    };
+
+    window.closeFilterModal = function(event) {
+      if (event && event.target !== event.currentTarget) return;
+      const overlay = document.getElementById('filterModalOverlay');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    };
+
+    window.syncFilterToDesktop = function(type, value) {
+      if (type === 'operator') {
+        const desktopInput = document.getElementById('operatorInput');
+        if (desktopInput) desktopInput.value = value;
+      } else if (type === 'type') {
+        const desktopSelect = document.getElementById('typeSelect');
+        if (desktopSelect) desktopSelect.value = value;
+      }
+    };
+
+    window.setMobileSort = function(btn, sortType) {
+      const otherBtnId = sortType === 'early' ? 'mobileSortLate' : 'mobileSortEarly';
+      const otherBtn = document.getElementById(otherBtnId);
+      const desktopBtnId = sortType === 'early' ? 'sortEarly' : 'sortLate';
+      const desktopBtn = document.getElementById(desktopBtnId);
+      
+      // Style the clicked button
+      btn.classList.add('active');
+      btn.style.background = '#d84e55';
+      btn.style.color = '#ffffff';
+      btn.style.borderColor = '#d84e55';
+      
+      // Reset the other button
+      if (otherBtn) {
+        otherBtn.classList.remove('active');
+        otherBtn.style.background = '#ffffff';
+        otherBtn.style.color = '#475569';
+        otherBtn.style.borderColor = '#e2e8f0';
+      }
+      
+      // Sync with desktop
+      if (desktopBtn) {
+        setSort(desktopBtn);
+      }
+    };
+
+    window.resetMobileFilters = function() {
+      document.getElementById('mobileOperatorInput').value = '';
+      
+      // Reset mobile type dropdown
+      const mobileTypeSel = document.getElementById('mobileTypeSelect');
+      if (mobileTypeSel) {
+        mobileTypeSel.value = '';
+      }
+      
+      const mobileSortEarly = document.getElementById('mobileSortEarly');
+      if (mobileSortEarly) {
+        setMobileSort(mobileSortEarly, 'early');
+      }
+      
+      // Also reset desktop filters
+      resetAllFilters();
+      closeFilterModal();
+    };
+
+    window.applyMobileFilters = function() {
+      handleSearch();
+      closeFilterModal();
+    };
+
+    window.clearInput = function(inputId, clearBtnId) {
+      const input = document.getElementById(inputId);
+      const btn = document.getElementById(clearBtnId);
+      if (input) input.value = '';
+      if (btn) btn.style.display = 'none';
+      input.focus();
+      handleSearch();
+    };
+
+    function getSortTimeMins(bus, selectedBoardingCity) {
+      if (selectedBoardingCity) {
         const stops = getBusStops(bus);
-        const stop = stops.find(s => s.city.toLowerCase() === selectedBoarding.toLowerCase());
+        const stop = stops.find(s => (s.city || '').toLowerCase() === selectedBoardingCity.toLowerCase());
         if (stop && stop.time) {
           return parseTimeMins(stop.time);
         }
@@ -3470,8 +4823,8 @@
         console.log('[handleSearch] customBuses count:', safeCustomBuses.length);
         
         const operator = document.getElementById('operatorInput').value.trim().toLowerCase();
-        const boarding = document.getElementById('boardingSelect').value;
-        const dropping = document.getElementById('droppingSelect').value;
+        const boarding = document.getElementById('boardingInput').value.trim();
+        const dropping = document.getElementById('droppingInput').value.trim();
         const type = document.getElementById('typeSelect').value;
         const sortBtn = document.querySelector('.sort-btn.active');
         const sort = sortBtn ? sortBtn.id : 'sortEarly';
@@ -3483,13 +4836,67 @@
           const matchOp = !operator || (b.op || b.operator || '').toLowerCase().includes(operator);
           const matchType = !type || (b.type || b.busType || '').toLowerCase() === type.toLowerCase();
           
-          const stops = getBusStops(b);
-          const bIndex = boarding ? stops.findIndex(s => s.city.toLowerCase() === boarding.toLowerCase()) : -1;
-          const dIndex = dropping ? stops.findIndex(s => s.city.toLowerCase() === dropping.toLowerCase()) : -1;
+          const stops = b.intermediateStops || b.stopTimes || b.stops || [];
+          const getStopCity = s => (s.name || s.stopName || s.city || '').toLowerCase().trim();
 
-          if (boarding && bIndex === -1) return false;
-          if (dropping && dIndex === -1) return false;
-          if (boarding && dropping && bIndex >= dIndex) return false;
+          if (boarding) {
+            const boardingQuery = boarding.toLowerCase().trim();
+            const group = Object.values(cachedStopGroups || {}).find(g => (g.name || '').toLowerCase() === boardingQuery);
+            const groupStops = group ? (group.stops || []).map(s => s.toLowerCase().trim()) : [];
+            
+            let matchedBoarding = null;
+            if (groupStops.length > 0) {
+              matchedBoarding = stops.find(s => groupStops.includes(getStopCity(s)));
+            } else {
+              matchedBoarding = stops.find(s => getStopCity(s) === boardingQuery);
+            }
+            
+            if (!matchedBoarding) return false;
+            
+            const stopPointType = matchedBoarding.pointType || (matchedBoarding.showOnCard === false ? 'none' : 'both');
+            if (stopPointType === 'none' || stopPointType === 'dropping') return false;
+          }
+          
+          if (dropping) {
+            const droppingQuery = dropping.toLowerCase().trim();
+            const group = Object.values(cachedStopGroups || {}).find(g => (g.name || '').toLowerCase() === droppingQuery);
+            const groupStops = group ? (group.stops || []).map(s => s.toLowerCase().trim()) : [];
+            
+            let matchedDropping = null;
+            if (groupStops.length > 0) {
+              matchedDropping = stops.find(s => groupStops.includes(getStopCity(s)));
+            } else {
+              matchedDropping = stops.find(s => getStopCity(s) === droppingQuery);
+            }
+            
+            if (!matchedDropping) return false;
+            
+            const stopPointType = matchedDropping.pointType || (matchedDropping.showOnCard === false ? 'none' : 'both');
+            if (stopPointType === 'none' || stopPointType === 'boarding') return false;
+          }
+          
+          if (boarding && dropping) {
+            const boardingQuery = boarding.toLowerCase().trim();
+            const droppingQuery = dropping.toLowerCase().trim();
+            
+            const boardGroup = Object.values(cachedStopGroups || {}).find(g => (g.name || '').toLowerCase() === boardingQuery);
+            const boardGroupStops = boardGroup ? (boardGroup.stops || []).map(s => s.toLowerCase().trim()) : [];
+            
+            const dropGroup = Object.values(cachedStopGroups || {}).find(g => (g.name || '').toLowerCase() === droppingQuery);
+            const dropGroupStops = dropGroup ? (dropGroup.stops || []).map(s => s.toLowerCase().trim()) : [];
+            
+            const boardingIdx = stops.findIndex(s => {
+              const city = getStopCity(s);
+              return boardGroupStops.length > 0 ? boardGroupStops.includes(city) : city === boardingQuery;
+            });
+            
+            const droppingIdx = stops.findIndex(s => {
+              const city = getStopCity(s);
+              return dropGroupStops.length > 0 ? dropGroupStops.includes(city) : city === droppingQuery;
+            });
+            
+            if (boardingIdx === -1 || droppingIdx === -1 || boardingIdx >= droppingIdx) return false;
+          }
 
           return matchOp && matchType;
         });
@@ -3570,8 +4977,8 @@
 
 
 
-      // Apply initial tracking state to all rendered cards
-      updateAllTrackingStates();
+      // Cards are rendered with correct button state from the start
+      // No need for post-render UI updates - prevents layout shift
       
       } catch (err) {
         console.error('[handleSearch] CRITICAL ERROR during rendering:', err);
@@ -3595,6 +5002,7 @@
           resultsBlock.style.display = 'block';
         }
       }
+      window.handleSearch = handleSearch;
     }
 
     function setSort(btn) {
@@ -3625,13 +5033,113 @@
       if (serviceNo) {
         window.selectedHistoryDates[serviceNo] = selectedDate;
       }
-      const historyData = cachedBusHistory[serviceNo] || {};
-      let snap = historyData[selectedDate];
-      const contentDiv = document.getElementById(`history-content-${busKey}`);
       
+      let snap = null;
+      const contentDiv = document.getElementById(`history-content-${busKey}`);
       if (!contentDiv) return;
 
-      // Fallback: if no Firebase history, try building from backend actual-times
+      // 1. Try to read from Firebase journeys (Source of truth)
+      if (window._fbJourneys && window._fbJourneys[serviceNo]) {
+        let matchingKey = null;
+        const activeInfo = window._fbActiveJourneys?.[serviceNo];
+        if (activeInfo && activeInfo.journeyKey && activeInfo.journeyKey.startsWith(selectedDate)) {
+          matchingKey = activeInfo.journeyKey;
+        } else {
+          matchingKey = Object.keys(window._fbJourneys[serviceNo]).find(k => k.startsWith(selectedDate));
+        }
+        
+        if (matchingKey) {
+          const journeyData = window._fbJourneys[serviceNo][matchingKey];
+          const actualTimes = journeyData.actualTimes || {};
+          
+          const matchedBus = customBuses.find(b => extractServiceNo(b.link) === serviceNo);
+          const staticStops = matchedBus ? (matchedBus.intermediateStops || matchedBus.stopTimes || []) : [];
+          
+          let story = [];
+          if (staticStops.length > 0) {
+            story = staticStops.map((st, i) => {
+              const stopName = st.name || st.stopName || '';
+              const scheduledTime = st.scheduledTime || st.time || '--:--';
+              
+              let actualTime = '';
+              let delayMinutes = 0;
+              let status = 'pending';
+              
+              const normStopName = stopName.toLowerCase().replace(/[\s_]+/g, '');
+              const actualKey = Object.keys(actualTimes).find(key => key.toLowerCase().replace(/[\s_]+/g, '') === normStopName);
+              
+              if (actualKey) {
+                const timingData = actualTimes[actualKey];
+                if (timingData) {
+                  actualTime = timingData.actual || '';
+                  delayMinutes = timingData.delayMinutes || 0;
+                  status = timingData.status || (actualTime ? 'On Time' : 'pending');
+                }
+              }
+              
+              return {
+                stopName: stopName,
+                scheduledTime: scheduledTime,
+                actualTime: actualTime,
+                delayMinutes: delayMinutes,
+                status: status
+              };
+            });
+          } else {
+            story = Object.entries(actualTimes).map(([stopKey, data]) => {
+              const stopName = stopKey.replace(/_/g, ' ');
+              const isPassed = data.status === "Passed";
+              const scheduledTime = data.scheduled || '--:--';
+              const actualTime = isPassed ? (scheduledTime !== '--:--' ? scheduledTime : '') : (data.actual || '');
+              const delayMinutes = isPassed ? 0 : (data.delayMinutes || 0);
+              const status = isPassed ? "Passed" : (data.status || 'pending');
+              
+              return {
+                stopName: stopName,
+                scheduledTime: scheduledTime,
+                actualTime: actualTime,
+                delayMinutes: delayMinutes,
+                status: status
+              };
+            });
+          }
+          
+          // Compute delay analytics
+          let totalDelay = 0;
+          let worstDelay = 0;
+          let onTimeCount = 0;
+          story.forEach(st => {
+            const delay = st.delayMinutes || 0;
+            totalDelay += delay;
+            if (delay > worstDelay) worstDelay = delay;
+            if (delay <= 0) onTimeCount++;
+          });
+          const avgDelay = story.length > 0 ? Math.round(totalDelay / story.length) : 0;
+          const onTimePercentage = story.length > 0 ? Math.round((onTimeCount / story.length) * 100) : 100;
+          
+          const metadata = journeyData.metadata || {};
+          
+          snap = {
+            route: matchedBus ? matchedBus.route : (metadata.route || 'Unknown Route'),
+            departureTime: matchedBus ? matchedBus.time : (metadata.departureTime || '--:--'),
+            arrivalTime: matchedBus ? matchedBus.arrivalTime : (metadata.arrivalTime || '--:--'),
+            story: story,
+            analytics: {
+              avgDelay,
+              worstDelay,
+              onTimePercentage
+            }
+          };
+        }
+      }
+      
+      // 2. Fallback to old Firebase history
+      if (!snap) {
+        const historyData = cachedBusHistory[serviceNo] || {};
+        snap = historyData[selectedDate];
+      }
+      
+      // 3. Fallback to window.actualTimesData
       if (!snap && window.actualTimesData && serviceNo && window.actualTimesData[serviceNo]) {
         // Find key that starts with selectedDate (e.g. "2026-06-09_1630" or "2026-06-09")
         const matchingKey = Object.keys(window.actualTimesData[serviceNo]).find(k => k.startsWith(selectedDate));
@@ -3786,7 +5294,7 @@
         
         // Determine display values
         const isPassed = status === 'Passed';
-        const actualDisplay = isPassed ? (scheduledTime !== '--:--' ? scheduledTime : 'Passed') : (actualTime || 'Not Reached');
+        const actualDisplay = isPassed ? (scheduledTime !== '--:--' ? scheduledTime : 'Passed') : (actualTime || 'Pending');
         const actualClass = (actualTime || isPassed) ? 'actual' : 'not-reached';
         
         // Determine status display
@@ -3859,13 +5367,54 @@
     }, 1000);
     updateClock();
 
+    // ============================================================
+    // MOBILE NAVIGATION
+    // ============================================================
+    function toggleMobileNav() {
+      const overlay = document.getElementById('mobileNavOverlay');
+      const drawer = document.getElementById('mobileNavDrawer');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      overlay.classList.add('active');
+      drawer.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      if (menuBtn) {
+        menuBtn.setAttribute('aria-expanded', 'true');
+      }
+      setTimeout(() => {
+        const firstLink = drawer.querySelector('.mobile-nav-link');
+        if (firstLink) firstLink.focus();
+      }, 100);
+    }
+
+    function closeMobileNav() {
+      const overlay = document.getElementById('mobileNavOverlay');
+      const drawer = document.getElementById('mobileNavDrawer');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      overlay.classList.remove('active');
+      drawer.classList.remove('active');
+      document.body.style.overflow = '';
+      if (menuBtn) {
+        menuBtn.setAttribute('aria-expanded', 'false');
+        menuBtn.focus();
+      }
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const drawer = document.getElementById('mobileNavDrawer');
+        if (drawer && drawer.classList.contains('active')) {
+          closeMobileNav();
+        }
+      }
+    });
+
     /**
-     * updateAllTrackingStates — Scans all rendered .card-actions elements,
-     * reads their data-dep / data-arr attributes, computes getTrackingState(),
-     * and updates button state + countdown text in-place.
+     * updateAllTrackingStates — Lightweight state tracking for history snapshots.
+     * NOTE: Button UI is now rendered correctly from the start by renderTrackButton()
+     * to prevent layout shift (CLS). This function only handles background state
+     * transitions for history persistence.
      *
-     * Called once per second from the shared interval, and once after
-     * each handleSearch() render.
+     * Called once per second from the shared interval.
      */
     function updateAllTrackingStates() {
       const cardActions = document.querySelectorAll('.card-actions[data-dep]');
@@ -3874,25 +5423,8 @@
         const arr  = actions.getAttribute('data-arr');
         const link = actions.getAttribute('data-link');
         const op   = actions.getAttribute('data-op');
-        const mode = actions.getAttribute('data-mode') || 'normal';
-        const btn  = actions.querySelector('.ibc-track-btn');
-        const cdEl = actions.querySelector('.tracking-countdown');
-        if (!btn) return;
-
-        const trackingEnabled = actions.getAttribute('data-tracking-enabled') !== 'false';
-        if (!trackingEnabled) {
-          btn.classList.add('track-btn-disabled');
-          btn.onclick = (e) => e.preventDefault();
-          btn.innerHTML = '<i class="fa-solid fa-ban" style="font-size:14px"></i> Tracking disabled by operator';
-          btn.style.background = '#f1f5f9';
-          btn.style.color = '#94a3b8';
-          btn.style.boxShadow = 'none';
-          btn.style.cursor = 'not-allowed';
-          if (cdEl) { cdEl.style.display = 'none'; cdEl.textContent = ''; }
-          return;
-        }
-
-        const state = getTrackingState({ time: dep, arrivalTime: arr });
+        
+        const state = getTrackingState({ time: dep, arrivalTime: arr, link: link });
 
         // State transition trigger logic for history snapshots
         const serviceNo = extractServiceNo(link);
@@ -3915,41 +5447,12 @@
           }
         }
 
+        // Create history snapshot when trip completes
         if (state === 'COMPLETED' && prevState !== 'COMPLETED') {
           const busObj = cachedBuses.find(b => b.time === dep && b.op === op);
           if (busObj && isHistoryEnabled(busObj)) {
             maybeCreateHistorySnapshot(busObj);
           }
-        }
-
-        if (state === 'LIVE') {
-          btn.classList.remove('track-btn-disabled');
-          btn.onclick = () => openMap(link, op);
-          btn.innerHTML = '<span style="display:flex; align-items:center; justify-content:center; gap:8px;"><div class="live-dot"></div> Track Live</span>';
-          btn.style.background = 'linear-gradient(135deg, #1d4ed8, #1e40af)';
-          btn.style.color = '#ffffff';
-          btn.style.boxShadow = '0 0 15px rgba(29, 78, 216, 0.4)';
-          btn.style.cursor = 'pointer';
-          if (cdEl) { cdEl.style.display = 'none'; cdEl.textContent = ''; }
-        } else if (state === 'PRE_DEPARTURE') {
-          btn.classList.add('track-btn-disabled');
-          btn.onclick = (e) => e.preventDefault();
-          btn.innerHTML = `<i class="fa-solid fa-clock"></i> Waiting for Departure`;
-          btn.style.background = '#e2e8f0';
-          btn.style.color = '#64748b';
-          btn.style.boxShadow = 'none';
-          btn.style.cursor = 'not-allowed';
-          if (cdEl) { cdEl.style.display = 'none'; cdEl.textContent = ''; }
-        } else {
-          // COMPLETED
-          btn.classList.add('track-btn-disabled');
-          btn.onclick = (e) => e.preventDefault();
-          btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Trip Completed`;
-          btn.style.background = '#e2e8f0';
-          btn.style.color = '#64748b';
-          btn.style.boxShadow = 'none';
-          btn.style.cursor = 'not-allowed';
-          if (cdEl) { cdEl.style.display = 'none'; cdEl.textContent = ''; }
         }
       });
     }
@@ -3969,7 +5472,16 @@
     if (homeLink) homeLink.addEventListener('click', scrollToSearch);
     if (navLogo) navLogo.addEventListener('click', scrollToSearch);
 
+    document.getElementById('operatorInput').addEventListener('input', () => {
+      handleSearch();
+    });
     document.getElementById('operatorInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleSearch();
+    });
+    document.getElementById('boardingInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleSearch();
+    });
+    document.getElementById('droppingInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') handleSearch();
     });
 
@@ -4084,49 +5596,154 @@
         localYbmBuses = readLocalYbmCustomBuses();
 
         function populateDropdowns() {
-          const boardingSel = document.getElementById('boardingSelect');
-          const droppingSel = document.getElementById('droppingSelect');
           const typeSel  = document.getElementById('typeSelect');
 
-          if (boardingSel && droppingSel) {
-            const curBoarding = boardingSel.value;
-            const curDropping = droppingSel.value;
+          function setupCustomAutocomplete(inputId, dropdownId, initialValKey) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            if (!input || !dropdown) return;
 
-            boardingSel.innerHTML = '<option value="">[ Select Boarding Point ]</option>';
-            droppingSel.innerHTML = '<option value="">[ Select Dropping Point ]</option>';
+            // Set initial value from URL parsing if available
+            if (window[initialValKey]) {
+              input.value = window[initialValKey];
+              window[initialValKey] = null;
+              const clearBtnId = inputId === 'boardingInput' ? 'clearBoarding' : (inputId === 'droppingInput' ? 'clearDropping' : null);
+              const clearBtn = clearBtnId ? document.getElementById(clearBtnId) : null;
+              if (clearBtn) {
+                clearBtn.style.display = 'flex';
+              }
+            }
 
-            const allCities = new Set();
-            customBuses.forEach(b => {
-              const stops = getBusStops(b);
-              stops.forEach(s => {
-                if (s.city) allCities.add(s.city.trim());
+            let currentFocusIndex = -1;
+
+            function removeActive(items) {
+              for (let i = 0; i < items.length; i++) {
+                items[i].classList.remove("autocomplete-active");
+                items[i].style.backgroundColor = "";
+              }
+            }
+
+            function addActive(items) {
+              if (!items || items.length === 0) return false;
+              removeActive(items);
+              if (currentFocusIndex >= items.length) currentFocusIndex = 0;
+              if (currentFocusIndex < 0) currentFocusIndex = items.length - 1;
+              items[currentFocusIndex].classList.add("autocomplete-active");
+              items[currentFocusIndex].style.backgroundColor = "rgba(0, 0, 0, 0.05)";
+              items[currentFocusIndex].scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
               });
-            });
-
-            Array.from(allCities).sort().forEach(city => {
-              const opt1 = document.createElement('option');
-              opt1.value = city; opt1.textContent = city;
-              boardingSel.appendChild(opt1);
-
-              const opt2 = document.createElement('option');
-              opt2.value = city; opt2.textContent = city;
-              droppingSel.appendChild(opt2);
-            });
-
-            if (window.initialBoardingQuery) {
-              boardingSel.value = window.initialBoardingQuery;
-              window.initialBoardingQuery = null;
-            } else if (curBoarding && [...boardingSel.options].some(o => o.value === curBoarding)) {
-              boardingSel.value = curBoarding;
             }
 
-            if (window.initialDroppingQuery) {
-              droppingSel.value = window.initialDroppingQuery;
-              window.initialDroppingQuery = null;
-            } else if (curDropping && [...droppingSel.options].some(o => o.value === curDropping)) {
-              droppingSel.value = curDropping;
+            function filterOptions() {
+              currentFocusIndex = -1;
+              const val = input.value.trim().toLowerCase();
+              
+              const clearBtnId = inputId === 'boardingInput' ? 'clearBoarding' : (inputId === 'droppingInput' ? 'clearDropping' : null);
+              const clearBtn = clearBtnId ? document.getElementById(clearBtnId) : null;
+              if (clearBtn) {
+                clearBtn.style.display = val ? 'flex' : 'none';
+              }
+              
+              const matchedGroups = Object.values(cachedStopGroups || {})
+                .filter(g => g && g.name && g.name.toLowerCase().includes(val));
+
+              const allCities = new Set();
+              const buses = mergeBusLists(cachedBuses, localYbmBuses);
+              buses.forEach(b => {
+                const stops = getBusStops(b);
+                stops.forEach(s => {
+                  if (s.city) allCities.add(s.city.trim());
+                });
+              });
+              
+              const sortedCities = Array.from(allCities).sort();
+              const filtered = sortedCities.filter(city => city.toLowerCase().includes(val));
+
+              if (matchedGroups.length === 0 && filtered.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+              }
+
+              dropdown.innerHTML = '';
+
+              // Render matched groups first
+              matchedGroups.forEach(group => {
+                const item = document.createElement('div');
+                item.className = 'custom-dropdown-item stop-group-item';
+                item.innerHTML = `<i class="fa-solid fa-tags" style="color: var(--primary); margin-right: 8px;"></i>
+                                  <div>
+                                    <strong style="color: var(--primary); font-weight: 700;">${group.name}</strong>
+                                    <span class="dropdown-subtitle" style="color: var(--primary); opacity: 0.8; font-weight: 700; font-size: 11px; margin-left: 6px;">City Group</span>
+                                  </div>`;
+                item.addEventListener('click', () => {
+                  input.value = group.name;
+                  if (clearBtn) clearBtn.style.display = 'flex';
+                  dropdown.style.display = 'none';
+                  handleSearch(); // Trigger search in-place when clicked
+                });
+                dropdown.appendChild(item);
+              });
+
+              filtered.forEach(city => {
+                const item = document.createElement('div');
+                item.className = 'custom-dropdown-item';
+                item.innerHTML = `<i class="fa-solid fa-location-dot" style="margin-right: 8px;"></i>
+                                  <div>
+                                    <strong>${city}</strong>
+                                    <span class="dropdown-subtitle" style="font-size: 11px; margin-left: 6px; opacity: 0.6;">City / Station</span>
+                                  </div>`;
+                item.addEventListener('click', () => {
+                  input.value = city;
+                  if (clearBtn) clearBtn.style.display = 'flex';
+                  dropdown.style.display = 'none';
+                  handleSearch(); // Trigger search in-place when a stop is clicked
+                });
+                dropdown.appendChild(item);
+              });
+
+              dropdown.style.display = 'block';
             }
+
+            input.addEventListener('focus', filterOptions);
+            input.addEventListener('input', filterOptions);
+            input.addEventListener('click', (e) => {
+              e.stopPropagation();
+              filterOptions();
+            });
+
+            input.addEventListener('keydown', (e) => {
+              const items = dropdown.getElementsByClassName('custom-dropdown-item');
+              if (dropdown.style.display !== 'none' && items.length > 0) {
+                if (e.key === 'ArrowDown') {
+                  currentFocusIndex++;
+                  addActive(items);
+                  e.preventDefault();
+                } else if (e.key === 'ArrowUp') {
+                  currentFocusIndex--;
+                  addActive(items);
+                  e.preventDefault();
+                } else if (e.key === 'Enter') {
+                  if (currentFocusIndex > -1 && items[currentFocusIndex]) {
+                    e.preventDefault();
+                    items[currentFocusIndex].click();
+                  }
+                } else if (e.key === 'Escape') {
+                  dropdown.style.display = 'none';
+                }
+              }
+            });
+
+            document.addEventListener('click', (e) => {
+              if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+              }
+            });
           }
+
+          setupCustomAutocomplete('boardingInput', 'boardingDropdown', 'initialBoardingQuery');
+          setupCustomAutocomplete('droppingInput', 'droppingDropdown', 'initialDroppingQuery');
 
           if (typeSel) {
             const curType = typeSel.value;
@@ -4145,6 +5762,24 @@
             });
             if (window.initialTypeQuery) { typeSel.value = window.initialTypeQuery; window.initialTypeQuery = null; }
             else if ([...typeSel.options].some(o => o.value === curType)) typeSel.value = curType;
+
+            if (!typeSel.dataset.listenerAttached) {
+              typeSel.addEventListener('change', () => handleSearch());
+              typeSel.dataset.listenerAttached = 'true';
+            }
+            
+            // Sync options to mobile type dropdown
+            const mobileTypeSel = document.getElementById('mobileTypeSelect');
+            if (mobileTypeSel) {
+              const mobileCurType = mobileTypeSel.value;
+              mobileTypeSel.innerHTML = '<option value="">All Bus Types</option>';
+              Array.from(allTypes).sort().forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t; opt.textContent = t;
+                mobileTypeSel.appendChild(opt);
+              });
+              mobileTypeSel.value = typeSel.value || mobileCurType;
+            }
           }
         }
 
@@ -4460,32 +6095,60 @@
       const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
       const db  = getDatabase(app);
       
-      console.log('[Firebase Module] Loading data from Firebase...');
-      const snap = await get(ref(db, '/'));
-      const all  = snap.val() || {};
+      async function refreshFirebaseData() {
+        try {
+          console.log('[Firebase Module] Fetching live data from Firebase...');
+          const snap = await get(ref(db, '/'));
+          const all  = snap.val() || {};
+          
+          window._fbBuses     = Object.values(all.buses     || {}).filter(b => b && b.op);
+          window._fbRoutes    = Object.values(all.routes    || {}).filter(r => r && r.name);
+          window._fbOperators = Object.values(all.operators || {}).filter(o => o && o.name);
+          window._fbTypes     = Object.values(all.types     || {}).filter(t => t && t.name);
+          window._fbActualTimes = all.actualTimes || {};
+          window._fbBusHistory = all.busHistory || {};
+          window._fbStopGroups = all.stopGroups || {};
+          window._fbActiveJourneys = all.activeJourneys || {};
+          window._fbJourneys = all.journeys || {};
+          
+          console.log('[Firebase Module] Processed buses:', window._fbBuses.length);
+          console.log('[Firebase Module] Processed routes:', window._fbRoutes.length);
+          console.log('[Firebase Module] Processed operators:', window._fbOperators.length);
+          console.log('[Firebase Module] Processed types:', window._fbTypes.length);
+          console.log('[Firebase Module] Processed stop groups:', Object.keys(window._fbStopGroups).length);
+          console.log('[Firebase Module] Actual times data:', Object.keys(window._fbActualTimes).length, 'services');
+          console.log('[Firebase Module] History data:', Object.keys(window._fbBusHistory).length, 'buses');
+          console.log('[Firebase Module] Active journeys:', Object.keys(window._fbActiveJourneys).length);
+          console.log('[Firebase Module] Journeys:', Object.keys(window._fbJourneys).length);
+          
+          // Propagate to legacy cached vars
+          if (typeof window.applyFirebaseData === 'function') {
+            window.applyFirebaseData();
+          }
+          
+          // Notify app components
+          window.dispatchEvent(new CustomEvent('firebaseDataReady'));
+          
+          // Re-trigger search rendering if active
+          if (typeof window.handleSearch === 'function') {
+            window.handleSearch();
+          }
+        } catch (err) {
+          console.error('[Firebase Module] Failed to fetch data:', err);
+        }
+      }
       
-      console.log('[Firebase Module] Raw data from Firebase:', all);
-      console.log('[Firebase Module] Buses raw:', all.buses);
-      console.log('[Firebase Module] Routes raw:', all.routes);
+      // Load initially
+      await refreshFirebaseData();
       
-      window._fbBuses     = Object.values(all.buses     || {}).filter(b => b && b.op);
-      window._fbRoutes    = Object.values(all.routes    || {}).filter(r => r && r.name);
-      window._fbOperators = Object.values(all.operators || {}).filter(o => o && o.name);
-      window._fbTypes     = Object.values(all.types     || {}).filter(t => t && t.name);
-      window._fbActualTimes = all.actualTimes || {};
-      window._fbBusHistory = all.busHistory || {};
-      
-      console.log('[Firebase Module] Processed buses:', window._fbBuses.length);
-      console.log('[Firebase Module] Processed routes:', window._fbRoutes.length);
-      console.log('[Firebase Module] Processed operators:', window._fbOperators.length);
-      console.log('[Firebase Module] Processed types:', window._fbTypes.length);
-      console.log('[Firebase Module] Actual times data:', Object.keys(window._fbActualTimes).length, 'services');
-      console.log('[Firebase Module] History data:', Object.keys(window._fbBusHistory).length, 'buses');
+      // Poll every 15 seconds (Requirement 8)
+      setInterval(refreshFirebaseData, 15000);
       
     } catch(e) {
       console.error('[Firebase Module] ERROR loading data:', e);
       window._fbBuses = []; window._fbRoutes = []; window._fbOperators = []; window._fbTypes = [];
-      window._fbActualTimes = {}; window._fbBusHistory = {};
+      window._fbActualTimes = {}; window._fbBusHistory = {}; window._fbStopGroups = {};
+      window._fbActiveJourneys = {}; window._fbJourneys = {};
       
       // Inline showFirebaseErrorBanner
       const msg = e.message || String(e);

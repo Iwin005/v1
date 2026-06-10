@@ -242,7 +242,7 @@
     /* Quick Action Cards */
     .actions-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: var(--space-lg);
       margin-bottom: var(--space-2xl);
     }
@@ -879,6 +879,667 @@
       cursor: not-allowed;
       opacity: 0.6;
     }
+
+    /* Reports Section Styling */
+    .reports-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--space-xl);
+      margin-top: var(--space-xl);
+    }
+    .report-card {
+      background: var(--surface-white);
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      padding: var(--space-xl);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+    }
+    .report-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .report-card-title i {
+      color: var(--brand-gold);
+    }
+    .chart-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .chart-bar-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 40px;
+      align-items: center;
+      gap: 12px;
+    }
+    .chart-bar-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chart-bar-wrapper {
+      background: #f1f5f9;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .chart-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .chart-bar-value {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: right;
+    }
+    .reports-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .reports-table-container {
+      background: var(--surface-white);
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      padding: var(--space-xl);
+      box-shadow: var(--shadow-soft);
+      margin-top: var(--space-xl);
+      overflow-x: auto;
+    }
+    .reports-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    /* Route Performance Cards */
+    .route-perf-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .route-perf-header h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .route-perf-header h3 i {
+      color: var(--brand-gold);
+    }
+    .route-perf-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+    .route-perf-card {
+      background: var(--surface-white);
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .route-perf-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    .route-card-top {
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .route-card-top .route-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .route-card-top .route-bus-count {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,255,255,0.12);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .route-card-body {
+      padding: 18px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .route-status-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .route-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .route-status-pill.active {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .route-status-pill.scheduled {
+      background: #fef9c3;
+      color: #a16207;
+    }
+    .route-status-pill.completed {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    .route-status-pill.offline {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .route-adoption-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .route-adoption-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .route-adoption-label strong {
+      color: var(--text-primary);
+      font-size: 0.85rem;
+    }
+    .route-adoption-bar {
+      width: 100%;
+      height: 8px;
+      background: #f1f5f9;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .route-adoption-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .route-operators-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .route-op-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      background: #f8fafc;
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* Route Card Action Buttons */
+    .route-card-actions {
+      display: flex;
+      gap: 8px;
+      padding-top: 4px;
+      border-top: 1px solid var(--border-soft);
+    }
+    .route-action-btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      background: #f8fafc;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .route-action-btn:hover {
+      background: var(--brand-yellow);
+      color: var(--text-dark);
+      border-color: var(--brand-yellow);
+    }
+    .route-action-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* Expandable Details Panel */
+    .route-card-details {
+      display: none;
+      border-top: 1px solid var(--border-soft);
+      background: #fafbfc;
+      padding: 16px 20px 20px;
+      animation: routeDetailsFadeIn 0.3s ease;
+      overflow-x: auto;
+    }
+    .route-card-details.open {
+      display: block;
+    }
+    @keyframes routeDetailsFadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stops Timeline inside card */
+    .route-stops-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 16px;
+    }
+    .route-stop-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      position: relative;
+      padding-bottom: 12px;
+    }
+    .route-stop-item:last-child {
+      padding-bottom: 0;
+    }
+    .route-stop-node {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      flex-shrink: 0;
+      z-index: 1;
+      box-shadow: 0 2px 6px rgba(59,130,246,0.25);
+    }
+    .route-stop-item:first-child .route-stop-node {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      box-shadow: 0 2px 6px rgba(16,185,129,0.25);
+    }
+    .route-stop-item:last-child .route-stop-node {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      box-shadow: 0 2px 6px rgba(239,68,68,0.25);
+    }
+    .route-stop-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 13px;
+      top: 28px;
+      bottom: 0;
+      width: 2px;
+      background: #e2e8f0;
+    }
+    .route-stop-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .route-stop-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .route-stop-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 3px;
+      flex-wrap: wrap;
+    }
+    .route-stop-meta span {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Bus Schedule Table inside card */
+    .route-bus-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.8rem;
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      overflow: hidden;
+      min-width: 520px;
+    }
+    .route-bus-table thead th {
+      background: #f1f5f9;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .route-bus-table tbody td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f1f5f9;
+      color: var(--text-primary);
+      vertical-align: middle;
+    }
+    .route-bus-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .route-bus-table tbody tr:hover {
+      background: #f8fafc;
+    }
+    .route-detail-section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .route-detail-section-title i {
+      color: var(--brand-gold);
+      font-size: 12px;
+    }
+
+    /* Separated Bus Cards styling */
+    .fleet-cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .admin-bus-card {
+      background: var(--surface-white);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02), 0 1px 3px rgba(0,0,0,0.03);
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 0.8fr 0.8fr 0.8fr;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .admin-bus-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02);
+    }
+    
+    .admin-bus-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 5px;
+      transition: all 0.2s ease;
+    }
+    
+    .admin-bus-card.active-status::before {
+      background: var(--brand-green);
+    }
+    
+    .admin-bus-card.offline-status::before {
+      background: var(--danger);
+    }
+    
+    .admin-bus-card .bus-info {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    
+    .admin-bus-card .bus-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #fff8e1;
+      color: var(--brand-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    
+    .admin-bus-card .bus-details h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+    
+    .admin-bus-card .bus-details p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .admin-bus-card .route-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .admin-bus-card .route-path {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+    
+    .admin-bus-card .route-name {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      width: fit-content;
+    }
+    
+    .admin-bus-card .stops-toggle {
+      background: none;
+      border: none;
+      color: var(--brand-blue);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0;
+      margin-top: 4px;
+      width: fit-content;
+    }
+    
+    .admin-bus-card .stops-toggle:hover {
+      text-decoration: underline;
+    }
+    
+    .admin-bus-card .time-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .admin-bus-card .time-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-dark);
+    }
+    
+    .admin-bus-card .time-row i {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    
+    .admin-bus-card .bus-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      width: fit-content;
+    }
+    
+    .admin-bus-card .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      width: fit-content;
+    }
+    
+    .admin-bus-card .status-badge.active {
+      background: #e6f4ea;
+      color: #137333;
+    }
+    
+    .admin-bus-card .status-badge.offline {
+      background: #feefee;
+      color: var(--danger);
+    }
+    
+    .admin-bus-card .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    
+    .admin-bus-card .status-badge.active .status-dot {
+      background: var(--brand-green);
+    }
+    
+    .admin-bus-card .status-badge.offline .status-dot {
+      background: var(--danger);
+    }
+    
+    .admin-bus-card .row-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    
+    .admin-bus-card .btn-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: var(--surface-white);
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .admin-bus-card .btn-icon:hover {
+      background: #f8fafc;
+      color: var(--text-dark);
+    }
+    
+    .admin-bus-card .btn-icon.edit:hover {
+      border-color: #3b82f6;
+      color: #3b82f6;
+      background: #eff6ff;
+    }
+    
+    .admin-bus-card .btn-icon.delete:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: #feefee;
+    }
+
+    @media (max-width: 1100px) {
+      .admin-bus-card {
+        grid-template-columns: 1.2fr 1fr 1fr 1fr;
+        gap: 12px;
+      }
+      .admin-bus-card .row-actions {
+        grid-column: span 4;
+        justify-content: flex-start;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 8px;
+        margin-top: 4px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .admin-bus-card {
+        grid-template-columns: 1fr 1fr;
+      }
+      .admin-bus-card .row-actions {
+        grid-column: span 2;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .admin-bus-card {
+        grid-template-columns: 1fr;
+      }
+      .admin-bus-card .row-actions {
+        grid-column: span 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -897,11 +1558,11 @@
       <nav class="sidebar-nav">
         <div class="nav-section">
           <div class="nav-section-title">Main</div>
-          <a href="#" class="nav-item" onclick="showSection('dashboard'); return false;">
+          <a href="#" class="nav-item" onclick="showSection('fleet'); return false;" id="navDashboardLink">
             <i class="fa-solid fa-grid-2"></i>
             Dashboard
           </a>
-          <a href="#" class="nav-item active" onclick="showSection('fleet'); return false;">
+          <a href="#" class="nav-item active" onclick="showSection('fleet'); return false;" id="navFleetLink">
             <i class="fa-solid fa-bus"></i>
             Manage Fleet
           </a>
@@ -929,11 +1590,15 @@
             <i class="fa-solid fa-map-pin"></i>
             Route Points
           </a>
+          <a href="#" class="nav-item" onclick="openStopGroupsModal(); return false;" id="navStopGroupsLink">
+            <i class="fa-solid fa-tags"></i>
+            Stop Groups
+          </a>
         </div>
         
         <div class="nav-section">
           <div class="nav-section-title">System</div>
-          <a href="#" class="nav-item" onclick="showToast('Reports - Coming Soon'); return false;">
+          <a href="#" class="nav-item" onclick="showSection('reports'); return false;" id="navReportsLink">
             <i class="fa-solid fa-chart-bar"></i>
             Reports
           </a>
@@ -994,8 +1659,9 @@
 
       <!-- Content Area -->
       <div class="content-area">
-        <!-- Page Header -->
-        <div class="page-header">
+        <div id="fleetSection" class="section-content">
+          <!-- Page Header -->
+          <div class="page-header">
           <h1 class="page-title">Manage Fleet</h1>
           <p class="page-subtitle">View and manage all buses in your fleet</p>
         </div>
@@ -1086,6 +1752,14 @@
             <div class="action-title">Route Points</div>
             <div class="action-desc">Manage stops</div>
           </div>
+          
+          <div class="action-card" onclick="openStopGroupsModal()">
+            <div class="action-icon" style="background: #eff6ff; color: #3b82f6;">
+              <i class="fa-solid fa-tags"></i>
+            </div>
+            <div class="action-title">Stop Groups</div>
+            <div class="action-desc">Group stops (e.g. Chennai)</div>
+          </div>
         </div>
 
         <!-- Toolbar -->
@@ -1103,31 +1777,153 @@
           </div>
         </div>
 
-        <!-- Fleet Table -->
-        <div class="fleet-container">
-          <table class="fleet-table">
-            <thead>
-              <tr>
-                <th>Bus / Operator</th>
-                <th>Route</th>
-                <th>Departure → Arrival</th>
-                <th>Bus Type</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="fleetTableBody">
-              <tr>
-                <td colspan="6" class="loading-state">
-                  <i class="fa-solid fa-spinner fa-spin"></i>
-                  <p>Loading fleet data...</p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Fleet Cards Container -->
+        <div class="fleet-cards-container" id="fleetTableBody">
+          <div class="loading-state" style="text-align: center; padding: 40px; color: var(--text-muted);">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 8px;"></i>
+            <p>Loading fleet data...</p>
+          </div>
         </div>
-      </div>
-    </main>
+      </div> <!-- Closes fleetSection -->
+
+      <!-- Reports Section -->
+      <div id="reportsSection" class="section-content" style="display: none;">
+        <!-- Page Header -->
+        <div class="page-header">
+          <h1 class="page-title">Analytics & Reports</h1>
+          <p class="page-subtitle">Visual performance and fleet tracking analytics</p>
+        </div>
+
+        <!-- Reports Toolbar -->
+        <div class="reports-toolbar">
+          <div style="font-size: 0.9rem; color: var(--text-muted);">
+            Generated from synced real-time data cache (Zero database reads/writes)
+          </div>
+          <button class="nav-btn" onclick="exportReportToCSV()" style="background: linear-gradient(135deg, var(--brand-yellow) 0%, var(--brand-yellow-soft) 100%); color: var(--text-dark); border: none; font-weight: 600; display: inline-flex; align-items: center; gap: var(--space-xs); height: 40px; border-radius: 10px; cursor: pointer; padding: 0 16px;">
+            <i class="fa-solid fa-file-csv"></i> Export CSV
+          </button>
+        </div>
+
+        <!-- Reports Stats Row -->
+        <div class="reports-stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon blue"><i class="fa-solid fa-bus"></i></div>
+            </div>
+            <div class="stat-value" id="repTotalBuses">0</div>
+            <div class="stat-label">Total Buses</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon green"><i class="fa-solid fa-satellite-dish"></i></div>
+            </div>
+            <div class="stat-value" id="repLiveTracking">0%</div>
+            <div class="stat-label">Live Tracking Enabled</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon yellow"><i class="fa-solid fa-clock"></i></div>
+            </div>
+            <div class="stat-value" id="repActualTiming">0%</div>
+            <div class="stat-label">Actual Stop Timing</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon purple"><i class="fa-solid fa-route"></i></div>
+            </div>
+            <div class="stat-value" id="repActiveJourneys">0</div>
+            <div class="stat-label">Active Journeys</div>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="reports-grid">
+          <!-- Operator Share -->
+          <div class="report-card">
+            <div class="report-card-title">
+              <i class="fa-solid fa-building"></i> Operator Share
+            </div>
+            <div class="chart-bar-container" id="repOperatorChart">
+              <!-- Dynamically filled -->
+            </div>
+          </div>
+
+          <!-- Bus Type Share -->
+          <div class="report-card">
+            <div class="report-card-title">
+              <i class="fa-solid fa-bus-simple"></i> Bus Type Breakdown
+            </div>
+            <div class="chart-bar-container" id="repTypeChart">
+              <!-- Dynamically filled -->
+            </div>
+          </div>
+
+          <!-- Tracking Features Health -->
+          <div class="report-card">
+            <div class="report-card-title">
+              <i class="fa-solid fa-shield-halved"></i> Feature Adoption Health
+            </div>
+            <div class="chart-bar-container">
+              <div class="chart-bar-row">
+                <div class="chart-bar-label">Live Tracking</div>
+                <div class="chart-bar-wrapper">
+                  <div class="chart-bar-fill" id="healthLiveFill" style="background: linear-gradient(90deg, #10b981, #34d399); width: 0%;"></div>
+                </div>
+                <div class="chart-bar-value" id="healthLiveVal">0%</div>
+              </div>
+              <div class="chart-bar-row">
+                <div class="chart-bar-label">Actual Timing</div>
+                <div class="chart-bar-wrapper">
+                  <div class="chart-bar-fill" id="healthActualFill" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); width: 0%;"></div>
+                </div>
+                <div class="chart-bar-value" id="healthActualVal">0%</div>
+              </div>
+              <div class="chart-bar-row">
+                <div class="chart-bar-label">Journey History</div>
+                <div class="chart-bar-wrapper">
+                  <div class="chart-bar-fill" id="healthHistoryFill" style="background: linear-gradient(90deg, #8b5cf6, #a78bfa); width: 0%;"></div>
+                </div>
+                <div class="chart-bar-value" id="healthHistoryVal">0%</div>
+              </div>
+              <div class="chart-bar-row">
+                <div class="chart-bar-label">Delay Analytics</div>
+                <div class="chart-bar-wrapper">
+                  <div class="chart-bar-fill" id="healthAnalyticsFill" style="background: linear-gradient(90deg, #f59e0b, #fbbf24); width: 0%;"></div>
+                </div>
+                <div class="chart-bar-value" id="healthAnalyticsVal">0%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Route Utilization & Performance -->
+        <div class="reports-table-container">
+          <div class="route-perf-header">
+            <h3>
+              <i class="fa-solid fa-chart-line"></i>
+              Route Performance Overview
+            </h3>
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 6px; background: #f1f5f9; border-radius: 10px; padding: 5px 12px; border: 1px solid var(--border-soft);">
+                <i class="fa-solid fa-calendar-days" style="color: var(--text-muted); font-size: 0.8rem;"></i>
+                <input type="date" id="historyDatePicker" style="border: none; background: transparent; font-size: 0.82rem; font-weight: 600; color: var(--text-primary); outline: none; cursor: pointer;" />
+              </div>
+              <button class="route-action-btn" onclick="downloadHistoryByDate()" style="flex: none; padding: 7px 16px;">
+                <i class="fa-solid fa-clock-rotate-left"></i> Download History
+              </button>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">
+                <i class="fa-solid fa-circle-info" style="margin-right: 3px;"></i>
+                Sorted by bus count
+              </div>
+            </div>
+          </div>
+          <div class="route-perf-grid" id="repRouteCardGrid">
+            <!-- Dynamically filled -->
+          </div>
+        </div>
+      </div> <!-- Closes reportsSection -->
+    </div> <!-- Closes content-area -->
+  </main>
   </div>
 
   <!-- ============================================
@@ -1439,10 +2235,82 @@
     </div>
   </div>
 
+  <!-- Stop Groups Modal -->
+  <div id="stopGroupsModal" class="modal-overlay" onclick="if(event.target===this) closeStopGroupsModal()">
+    <div class="modal-content" style="max-width: 700px; max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <h3 id="stopGroupsModalTitle"><i class="fa-solid fa-tags" style="color: var(--brand-gold); margin-right: 8px;"></i>Manage Stop Groups</h3>
+        <button class="btn-close" onclick="closeStopGroupsModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body" style="flex: 1; overflow-y: auto; display: flex; gap: 20px; padding: 24px;">
+        
+        <!-- Left Pane: Groups List & Create -->
+        <div style="flex: 1; border-right: 1px solid var(--border); padding-right: 20px; display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; color: var(--text-muted);">Create Group</h4>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="newGroupNameInput" placeholder="e.g. Chennai" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem;">
+              <button onclick="createStopGroup()" class="btn-save" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-plus"></i> Add</button>
+            </div>
+          </div>
+          
+          <div style="flex: 1; display: flex; flex-direction: column; min-height: 200px;">
+            <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; color: var(--text-muted);">Stop Groups</h4>
+            <div id="stopGroupsList" style="flex: 1; display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto;">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right Pane: Edit Stops in Group -->
+        <div id="stopGroupEditPane" style="flex: 1.2; display: none; flex-direction: column; gap: 16px;">
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Editing Group</div>
+            <div id="selectedGroupName" style="font-weight: 800; font-size: 1.25rem; color: var(--primary); margin-bottom: 4px;"></div>
+            <input type="hidden" id="selectedGroupId">
+          </div>
+          
+          <div>
+            <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; color: var(--text-muted);">Add Stop to Group</h4>
+            <div style="display: flex; gap: 8px;">
+              <select id="groupStopNameSelect" onchange="handleGroupStopSelectChange()" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem;">
+                <option value="">-- Select Stop --</option>
+              </select>
+              <input type="text" id="groupStopNameCustom" placeholder="Type new stop" style="display: none; flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem;">
+              <button onclick="addStopToGroup()" class="btn-save" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-plus"></i> Add</button>
+            </div>
+          </div>
+          
+          <div>
+            <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; color: var(--text-muted);">Stops in this Group</h4>
+            <div id="groupStopsDisplay" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 200px; overflow-y: auto; padding: 4px 0;">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+        
+        <div id="stopGroupSelectPrompt" style="flex: 1.2; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+          <div>
+            <i class="fa-solid fa-tags" style="font-size: 2.5rem; opacity: 0.3; margin-bottom: 12px;"></i>
+            <p>Select or create a stop group to manage its member stops.</p>
+          </div>
+        </div>
+        
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeStopGroupsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase and App Logic -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getDatabase, ref, onValue, set, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+    import { getDatabase, ref, onValue, set, get, push } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
     import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
     const firebaseConfig = {
@@ -1468,6 +2336,7 @@
     let cachedRoutes = [];
     let cachedBusTypes = [];
     let cachedRoutePoints = {};
+    let cachedStopGroups = {};
     let loadedRoutes = [];
     let loadedOperators = [];
     let loadedBusTypes = [];
@@ -1517,6 +2386,12 @@
         cachedBuses = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
         updateStats();
         renderFleetTable();
+        
+        // Auto-refresh reports if open
+        const reportsSec = document.getElementById('reportsSection');
+        if (reportsSec && reportsSec.style.display === 'block') {
+          generateReports();
+        }
       });
 
       // Operators
@@ -1557,6 +2432,19 @@
         cachedRoutePoints = snapshot.val() || {};
         console.log('Route points loaded:', cachedRoutePoints);
         renderFleetTable();
+      });
+
+      // Stop Groups
+      onValue(ref(db, '/stopGroups'), snapshot => {
+        cachedStopGroups = snapshot.val() || {};
+        console.log('Stop groups loaded:', cachedStopGroups);
+        if (document.getElementById('stopGroupsModal').classList.contains('open')) {
+          renderStopGroupsList();
+          const activeId = document.getElementById('selectedGroupId').value;
+          if (activeId) {
+            selectStopGroup(activeId);
+          }
+        }
       });
     }
 
@@ -1728,15 +2616,11 @@
 
       if (filteredBuses.length === 0) {
         tbody.innerHTML = `
-          <tr>
-            <td colspan="6">
-              <div class="empty-state">
-                <i class="fa-solid fa-bus-simple"></i>
-                <h3>No buses found</h3>
-                <p>Add a new bus to get started</p>
-              </div>
-            </td>
-          </tr>
+          <div class="empty-state">
+            <i class="fa-solid fa-bus-simple"></i>
+            <h3>No buses found</h3>
+            <p>Add a new bus to get started</p>
+          </div>
         `;
         return;
       }
@@ -1781,137 +2665,138 @@
         
         // Build stops HTML
         const stopsHtml = hasStops ? `
-          <tr class="stops-row" id="stops-${routeKey}-${index}" style="display:none;">
-            <td colspan="6">
-              <div class="stops-container">
-                <div class="stops-header">
-                  <i class="fa-solid fa-route"></i> Route Timeline (${routePoints.length} Stops)
-                </div>
-                <div class="stops-timeline">
-                  ${routePoints.map((point, i) => {
-                    const pointName = typeof point === 'object' ? (point.name || point.stop || point) : point;
-                    const isLast = i === routePoints.length - 1;
-                    const stopTime = bus.stopTimes?.[i]?.time || '--:--';
-                    return `
-                      <div class="timeline-item ${isLast ? '' : 'active-stop'}">
-                        <div class="timeline-node">
-                          ${isLast ? '🏁' : (i + 1)}
-                        </div>
-                        <div class="timeline-content">
-                          <div class="timeline-name">${pointName}</div>
-                          <div class="timeline-time">
-                            <i class="fa-regular fa-clock"></i>
-                            <span>${stopTime}</span>
-                          </div>
+          <div class="stops-row" id="stops-${routeKey}-${index}" style="display:none; width: 100%;">
+            <div class="stops-container" style="border-radius: 12px; border: 1px solid var(--border); background: var(--surface-soft); padding: 16px; margin-top: -8px;">
+              <div class="stops-header" style="font-weight: 700; margin-bottom: 12px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-route" style="color: var(--brand-gold);"></i> Route Timeline (${routePoints.length} Stops)
+              </div>
+              <div class="stops-timeline">
+                ${routePoints.map((point, i) => {
+                  const pointName = typeof point === 'object' ? (point.name || point.stop || point) : point;
+                  const isLast = i === routePoints.length - 1;
+                  const stopTime = bus.stopTimes?.[i]?.time || '--:--';
+                  return `
+                    <div class="timeline-item ${isLast ? '' : 'active-stop'}">
+                      <div class="timeline-node">
+                        ${isLast ? '🏁' : (i + 1)}
+                      </div>
+                      <div class="timeline-content">
+                        <div class="timeline-name">${pointName}</div>
+                        <div class="timeline-time">
+                          <i class="fa-regular fa-clock"></i>
+                          <span>${stopTime}</span>
                         </div>
                       </div>
-                    `;
-                  }).join('')}
-                </div>
+                    </div>
+                  `;
+                }).join('')}
               </div>
-            </td>
-          </tr>
+            </div>
+          </div>
         ` : '';
         
         return `
-          <tr data-route-key="${routeKey}" data-op-key="${opKey}">
-            <td>
-              <div class="bus-info">
-                <div class="bus-avatar">
-                  <i class="fa-solid fa-bus"></i>
-                </div>
-                <div class="bus-details">
-                  <h4>${bus.op || 'Unknown'}</h4>
-                  <p>${bus.departurePoint || 'Unknown'} → ${bus.destinationPoint || 'Unknown'}</p>
-                  
-                  <!-- Premium SaaS Operational Health Panel (Phase 3B) -->
-                  <div class="health-monitoring-panel" style="margin-top: 8px; padding: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; width: 100%; max-width: 250px; font-size: 11px; display: flex; flex-direction: column; gap: 6px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f7; padding-bottom: 4px;">
-                      <span style="font-weight: 700; color: ${statusInfo.color}; display: flex; align-items: center; gap: 4px;">
-                        <span style="width: 8px; height: 8px; border-radius: 50%; background-color: ${statusInfo.color}; display: inline-block;"></span>
-                        <i class="fa-solid ${statusInfo.icon}" style="font-size: 10px;"></i> ${statusInfo.label}
-                      </span>
-                      <span style="color: #64748b; font-size: 10px;">
-                        GPS: <strong style="color: #334155;">${lastGps}</strong>
-                      </span>
-                    </div>
+          <div class="admin-bus-card ${isActive ? 'active-status' : 'offline-status'}" data-route-key="${routeKey}" data-op-key="${opKey}">
+            <!-- 1. Bus / Operator -->
+            <div class="bus-info">
+              <div class="bus-avatar">
+                <i class="fa-solid fa-bus"></i>
+              </div>
+              <div class="bus-details">
+                <h4>${bus.op || 'Unknown'}</h4>
+                <p>${bus.departurePoint || 'Unknown'} → ${bus.destinationPoint || 'Unknown'}</p>
+                
+                <!-- Premium SaaS Operational Health Panel -->
+                <div class="health-monitoring-panel" style="margin-top: 8px; padding: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; width: 100%; max-width: 250px; font-size: 11px; display: flex; flex-direction: column; gap: 6px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f7; padding-bottom: 4px;">
+                    <span style="font-weight: 700; color: ${statusInfo.color}; display: flex; align-items: center; gap: 4px;">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background-color: ${statusInfo.color}; display: inline-block;"></span>
+                      <i class="fa-solid ${statusInfo.icon}" style="font-size: 10px;"></i> ${statusInfo.label}
+                    </span>
+                    <span style="color: #64748b; font-size: 10px;">
+                      GPS: <strong style="color: #334155;">${lastGps}</strong>
+                    </span>
+                  </div>
 
-                    ${progress.totalStops > 0 ? `
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                      <div style="display: flex; justify-content: space-between; color: #64748b; font-size: 10px;">
-                        <span>Progress: <strong>${progress.completedStops} / ${progress.totalStops} Stops</strong></span>
-                        <span><strong>${progress.percent}%</strong></span>
-                      </div>
-                      <div style="width: 100%; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden;">
-                        <div style="width: ${progress.percent}%; height: 100%; background: #3b82f6; border-radius: 2px;"></div>
-                      </div>
+                  ${progress.totalStops > 0 ? `
+                  <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <div style="display: flex; justify-content: space-between; color: #64748b; font-size: 10px;">
+                      <span>Progress: <strong>${progress.completedStops} / ${progress.totalStops} Stops</strong></span>
+                      <span><strong>${progress.percent}%</strong></span>
                     </div>
-                    ` : ''}
+                    <div style="width: 100%; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden;">
+                      <div style="width: ${progress.percent}%; height: 100%; background: #3b82f6; border-radius: 2px;"></div>
+                    </div>
+                  </div>
+                  ` : ''}
 
-                    <div style="display: flex; flex-wrap: wrap; gap: 3px;">
-                      <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${tracking ? '#e6f4ea' : '#f1f5f9'}; color: ${tracking ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
-                        ${tracking ? '🟢' : '⚪'} Trk
-                      </span>
-                      <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${actual ? '#e6f4ea' : '#f1f5f9'}; color: ${actual ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
-                        ${actual ? '🟢' : '⚪'} Time
-                      </span>
-                      <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${history ? '#e6f4ea' : '#f1f5f9'}; color: ${history ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
-                        ${history ? '🟢' : '⚪'} Hist
-                      </span>
-                      <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${analytics ? '#e6f4ea' : '#f1f5f9'}; color: ${analytics ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
-                        ${analytics ? '🟢' : '⚪'} Anlyt
-                      </span>
-                    </div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+                    <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${tracking ? '#e6f4ea' : '#f1f5f9'}; color: ${tracking ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                      ${tracking ? '🟢' : '⚪'} Trk
+                    </span>
+                    <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${actual ? '#e6f4ea' : '#f1f5f9'}; color: ${actual ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                      ${actual ? '🟢' : '⚪'} Time
+                    </span>
+                    <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${history ? '#e6f4ea' : '#f1f5f9'}; color: ${history ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                      ${history ? '🟢' : '⚪'} Hist
+                    </span>
+                    <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${analytics ? '#e6f4ea' : '#f1f5f9'}; color: ${analytics ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                      ${analytics ? '🟢' : '⚪'} Anlyt
+                    </span>
                   </div>
                 </div>
               </div>
-            </td>
-            <td>
-              <div class="route-info">
-                <div class="route-path">
-                  ${bus.departurePoint || 'Start'} <i class="fa-solid fa-arrow-right"></i> ${bus.destinationPoint || 'End'}
-                </div>
-                <span class="route-name">${bus.route || 'Unknown Route'}</span>
-                ${hasStops ? `<button class="stops-toggle" onclick="toggleStops('${routeKey}-${index}')">
-                  <i class="fa-solid fa-chevron-down"></i> View Stops
-                </button>` : ''}
+            </div>
+
+            <!-- 2. Route -->
+            <div class="route-info">
+              <div class="route-path">
+                ${bus.departurePoint || 'Start'} <i class="fa-solid fa-arrow-right"></i> ${bus.destinationPoint || 'End'}
               </div>
-            </td>
-            <td>
-              <div class="time-info">
-                <div class="time-row">
-                  <i class="fa-regular fa-clock"></i>
-                  ${bus.time || '--:--'}
-                </div>
-                <div class="time-row">
-                  <i class="fa-solid fa-arrow-down" style="color: var(--primary);"></i>
-                  ${bus.arrivalTime || '--:--'}
-                </div>
+              <span class="route-name">${bus.route || 'Unknown Route'}</span>
+              ${hasStops ? `<button class="stops-toggle" onclick="toggleStops('${routeKey}-${index}')">
+                <i class="fa-solid fa-chevron-down"></i> View Stops
+              </button>` : ''}
+            </div>
+
+            <!-- 3. Departure -> Arrival -->
+            <div class="time-info">
+              <div class="time-row">
+                <i class="fa-regular fa-clock"></i>
+                <strong>Dep:</strong> ${bus.time || '--:--'}
               </div>
-            </td>
-            <td>
+              <div class="time-row">
+                <i class="fa-solid fa-arrow-down" style="color: var(--brand-gold);"></i>
+                <strong>Arr:</strong> ${bus.arrivalTime || '--:--'}
+              </div>
+            </div>
+
+            <!-- 4. Bus Type -->
+            <div>
               <span class="bus-type-badge">
                 <i class="fa-solid fa-bus"></i>
                 ${bus.type || 'Standard'}
               </span>
-            </td>
-            <td>
+            </div>
+
+            <!-- 5. Status -->
+            <div>
               <span class="status-badge ${isActive ? 'active' : 'offline'}">
                 <span class="status-dot"></span>
                 ${isActive ? 'Active' : 'Offline'}
               </span>
-            </td>
-            <td>
-              <div class="row-actions">
-                <button class="btn-icon edit" onclick="editBus('${routeKey}', '${opKey}')" title="Edit">
-                  <i class="fa-solid fa-pen"></i>
-                </button>
-                <button class="btn-icon delete" onclick="deleteBus('${bus.id}')" title="Delete">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
+            </div>
+
+            <!-- 6. Actions -->
+            <div class="row-actions">
+              <button class="btn-icon edit" onclick="editBus('${bus.id}')" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="btn-icon delete" onclick="deleteBus('${bus.id}')" title="Delete">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
           ${stopsHtml}
         `;
       }).join('');
@@ -1935,7 +2820,7 @@
       const btn = document.querySelector(`[onclick="toggleStops('${id}')"]`);
       if (row) {
         if (row.style.display === 'none') {
-          row.style.display = 'table-row';
+          row.style.display = 'block';
           btn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> Hide Stops';
         } else {
           row.style.display = 'none';
@@ -1944,9 +2829,11 @@
       }
     };
 
-    window.editBus = function(routeKey, opKey) {
-      const bus = cachedBuses.find(b => sanitizeKey(b.route) === routeKey && sanitizeKey(b.op) === opKey);
+    window.editBus = function(busId) {
+      const bus = cachedBuses.find(b => b.id === busId);
       if (bus) {
+        const routeKey = sanitizeKey(bus.route || '');
+        const opKey = sanitizeKey(bus.op || '');
         openBusForm(bus.id, routeKey, opKey, bus.op, bus.time, bus.arrivalTime || '', bus.departurePoint || '', bus.destinationPoint || '', bus.route, bus.link || '', bus.type || '', bus.stopTimes || [], bus);
       }
     };
@@ -2142,6 +3029,7 @@
     };
 
     function populateExistingStopTimes() {
+      console.log('[DEBUG] populateExistingStopTimes starting. existingStopTimes:', existingStopTimes);
       if (!existingStopTimes || existingStopTimes.length === 0) return;
       
       existingStopTimes.forEach(stop => {
@@ -2150,7 +3038,10 @@
         
         // Find the row for this stop
         const timeInput = document.querySelector(`.stop-time-input[data-stop-name="${stopName.replace(/"/g, '\\"')}"]`);
-        if (!timeInput) return;
+        if (!timeInput) {
+          console.warn('[DEBUG] No time input found for stop:', stopName);
+          return;
+        }
         
         const row = timeInput.closest('.stop-input-row');
         if (!row) return;
@@ -2163,12 +3054,19 @@
         const lngInput = row.querySelector('.stop-lng-input');
         const radiusInput = row.querySelector('.stop-radius-input');
         const showInput = row.querySelector('.stop-show-on-card');
+        const typeSelect = row.querySelector('.stop-point-type-select');
         
         if (latInput && stop.lat) latInput.value = stop.lat;
         if (lngInput && stop.lng) lngInput.value = stop.lng;
         if (radiusInput && stop.radius) radiusInput.value = stop.radius;
         if (showInput) {
-          showInput.checked = (stop.showOnCard === true || stop.showOnCard === "true");
+          const isChecked = (stop.showOnCard === true || stop.showOnCard === "true" || stop.showOnCard === undefined);
+          showInput.checked = isChecked;
+          console.log('[DEBUG] Stop:', stopName, 'showOnCard:', stop.showOnCard, 'setting checked:', isChecked);
+        }
+        if (typeSelect) {
+          typeSelect.value = stop.pointType || 'both';
+          console.log('[DEBUG] Stop:', stopName, 'pointType:', stop.pointType, 'setting value:', typeSelect.value);
         }
       });
     }
@@ -2203,16 +3101,18 @@
         const stopName = input.dataset.stopName;
         const scheduledTime = input.value.trim();
         
-        // Find corresponding lat/lng/show inputs
+        // Find corresponding lat/lng/show/type inputs
         const row = input.closest('.stop-input-row');
         const latInput = row?.querySelector('.stop-lat-input');
         const lngInput = row?.querySelector('.stop-lng-input');
         const showInput = row?.querySelector('.stop-show-on-card');
+        const typeSelect = row?.querySelector('.stop-point-type-select');
         
         const lat = latInput?.value ? parseFloat(latInput.value) : null;
         const lng = lngInput?.value ? parseFloat(lngInput.value) : null;
         const radius = 1000; // Default radius of detection set to 1km
         const showOnCard = showInput ? showInput.checked : false;
+        const pointType = typeSelect ? typeSelect.value : 'both';
         
         // Merge with existing stop data if editing
         const existing = existingStopTimes.find(s => s.name === stopName) || {};
@@ -2226,6 +3126,7 @@
           lng: lng,
           radius: radius,
           showOnCard: showOnCard,
+          pointType: pointType,
           sequence: index + 1
         };
       });
@@ -2237,7 +3138,8 @@
         lat: stop.lat,
         lng: stop.lng,
         radius: stop.radius,
-        showOnCard: stop.showOnCard
+        showOnCard: stop.showOnCard,
+        pointType: stop.pointType
       }));
 
       const editingBusId = document.getElementById('editingBusId').value;
@@ -2277,9 +3179,10 @@
           await set(ref(db, `/buses/${editingBusId}`), busData);
           showToast('Bus updated successfully!');
         } else {
-          // CREATE MODE: Add new bus
-          const newBusKey = `${newRouteKey}_${newOpKey}`;
-          await set(ref(db, `/buses/${newBusKey}`), busData);
+          // CREATE MODE: Add new bus using push to generate a unique key
+          const busesRef = ref(db, '/buses');
+          const newBusRef = push(busesRef);
+          await set(newBusRef, busData);
           showToast('Bus saved successfully!');
         }
 
@@ -2372,12 +3275,13 @@
       const headerRow = document.createElement('div');
       headerRow.className = 'stop-input-header';
       headerRow.innerHTML = `
-        <div style="display: grid; grid-template-columns: 1fr 100px 90px 90px 60px 40px; gap: 8px; padding: 10px; background: #f8fafc; border-radius: 8px; margin-bottom: 12px; font-size: 12px; font-weight: 600; color: #64748b; text-align: center;">
+        <div style="display: grid; grid-template-columns: 1fr 100px 90px 90px 60px 110px 40px; gap: 8px; padding: 10px; background: #f8fafc; border-radius: 8px; margin-bottom: 12px; font-size: 12px; font-weight: 600; color: #64748b; text-align: center;">
           <div style="text-align: left;">Stop Name</div>
           <div>Time</div>
           <div>Latitude</div>
           <div>Longitude</div>
           <div>Show</div>
+          <div>Point Type</div>
           <div>Seq</div>
         </div>
       `;
@@ -2387,7 +3291,7 @@
         const pointName = typeof point === 'object' ? point.name : point;
         const row = document.createElement('div');
         row.className = 'stop-input-row';
-        row.style.cssText = 'display: grid; grid-template-columns: 1fr 100px 90px 90px 60px 40px; gap: 8px; align-items: center; padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center;';
+        row.style.cssText = 'display: grid; grid-template-columns: 1fr 100px 90px 90px 60px 110px 40px; gap: 8px; align-items: center; padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center;';
         row.innerHTML = `
           <div class="stop-input-name" style="font-weight: 500; color: #1e293b; text-align: left;">${pointName}</div>
           <div class="stop-input-field">
@@ -2421,6 +3325,15 @@
                    class="stop-show-on-card" 
                    data-stop-name="${pointName.replace(/"/g, '&quot;')}"
                    style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--brand-gold);">
+          </div>
+          <div class="stop-input-field" style="display: flex; align-items: center; justify-content: center;">
+            <select class="stop-point-type-select" 
+                    data-stop-name="${pointName.replace(/"/g, '&quot;')}"
+                    style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; cursor: pointer; text-align-last: center;">
+              <option value="both">Both</option>
+              <option value="boarding">Boarding</option>
+              <option value="dropping">Dropping</option>
+            </select>
           </div>
           <div class="stop-sequence" style="text-align: center; color: #94a3b8; font-size: 12px; font-weight: 600;">${index + 1}</div>
         `;
@@ -2958,8 +3871,817 @@
       document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
       });
-      event.target.classList.add('active');
+      
+      // Determine active nav item
+      let activeId = 'navFleetLink';
+      if (section === 'reports') {
+        activeId = 'navReportsLink';
+      }
+      const activeEl = document.getElementById(activeId);
+      if (activeEl) {
+        activeEl.classList.add('active');
+      } else if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+      }
+
+      // Hide both sections initially
+      const fleetSec = document.getElementById('fleetSection');
+      const reportsSec = document.getElementById('reportsSection');
+      
+      if (fleetSec) fleetSec.style.display = 'none';
+      if (reportsSec) reportsSec.style.display = 'none';
+
+      // Show the requested section
+      if (section === 'reports') {
+        if (reportsSec) {
+          reportsSec.style.display = 'block';
+          generateReports();
+        }
+      } else {
+        if (fleetSec) fleetSec.style.display = 'block';
+      }
     };
+
+    function generateReports() {
+      if (!cachedBuses || cachedBuses.length === 0) return;
+      
+      const totalBuses = cachedBuses.length;
+      document.getElementById('repTotalBuses').textContent = totalBuses;
+      
+      let liveTrackingCount = 0;
+      let actualTimingCount = 0;
+      let historyTrackingCount = 0;
+      let delayAnalyticsCount = 0;
+      let activeJourneysCount = 0;
+      
+      const operatorCounts = {};
+      const typeCounts = {};
+      const routeStats = {};
+      
+      cachedBuses.forEach(bus => {
+        // Track feature adoption
+        const tracking = bus.trackingEnabled !== false;
+        const actual = tracking && (bus.actualTimingEnabled === true || bus.actualTimingEnabled === "true");
+        const history = actual && (bus.historyTrackingEnabled === true || bus.historyTrackingEnabled === "true");
+        const analytics = history && (bus.delayAnalyticsEnabled === true || bus.delayAnalyticsEnabled === "true");
+        
+        if (tracking) liveTrackingCount++;
+        if (actual) actualTimingCount++;
+        if (history) historyTrackingCount++;
+        if (analytics) delayAnalyticsCount++;
+        
+        // Operational Status
+        const statusInfo = getJourneyStatus(bus);
+        if (statusInfo.label === 'Journey Active') {
+          activeJourneysCount++;
+        }
+        
+        // Operator aggregation
+        const op = bus.op || 'Unknown';
+        operatorCounts[op] = (operatorCounts[op] || 0) + 1;
+        
+        // Type aggregation
+        const type = bus.type || 'Standard';
+        typeCounts[type] = (typeCounts[type] || 0) + 1;
+        
+        // Route aggregation
+        const rName = bus.route || 'Unknown Route';
+        if (!routeStats[rName]) {
+          routeStats[rName] = { total: 0, active: 0, offline: 0, scheduled: 0, completed: 0, trackingEnabled: 0, operators: new Set(), buses: [] };
+        }
+        routeStats[rName].total++;
+        routeStats[rName].operators.add(bus.op || 'Unknown');
+        routeStats[rName].buses.push(bus);
+        if (statusInfo.label === 'Journey Active') {
+          routeStats[rName].active++;
+        } else if (statusInfo.label === 'Offline') {
+          routeStats[rName].offline++;
+        } else if (statusInfo.label === 'Scheduled') {
+          routeStats[rName].scheduled++;
+        } else if (statusInfo.label === 'Completed') {
+          routeStats[rName].completed++;
+        }
+        if (tracking) {
+          routeStats[rName].trackingEnabled++;
+        }
+      });
+      
+      // Update stats cards
+      const livePct = totalBuses > 0 ? Math.round((liveTrackingCount / totalBuses) * 100) : 0;
+      const actualPct = totalBuses > 0 ? Math.round((actualTimingCount / totalBuses) * 100) : 0;
+      const historyPct = totalBuses > 0 ? Math.round((historyTrackingCount / totalBuses) * 100) : 0;
+      const analyticsPct = totalBuses > 0 ? Math.round((delayAnalyticsCount / totalBuses) * 100) : 0;
+      
+      document.getElementById('repLiveTracking').textContent = livePct + '%';
+      document.getElementById('repActualTiming').textContent = actualPct + '%';
+      document.getElementById('repActiveJourneys').textContent = activeJourneysCount;
+      
+      // Update Feature Adoption Chart Fills
+      document.getElementById('healthLiveFill').style.width = livePct + '%';
+      document.getElementById('healthLiveVal').textContent = livePct + '%';
+      
+      document.getElementById('healthActualFill').style.width = actualPct + '%';
+      document.getElementById('healthActualVal').textContent = actualPct + '%';
+      
+      document.getElementById('healthHistoryFill').style.width = historyPct + '%';
+      document.getElementById('healthHistoryVal').textContent = historyPct + '%';
+      
+      document.getElementById('healthAnalyticsFill').style.width = analyticsPct + '%';
+      document.getElementById('healthAnalyticsVal').textContent = analyticsPct + '%';
+      
+      // Render Operator Share Chart
+      const opContainer = document.getElementById('repOperatorChart');
+      opContainer.innerHTML = '';
+      const sortedOps = Object.entries(operatorCounts).sort((a,b) => b[1] - a[1]).slice(0, 5);
+      const maxOpCount = sortedOps.length > 0 ? sortedOps[0][1] : 1;
+      
+      sortedOps.forEach(([name, count]) => {
+        const pct = Math.round((count / maxOpCount) * 100);
+        const overallPct = totalBuses > 0 ? Math.round((count / totalBuses) * 100) : 0;
+        opContainer.innerHTML += `
+          <div class="chart-bar-row" style="margin-bottom: 12px;">
+            <div class="chart-bar-label" title="${name}">${name}</div>
+            <div class="chart-bar-wrapper">
+              <div class="chart-bar-fill" style="background: linear-gradient(90deg, #f59e0b, #fbbf24); width: ${pct}%;"></div>
+            </div>
+            <div class="chart-bar-value">${count} (${overallPct}%)</div>
+          </div>
+        `;
+      });
+      if (sortedOps.length === 0) {
+        opContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">No operator data available</p>';
+      }
+      
+      // Render Bus Type Share Chart
+      const typeContainer = document.getElementById('repTypeChart');
+      typeContainer.innerHTML = '';
+      const sortedTypes = Object.entries(typeCounts).sort((a,b) => b[1] - a[1]);
+      const maxTypeCount = sortedTypes.length > 0 ? sortedTypes[0][1] : 1;
+      
+      sortedTypes.forEach(([name, count]) => {
+        const pct = Math.round((count / maxTypeCount) * 100);
+        const overallPct = totalBuses > 0 ? Math.round((count / totalBuses) * 100) : 0;
+        typeContainer.innerHTML += `
+          <div class="chart-bar-row" style="margin-bottom: 12px;">
+            <div class="chart-bar-label" title="${name}">${name}</div>
+            <div class="chart-bar-wrapper">
+              <div class="chart-bar-fill" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); width: ${pct}%;"></div>
+            </div>
+            <div class="chart-bar-value">${count} (${overallPct}%)</div>
+          </div>
+        `;
+      });
+      if (sortedTypes.length === 0) {
+        typeContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">No bus type data available</p>';
+      }
+      
+      // Render Route Performance Cards
+      const routeGrid = document.getElementById('repRouteCardGrid');
+      routeGrid.innerHTML = '';
+      const sortedRoutes = Object.entries(routeStats).sort((a,b) => b[1].total - a[1].total);
+      
+      if (sortedRoutes.length === 0) {
+        routeGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px; font-size: 0.9rem;"><i class="fa-solid fa-route" style="font-size: 2rem; display: block; margin-bottom: 12px; opacity: 0.3;"></i>No route data available</div>`;
+      } else {
+        sortedRoutes.forEach(([rName, stats], cardIdx) => {
+          const indexPct = stats.total > 0 ? Math.round((stats.trackingEnabled / stats.total) * 100) : 0;
+          const adoptionColor = indexPct >= 80 ? 'linear-gradient(90deg, #10b981, #34d399)' : indexPct >= 50 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #ef4444, #f87171)';
+          
+          const operators = Array.from(stats.operators || []);
+          const opChips = operators.slice(0, 3).map(op => `<span class="route-op-chip"><i class="fa-solid fa-building" style="font-size: 9px; color: var(--brand-gold);"></i> ${op}</span>`).join('');
+          const moreOps = operators.length > 3 ? `<span class="route-op-chip">+${operators.length - 3} more</span>` : '';
+          
+          // Build intermediate stops timeline
+          const routeKey = sanitizeKey(rName);
+          let routePoints = cachedRoutePoints[routeKey] || cachedRoutePoints[rName] || [];
+          if (!Array.isArray(routePoints)) {
+            for (const key in cachedRoutePoints) {
+              if (sanitizeKey(key) === routeKey) { routePoints = cachedRoutePoints[key]; break; }
+            }
+          }
+          
+          let stopsTimelineHtml = '';
+          if (Array.isArray(routePoints) && routePoints.length > 0) {
+            stopsTimelineHtml = `
+              <div class="route-detail-section-title"><i class="fa-solid fa-map-pin"></i> Intermediate Stops (${routePoints.length})</div>
+              <div class="route-stops-timeline">
+                ${routePoints.map((point, i) => {
+                  const pName = typeof point === 'object' ? point.name : point;
+                  const pLat = typeof point === 'object' && point.lat ? parseFloat(point.lat).toFixed(4) : '—';
+                  const pLng = typeof point === 'object' && point.lng ? parseFloat(point.lng).toFixed(4) : '—';
+                  return `
+                    <div class="route-stop-item">
+                      <div class="route-stop-node">${i + 1}</div>
+                      <div class="route-stop-info">
+                        <div class="route-stop-name">${pName}</div>
+                        <div class="route-stop-meta">
+                          <span><i class="fa-solid fa-location-dot"></i> ${pLat}, ${pLng}</span>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `;
+          } else {
+            stopsTimelineHtml = `<p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 12px;"><i class="fa-solid fa-info-circle" style="margin-right: 4px;"></i>No intermediate stops configured for this route.</p>`;
+          }
+          
+          // Build per-bus schedule table
+          let busTableHtml = '';
+          if (stats.buses && stats.buses.length > 0) {
+            const busRows = stats.buses.map(b => {
+              const st = getJourneyStatus(b);
+              const stColor = st.label === 'Journey Active' ? '#16a34a' : st.label === 'Offline' ? '#dc2626' : st.label === 'Scheduled' ? '#ca8a04' : '#3b82f6';
+              const stopCount = (b.stopTimes || b.intermediateStops || []).length;
+              return `
+                <tr>
+                  <td style="font-weight: 600;">${b.op || '—'}</td>
+                  <td>${b.time || '—'}</td>
+                  <td>${b.arrivalTime || '—'}</td>
+                  <td>${b.type || 'Standard'}</td>
+                  <td style="text-align: center;">${stopCount}</td>
+                  <td><span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;font-weight:600;color:${stColor};"><span style="width:7px;height:7px;border-radius:50%;background:${stColor};display:inline-block;"></span>${st.label}</span></td>
+                </tr>
+              `;
+            }).join('');
+            busTableHtml = `
+              <div class="route-detail-section-title" style="margin-top: 8px;"><i class="fa-solid fa-bus"></i> Buses on this Route (${stats.buses.length})</div>
+              <table class="route-bus-table">
+                <thead>
+                  <tr>
+                    <th>Operator</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Type</th>
+                    <th style="text-align:center;">Stops</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>${busRows}</tbody>
+              </table>
+            `;
+          }
+          
+          const cardId = `routeCard_${cardIdx}`;
+          
+          routeGrid.innerHTML += `
+            <div class="route-perf-card">
+              <div class="route-card-top">
+                <div class="route-name" title="${rName}"><i class="fa-solid fa-route" style="margin-right: 6px; opacity: 0.6;"></i>${rName}</div>
+                <div class="route-bus-count"><i class="fa-solid fa-bus"></i> ${stats.total} Bus${stats.total !== 1 ? 'es' : ''}</div>
+              </div>
+              <div class="route-card-body">
+                <div class="route-status-row">
+                  ${stats.active > 0 ? `<span class="route-status-pill active"><i class="fa-solid fa-circle-play"></i> ${stats.active} Active</span>` : ''}
+                  ${stats.scheduled > 0 ? `<span class="route-status-pill scheduled"><i class="fa-solid fa-calendar"></i> ${stats.scheduled} Scheduled</span>` : ''}
+                  ${stats.completed > 0 ? `<span class="route-status-pill completed"><i class="fa-solid fa-circle-check"></i> ${stats.completed} Completed</span>` : ''}
+                  ${stats.offline > 0 ? `<span class="route-status-pill offline"><i class="fa-solid fa-signal"></i> ${stats.offline} Offline</span>` : ''}
+                  ${stats.active === 0 && stats.scheduled === 0 && stats.completed === 0 && stats.offline === 0 ? `<span class="route-status-pill" style="background: #f1f5f9; color: #64748b;"><i class="fa-solid fa-minus"></i> Idle</span>` : ''}
+                </div>
+                <div class="route-adoption-section">
+                  <div class="route-adoption-label">
+                    <span>Tracking Adoption</span>
+                    <strong>${indexPct}%</strong>
+                  </div>
+                  <div class="route-adoption-bar">
+                    <div class="route-adoption-fill" style="background: ${adoptionColor}; width: ${indexPct}%;"></div>
+                  </div>
+                </div>
+                <div class="route-operators-row">
+                  <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500; margin-right: 2px;">Operators:</span>
+                  ${opChips}${moreOps}
+                </div>
+                <div class="route-card-actions">
+                  <button class="route-action-btn" onclick="toggleRouteDetails('${cardId}', this)">
+                    <i class="fa-solid fa-eye"></i> View Stops & Buses
+                  </button>
+                  <button class="route-action-btn" onclick="downloadRouteReport('${rName.replace(/'/g, "\\'")}')"> 
+                    <i class="fa-solid fa-download"></i> Download
+                  </button>
+                </div>
+              </div>
+              <div class="route-card-details" id="${cardId}">
+                ${stopsTimelineHtml}
+                ${busTableHtml}
+              </div>
+            </div>
+          `;
+        });
+      }
+    }
+    window.generateReports = generateReports;
+
+    window.toggleRouteDetails = function(cardId, btn) {
+      const panel = document.getElementById(cardId);
+      if (!panel) return;
+      const isOpen = panel.classList.contains('open');
+      panel.classList.toggle('open');
+      btn.classList.toggle('active');
+      if (isOpen) {
+        btn.innerHTML = '<i class="fa-solid fa-eye"></i> View Stops & Buses';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Hide Details';
+      }
+    };
+
+    window.downloadRouteReport = function(routeName) {
+      const buses = cachedBuses.filter(b => b.route === routeName);
+      if (buses.length === 0) {
+        showError('No bus data for this route');
+        return;
+      }
+      
+      const routeKey = sanitizeKey(routeName);
+      let routePoints = cachedRoutePoints[routeKey] || cachedRoutePoints[routeName] || [];
+      if (!Array.isArray(routePoints)) {
+        for (const key in cachedRoutePoints) {
+          if (sanitizeKey(key) === routeKey) { routePoints = cachedRoutePoints[key]; break; }
+        }
+      }
+      
+      let csv = '\uFEFF';
+      csv += `Route Report: ${routeName}\n`;
+      csv += `Generated: ${new Date().toLocaleString()}\n\n`;
+      
+      // Stops section
+      if (Array.isArray(routePoints) && routePoints.length > 0) {
+        csv += 'INTERMEDIATE STOPS\n';
+        csv += 'Seq,Stop Name,Latitude,Longitude\n';
+        routePoints.forEach((p, i) => {
+          const name = typeof p === 'object' ? p.name : p;
+          const lat = typeof p === 'object' && p.lat ? p.lat : '';
+          const lng = typeof p === 'object' && p.lng ? p.lng : '';
+          csv += `${i+1},"${name}",${lat},${lng}\n`;
+        });
+        csv += '\n';
+      }
+      
+      // Buses section
+      csv += 'BUSES ON THIS ROUTE\n';
+      csv += 'Operator,Departure Time,Arrival Time,Bus Type,Departure Point,Destination Point,Tracking,Actual Timing,History,Analytics,Status,Stop Count\n';
+      buses.forEach(bus => {
+        const trk = bus.trackingEnabled !== false;
+        const act = trk && (bus.actualTimingEnabled === true || bus.actualTimingEnabled === "true");
+        const hist = act && (bus.historyTrackingEnabled === true || bus.historyTrackingEnabled === "true");
+        const anl = hist && (bus.delayAnalyticsEnabled === true || bus.delayAnalyticsEnabled === "true");
+        const st = getJourneyStatus(bus);
+        const stopCount = (bus.stopTimes || bus.intermediateStops || []).length;
+        csv += `"${(bus.op||'').replace(/"/g,'""')}","${bus.time||''}","${bus.arrivalTime||''}","${(bus.type||'Standard').replace(/"/g,'""')}","${(bus.departurePoint||'').replace(/"/g,'""')}","${(bus.destinationPoint||'').replace(/"/g,'""')}",${trk?'Yes':'No'},${act?'Yes':'No'},${hist?'Yes':'No'},${anl?'Yes':'No'},"${st.label}",${stopCount}\n`;
+      });
+      
+      // Per-bus stop times section
+      csv += '\nPER-BUS STOP SCHEDULE\n';
+      buses.forEach(bus => {
+        const stops = bus.intermediateStops || bus.stopTimes || [];
+        if (stops.length > 0) {
+          csv += `\nOperator: ${bus.op || '—'} | Dep: ${bus.time || '—'}\n`;
+          csv += 'Seq,Stop Name,Scheduled Time,Point Type,Show on Card\n';
+          stops.forEach((s, i) => {
+            const sName = s.name || s.stopName || '';
+            const sTime = s.scheduledTime || s.time || '';
+            const sType = s.pointType || 'both';
+            const sShow = s.showOnCard !== false ? 'Yes' : 'No';
+            csv += `${i+1},"${sName}","${sTime}",${sType},${sShow}\n`;
+          });
+        }
+      });
+      
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `winbus_route_${sanitizeKey(routeName)}_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast(`Report downloaded for ${routeName}`);
+    };
+
+    // Set date picker default to today
+    (function() {
+      const dp = document.getElementById('historyDatePicker');
+      if (dp) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        dp.value = `${yyyy}-${mm}-${dd}`;
+      }
+    })();
+
+    window.downloadHistoryByDate = async function() {
+      const dp = document.getElementById('historyDatePicker');
+      const selectedDate = dp ? dp.value : '';
+      if (!selectedDate) {
+        showError('Please select a date first');
+        return;
+      }
+      
+      if (!cachedBuses || cachedBuses.length === 0) {
+        showError('No fleet data loaded');
+        return;
+      }
+      
+      showToast('Fetching journey history from database...');
+      
+      // Extract service numbers from bus links
+      const busServiceMap = {};
+      cachedBuses.forEach(bus => {
+        if (bus.link) {
+          const parts = bus.link.replace(/\/+$/, '').split('/');
+          const serviceNo = parts[parts.length - 1];
+          if (serviceNo) {
+            if (!busServiceMap[serviceNo]) busServiceMap[serviceNo] = [];
+            busServiceMap[serviceNo].push(bus);
+          }
+        }
+      });
+      
+      let csv = '\uFEFF';
+      csv += `WINBUS JOURNEY HISTORY REPORT\n`;
+      csv += `Date: ${selectedDate}\n`;
+      csv += `Generated: ${new Date().toLocaleString()}\n`;
+      csv += `Total Fleet Size: ${cachedBuses.length}\n\n`;
+      
+      let totalJourneys = 0;
+      let totalStopsRecorded = 0;
+      
+      try {
+        // Read the entire journeys node for the date
+        const journeysSnapshot = await get(ref(db, '/journeys'));
+        const allJourneys = journeysSnapshot.val() || {};
+        
+        csv += 'JOURNEY DETAILS\n';
+        csv += 'Service No,Operator,Route,Departure Point,Destination,Journey Date,Departure Time,Status,Stop Name,Scheduled Time,Actual Time,Delay (min),Delay Status,Source\n';
+        
+        for (const [serviceNo, journeyDates] of Object.entries(allJourneys)) {
+          if (!journeyDates || typeof journeyDates !== 'object') continue;
+          
+          // Find matching configured bus
+          const matchedBuses = busServiceMap[serviceNo] || [];
+          const matchedBus = matchedBuses[0] || {};
+          
+          for (const [journeyKey, journeyData] of Object.entries(journeyDates)) {
+            if (!journeyKey.startsWith(selectedDate)) continue;
+            if (!journeyData || typeof journeyData !== 'object') continue;
+            
+            totalJourneys++;
+            
+            const meta = journeyData.metadata || {};
+            const actualTimes = journeyData.actualTimes || {};
+            const providerStops = journeyData.providerStops || [];
+            
+            const busOp = matchedBus.op || meta.operatorName || '';
+            const busRoute = matchedBus.route || meta.route || '';
+            const busDep = matchedBus.departurePoint || '';
+            const busDest = matchedBus.destinationPoint || '';
+            const depTime = meta.departureTime || matchedBus.time || '';
+            const status = meta.status || '';
+            
+            const actualTimesEntries = Object.entries(actualTimes);
+            
+            if (actualTimesEntries.length === 0) {
+              // No stop data, write a single row for the journey
+              csv += `"${serviceNo}","${busOp}","${busRoute}","${busDep}","${busDest}","${selectedDate}","${depTime}","${status}","","","","","",""\n`;
+            } else {
+              actualTimesEntries.forEach(([stopKey, stopData]) => {
+                totalStopsRecorded++;
+                const stopName = stopKey.replace(/_/g, ' ');
+                const scheduled = stopData.scheduled || '';
+                const actual = stopData.actual || '';
+                const delayMin = stopData.delayMinutes !== undefined ? stopData.delayMinutes : '';
+                const delayStatus = stopData.status || '';
+                const source = stopData.source || '';
+                
+                csv += `"${serviceNo}","${busOp}","${busRoute}","${busDep}","${busDest}","${selectedDate}","${depTime}","${status}","${stopName}","${scheduled}","${actual}",${delayMin},"${delayStatus}","${source}"\n`;
+              });
+            }
+          }
+        }
+        
+        // Add summary at the end
+        csv += `\nSUMMARY\n`;
+        csv += `Total Journeys Found,${totalJourneys}\n`;
+        csv += `Total Stops Recorded,${totalStopsRecorded}\n`;
+        csv += `Date,${selectedDate}\n`;
+        
+        if (totalJourneys === 0) {
+          showError(`No journey history found for ${selectedDate}`);
+          return;
+        }
+        
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `winbus_history_${selectedDate}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`History downloaded: ${totalJourneys} journeys, ${totalStopsRecorded} stops for ${selectedDate}`);
+        
+      } catch (err) {
+        console.error('History download error:', err);
+        showError('Failed to fetch journey history. Check console for details.');
+      }
+    };
+
+    function exportReportToCSV() {
+      if (!cachedBuses || cachedBuses.length === 0) {
+        showError('No fleet data available to export');
+        return;
+      }
+      
+      let csvContent = "\uFEFF"; // Unicode character to allow Excel to show correct formatting
+      csvContent += "Bus ID,Operator,Route,Departure Point,Destination Point,Departure Time,Arrival Time,Bus Type,Live Tracking,Actual Timing,Journey History,Delay Analytics,Status\n";
+      
+      cachedBuses.forEach(bus => {
+        const tracking = bus.trackingEnabled !== false ? "Enabled" : "Disabled";
+        const actual = (bus.trackingEnabled !== false && (bus.actualTimingEnabled === true || bus.actualTimingEnabled === "true")) ? "Enabled" : "Disabled";
+        const history = (bus.trackingEnabled !== false && (bus.actualTimingEnabled === true || bus.actualTimingEnabled === "true") && (bus.historyTrackingEnabled === true || bus.historyTrackingEnabled === "true")) ? "Enabled" : "Disabled";
+        const analytics = (bus.trackingEnabled !== false && (bus.actualTimingEnabled === true || bus.actualTimingEnabled === "true") && (bus.historyTrackingEnabled === true || bus.historyTrackingEnabled === "true") && (bus.delayAnalyticsEnabled === true || bus.delayAnalyticsEnabled === "true")) ? "Enabled" : "Disabled";
+        
+        const statusInfo = getJourneyStatus(bus);
+        
+        const row = [
+          `"${bus.id || ''}"`,
+          `"${(bus.op || '').replace(/"/g, '""')}"`,
+          `"${(bus.route || '').replace(/"/g, '""')}"`,
+          `"${(bus.departurePoint || '').replace(/"/g, '""')}"`,
+          `"${(bus.destinationPoint || '').replace(/"/g, '""')}"`,
+          `"${bus.time || ''}"`,
+          `"${bus.arrivalTime || ''}"`,
+          `"${(bus.type || 'Standard').replace(/"/g, '""')}"`,
+          `"${tracking}"`,
+          `"${actual}"`,
+          `"${history}"`,
+          `"${analytics}"`,
+          `"${statusInfo.label}"`
+        ].join(",");
+        
+        csvContent += row + "\n";
+      });
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const encodedUri = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `winbus_fleet_report_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Report CSV exported successfully!');
+    }
+    window.exportReportToCSV = exportReportToCSV;
+
+    // ============================================
+    // STOP GROUPS MANAGEMENT FUNCTIONS
+    // ============================================
+    function getAllUniqueStops() {
+      const stops = new Set();
+      
+      // Collect from cachedRoutePoints
+      Object.values(cachedRoutePoints).forEach(pointsList => {
+        if (Array.isArray(pointsList)) {
+          pointsList.forEach(p => {
+            const name = typeof p === 'object' ? p.name : p;
+            if (name) stops.add(name.trim());
+          });
+        }
+      });
+      
+      // Collect from buses
+      cachedBuses.forEach(b => {
+        const busStops = b.intermediateStops || b.stopTimes || b.stops || [];
+        busStops.forEach(s => {
+          const name = s.name || s.stopName || s.city;
+          if (name) stops.add(name.trim());
+        });
+      });
+      
+      return Array.from(stops).sort();
+    }
+
+    window.openStopGroupsModal = function() {
+      document.getElementById('stopGroupsModal').classList.add('open');
+      document.getElementById('newGroupNameInput').value = '';
+      document.getElementById('stopGroupEditPane').style.display = 'none';
+      document.getElementById('stopGroupSelectPrompt').style.display = 'flex';
+      document.getElementById('selectedGroupId').value = '';
+      
+      renderStopGroupsList();
+      populateGroupStopNamesDropdown();
+    };
+
+    window.closeStopGroupsModal = function() {
+      document.getElementById('stopGroupsModal').classList.remove('open');
+    };
+
+    function renderStopGroupsList() {
+      const container = document.getElementById('stopGroupsList');
+      if (!container) return;
+      container.innerHTML = '';
+      
+      const groupKeys = Object.keys(cachedStopGroups);
+      if (groupKeys.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 10px;">No stop groups created yet</p>';
+        return;
+      }
+      
+      groupKeys.forEach(key => {
+        const group = cachedStopGroups[key];
+        const stopsCount = Array.isArray(group.stops) ? group.stops.length : 0;
+        
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;';
+        row.onclick = () => selectStopGroup(key);
+        row.innerHTML = `
+          <div style="font-size: 0.9rem; font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 4px;">
+            <span>${group.name}</span>
+            <span style="font-size: 10px; color: #64748b; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight:600; margin-left: 6px;">${stopsCount} stops</span>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn-icon delete" onclick="event.stopPropagation(); deleteStopGroup('${key}')" title="Delete Group" style="width: 28px; height: 28px; font-size: 11px;">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    window.selectStopGroup = function(key) {
+      const group = cachedStopGroups[key];
+      if (!group) return;
+      
+      document.getElementById('selectedGroupId').value = key;
+      document.getElementById('selectedGroupName').textContent = group.name;
+      document.getElementById('stopGroupEditPane').style.display = 'flex';
+      document.getElementById('stopGroupSelectPrompt').style.display = 'none';
+      
+      displayGroupStops(key);
+    };
+
+    window.createStopGroup = async function() {
+      const name = document.getElementById('newGroupNameInput').value.trim();
+      if (!name) {
+        showError('Please enter a group name');
+        return;
+      }
+      
+      const key = sanitizeKey(name);
+      if (cachedStopGroups[key]) {
+        showError('A group with this name already exists');
+        return;
+      }
+      
+      const groupData = {
+        name: name,
+        stops: []
+      };
+      
+      try {
+        await set(ref(db, `/stopGroups/${key}`), groupData);
+        document.getElementById('newGroupNameInput').value = '';
+        showToast(`Stop group "${name}" created!`);
+        selectStopGroup(key);
+      } catch (e) {
+        showError('Failed to create group');
+      }
+    };
+
+    window.deleteStopGroup = async function(key) {
+      const group = cachedStopGroups[key];
+      const name = group ? group.name : key;
+      if (!confirm(`Are you sure you want to delete stop group "${name}"?`)) return;
+      
+      try {
+        await set(ref(db, `/stopGroups/${key}`), null);
+        showToast(`Stop group "${name}" deleted`);
+        
+        const activeId = document.getElementById('selectedGroupId').value;
+        if (activeId === key) {
+          document.getElementById('selectedGroupId').value = '';
+          document.getElementById('stopGroupEditPane').style.display = 'none';
+          document.getElementById('stopGroupSelectPrompt').style.display = 'flex';
+        }
+      } catch (e) {
+        showError('Failed to delete group');
+      }
+    };
+
+    function populateGroupStopNamesDropdown() {
+      const select = document.getElementById('groupStopNameSelect');
+      if (!select) return;
+      
+      select.innerHTML = '<option value="">-- Select Stop --</option>';
+      
+      const stops = getAllUniqueStops();
+      stops.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+      
+      const customOpt = document.createElement('option');
+      customOpt.value = '__custom__';
+      customOpt.textContent = '+ Type Custom Stop';
+      select.appendChild(customOpt);
+      
+      document.getElementById('groupStopNameCustom').style.display = 'none';
+      document.getElementById('groupStopNameCustom').value = '';
+    }
+
+    window.handleGroupStopSelectChange = function() {
+      const select = document.getElementById('groupStopNameSelect');
+      const customInput = document.getElementById('groupStopNameCustom');
+      if (select.value === '__custom__') {
+        customInput.style.display = 'block';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+        customInput.value = '';
+      }
+    };
+
+    window.addStopToGroup = async function() {
+      const groupId = document.getElementById('selectedGroupId').value;
+      if (!groupId) return;
+      
+      const select = document.getElementById('groupStopNameSelect');
+      const customInput = document.getElementById('groupStopNameCustom');
+      const stopName = select.value === '__custom__' ? customInput.value.trim() : select.value;
+      
+      if (!stopName) {
+        showError('Please select or type a stop name');
+        return;
+      }
+      
+      const group = cachedStopGroups[groupId];
+      if (!group) return;
+      
+      const currentStops = Array.isArray(group.stops) ? group.stops : [];
+      if (currentStops.some(s => s.toLowerCase().trim() === stopName.toLowerCase().trim())) {
+        showError('This stop is already in the group');
+        return;
+      }
+      
+      const updatedStops = [...currentStops, stopName];
+      
+      try {
+        await set(ref(db, `/stopGroups/${groupId}/stops`), updatedStops);
+        select.value = '';
+        customInput.value = '';
+        customInput.style.display = 'none';
+        showToast(`Added "${stopName}" to group!`);
+      } catch (e) {
+        showError('Failed to add stop');
+      }
+    };
+
+    window.removeStopFromGroup = async function(stopName) {
+      const groupId = document.getElementById('selectedGroupId').value;
+      if (!groupId) return;
+      
+      const group = cachedStopGroups[groupId];
+      if (!group) return;
+      
+      const currentStops = Array.isArray(group.stops) ? group.stops : [];
+      const updatedStops = currentStops.filter(s => s !== stopName);
+      
+      try {
+        await set(ref(db, `/stopGroups/${groupId}/stops`), updatedStops);
+        showToast(`Removed "${stopName}" from group`);
+      } catch (e) {
+        showError('Failed to remove stop');
+      }
+    };
+
+    function displayGroupStops(groupId) {
+      const container = document.getElementById('groupStopsDisplay');
+      if (!container) return;
+      
+      const group = cachedStopGroups[groupId];
+      const stops = group && Array.isArray(group.stops) ? group.stops : [];
+      
+      if (stops.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 4px 0;">No stops in this group yet</p>';
+        return;
+      }
+      
+      container.innerHTML = stops.map(stop => {
+        return `
+          <div style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #eff6ff; border-radius: 20px; border: 1px solid #bfdbfe; font-size: 0.82rem; font-weight: 600; color: #1e40af;">
+            <span>${stop}</span>
+            <button onclick="removeStopFromGroup('${stop.replace(/'/g, "\\'")}')" style="background: none; border: none; color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 2px;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
 
     // Animation keyframes
     const style = document.createElement('style');

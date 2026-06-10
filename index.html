@@ -43,50 +43,70 @@
       }
     }
 
+    /* ============================================================
+       HERO SECTION - Modern Glassmorphism Design
+       ============================================================ */
     .hero {
       position: relative;
       z-index: 1;
-      min-height: calc(100vh - 64px);
+      height: auto;
+      min-height: auto;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: var(--space-3xl) var(--space-lg);
+      justify-content: flex-start;
+      padding: 24px 16px;
       text-align: center;
-      background: linear-gradient(180deg, rgba(37, 99, 235, 0.03) 0%, rgba(248, 250, 252, 0) 100%);
+      background: linear-gradient(
+        180deg,
+        rgba(216, 78, 85, 0.06) 0%,
+        rgba(255, 193, 7, 0.03) 30%,
+        rgba(248, 250, 252, 0) 100%
+      );
+      overflow-x: hidden;
     }
 
     .hero-tag {
       display: inline-flex;
       align-items: center;
       gap: var(--space-sm);
-      background: var(--accent-light);
-      border: 1px solid rgba(37, 99, 235, 0.15);
-      color: var(--accent);
+      background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+      border: 1.5px solid rgba(216, 78, 85, 0.25);
+      color: #d84e55;
       font-size: var(--font-meta);
-      font-weight: 600;
-      padding: var(--space-sm) var(--space-lg);
+      font-weight: 700;
+      padding: 10px 18px;
       border-radius: 50px;
-      margin-bottom: var(--space-xl);
+      margin-bottom: var(--space-lg);
       animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+      box-shadow: 0 4px 15px rgba(216, 78, 85, 0.1);
+      white-space: nowrap;
+    }
+
+    .hero-tag i {
+      color: #d84e55;
+      font-size: 14px;
     }
 
     .hero h1 {
-      font-size: clamp(32px, 5vw, 56px);
+      font-size: clamp(28px, 6vw, 56px);
       font-weight: 800;
       line-height: 1.15;
       margin-bottom: var(--space-md);
-      color: var(--primary);
+      color: #1e293b;
       animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+      letter-spacing: -0.02em;
+      max-width: 90%;
     }
 
     .hero p {
-      font-size: clamp(14px, 1.5vw, 16px);
-      color: var(--text-muted);
-      max-width: 600px;
+      font-size: clamp(14px, 3.5vw, 17px);
+      color: #64748b;
+      max-width: 90%;
       line-height: 1.6;
-      margin-bottom: var(--space-2xl);
+      margin-bottom: var(--space-xl);
       animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+      font-weight: 500;
     }
 
     /* Search Container with Glassmorphism */
@@ -101,9 +121,9 @@
       max-width: 860px;
       box-shadow: var(--shadow-soft);
       text-align: left;
-      margin-bottom: var(--space-3xl);
+      margin-bottom: 24px;
       position: relative;
-      overflow: visible; /* Changed from hidden to display the swap button */
+      overflow: visible;
       animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
@@ -153,16 +173,13 @@
       margin-top: 2px;
     }
 
-    /* Enhanced 3-Column Form Grid Architecture */
+    /* Enhanced 2-Column Form Grid Architecture */
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: var(--space-lg);
       margin-bottom: var(--space-lg);
-    }
-
-    .form-grid .form-group:first-child {
-      grid-column: span 3;
+      position: relative;
     }
 
     .form-grid .input-wrap {
@@ -188,30 +205,256 @@
       box-shadow: 0 8px 20px rgba(255, 193, 7, 0.15) !important;
     }
 
-    /* Floating Swap Button */
-    .swap-btn {
+    /* RedBus Style Search Container */
+    /* RedBus Style Search Container */
+    .search-card.redbus-style {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 24px;
+      padding: 0;
+      width: 100%;
+      max-width: 920px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+      position: relative;
+      margin-bottom: 50px;
+      overflow: visible;
+      z-index: 1500;
+    }
+    
+    .search-card.redbus-style::before {
+      display: none;
+    }
+
+    .redbus-search-bar {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border-radius: 24px;
+      position: relative;
+      height: 90px;
+      width: 100%;
+    }
+
+    .redbus-inputs-wrap {
+      display: flex;
+      flex: 1;
+      height: 100%;
+      position: relative;
+    }
+
+    .redbus-field {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      position: relative;
+    }
+
+    .redbus-field:first-of-type {
+      border-right: 1px solid #e5e7eb;
+    }
+
+    .redbus-icon {
+      font-size: 20px;
+      color: #94a3b8;
+      margin-right: 16px;
+    }
+
+    .field-content {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      text-align: left;
+    }
+
+    .field-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .redbus-field input {
+      border: none !important;
+      background: transparent !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      color: #1e293b !important;
+      width: 100% !important;
+      outline: none !important;
+      box-shadow: none !important;
+      height: auto !important;
+    }
+
+    .redbus-field input::placeholder {
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 4px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .clear-btn:hover {
+      color: #64748b;
+    }
+
+    .redbus-swap-btn {
       position: absolute;
-      right: -22px;
-      top: 60%;
-      transform: translateY(-50%);
-      width: 36px;
-      height: 36px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: #ffffff;
-      border: 1px solid var(--border-soft);
-      color: var(--accent);
+      border: 1px solid #e5e7eb;
+      color: #d84e55;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       z-index: 10;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-      transition: background 0.2s, color 0.2s, transform 0.4s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
     }
-    .swap-btn:hover {
-      background: var(--brand-yellow-light);
-      color: var(--brand-gold);
-      transform: translateY(-50%) rotate(180deg);
+
+    .redbus-swap-btn:hover {
+      border-color: #d84e55;
+      background: #fff5f5;
+      transform: translate(-50%, -50%) rotate(180deg);
+    }
+
+    .redbus-search-btn {
+      height: 100%;
+      background: #d84e55;
+      color: #ffffff;
+      border: none;
+      border-top-right-radius: 24px;
+      border-bottom-right-radius: 24px;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 0 45px;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(216, 78, 85, 0.25);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .redbus-search-btn:hover {
+      background: #c13e44;
+      box-shadow: 0 10px 30px rgba(216, 78, 85, 0.35);
+    }
+
+    /* Custom Premium Autocomplete Dropdown styling - 0% transparent (opaque white) */
+    .autocomplete-wrapper {
+      position: relative;
+      width: 100%;
+      z-index: 100;
+    }
+    
+    .autocomplete-wrapper:focus-within {
+      z-index: 99999 !important;
+    }
+
+    .custom-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: #ffffff !important;
+      opacity: 1 !important;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      margin-top: 0;
+      max-height: 280px;
+      overflow-y: auto;
+      z-index: 99999 !important;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12), 0 5px 15px rgba(0, 0, 0, 0.05);
+      display: none;
+      text-align: left;
+    }
+
+    .custom-dropdown-section-title {
+      padding: 12px 18px 6px 18px;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.8px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .custom-dropdown-item {
+      padding: 12px 18px;
+      font-size: 14px;
+      color: #1e293b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 500;
+      transition: background 0.15s ease, color 0.15s ease;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .custom-dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .custom-dropdown-item:hover {
+      background: #f8fafc;
+      color: #d84e55;
+    }
+
+    .custom-dropdown-item i {
+      color: #64748b;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    .custom-dropdown-item:hover i {
+      color: #d84e55;
+    }
+
+    .dropdown-subtitle {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 400;
+      margin-top: 2px;
+      display: block;
+    }
+
+    /* Elegant Custom Scrollbar */
+    .custom-dropdown::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-dropdown::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-dropdown::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.12);
+      border-radius: 10px;
     }
 
     .form-grid-bottom {
@@ -310,44 +553,57 @@
       box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4);
     }
 
-    /* Modern SaaS Container Stats Bar styling */
+    /* ============================================================
+       STATS BAR - Responsive Grid with Glassmorphism
+       ============================================================ */
     .stats-bar {
-      display: flex;
-      justify-content: center;
-      gap: var(--space-3xl);
-      flex-wrap: wrap;
-      margin-top: var(--space-xl);
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      padding: var(--space-lg) var(--space-3xl);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-xl);
+      margin-top: 16px;
+      margin-bottom: 16px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      padding: 20px 24px;
       border-radius: 24px;
-      box-shadow: var(--shadow-soft);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
       animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      width: 100%;
     }
 
     .stat-item {
       text-align: center;
-      min-width: 120px;
-      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding: var(--space-md);
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: default;
     }
 
     .stat-item:hover {
-      transform: scale(1.08) translateY(-4px);
+      transform: translateY(-4px);
+      background: rgba(255, 193, 7, 0.1);
+      box-shadow: 0 4px 16px rgba(255, 193, 7, 0.15);
     }
 
     .stat-item .num {
-      font-size: 28px;
+      font-size: clamp(24px, 3vw, 32px);
       font-weight: 800;
       color: var(--primary);
+      line-height: 1;
+      margin-bottom: var(--space-xs);
     }
 
     .stat-item .lbl {
-      font-size: var(--font-meta);
+      font-size: clamp(11px, 1.2vw, 13px);
       color: var(--text-muted);
-      margin-top: var(--space-xs);
-      font-weight: 500;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     /* Features Section */
@@ -356,7 +612,7 @@
       justify-content: center;
       gap: var(--space-xl);
       flex-wrap: wrap;
-      padding: var(--space-3xl) var(--space-lg);
+      padding: 24px 16px;
       background: #ffffff;
       border-top: 1px solid var(--border);
     }
@@ -410,6 +666,17 @@
       font-size: var(--font-meta);
       color: var(--text-muted);
       line-height: 1.5;
+    }
+
+    .feat-content {
+      display: block;
+    }
+
+    /* Hide mobile menu button on desktop */
+    .mobile-menu-btn,
+    .mobile-nav-overlay,
+    .mobile-nav-drawer {
+      display: none !important;
     }
 
     /* Add Bus FAB Fixed Layout Setup */
@@ -632,38 +899,783 @@
       100% { transform: translateY(-120px) scale(1); opacity: 0; }
     }
 
+    /* Animated gradient background */
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes floatUp {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
     @media (max-width: 768px) {
+      .hero {
+        padding: 16px 12px;
+        min-height: auto;
+        height: auto;
+        background: linear-gradient(180deg, 
+          rgba(37, 99, 235, 0.08) 0%, 
+          rgba(255, 193, 7, 0.05) 30%,
+          rgba(248, 250, 252, 0) 100%);
+        position: relative;
+        overflow: visible;
+      }
+      .search-card {
+        padding: 16px;
+        border-radius: 16px;
+        margin-bottom: 16px;
+        margin-left: 8px;
+        margin-right: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 8px 32px rgba(255, 193, 7, 0.15), 0 2px 12px rgba(0, 0, 0, 0.05);
+        animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+      }
+      .search-card-header {
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+      }
+      .search-card-header .icon-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+      .search-card-header h2 {
+        font-size: var(--font-body);
+      }
+      .search-card-header p {
+        font-size: 11px;
+      }
       .form-grid {
         grid-template-columns: 1fr;
-        gap: var(--space-md);
+        gap: var(--space-lg);
+        position: relative;
+        padding: var(--space-md) 0;
       }
-      .form-grid .form-group:first-child {
-        grid-column: span 1;
+      .form-grid .input-wrap input,
+      .form-grid .input-wrap select {
+        height: 54px !important;
+        border-radius: 16px !important;
+        font-size: 16px !important;
+        border: 2px solid rgba(255, 193, 7, 0.2);
+        transition: all 0.3s ease;
+      }
+      .form-grid .input-wrap input:focus,
+      .form-grid .input-wrap select:focus {
+        border-color: var(--brand-yellow);
+        box-shadow: 0 4px 16px rgba(255, 193, 7, 0.2);
+        transform: translateY(-2px);
+      }
+      .form-group {
+        margin-bottom: var(--space-xs);
+      }
+      .form-group label {
+        font-size: 11px;
+        margin-bottom: var(--space-xs);
+      }
+      /* Mobile swap button - centered between stacked inputs */
+      .swap-btn {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 44px;
+        height: 44px;
+        margin-top: 0;
+        background: linear-gradient(135deg, var(--brand-yellow) 0%, var(--brand-gold) 100%);
+        border: 3px solid #ffffff;
+        color: #ffffff;
+        box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4), 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 20;
+        animation: floatUp 3s ease-in-out infinite;
+      }
+      .swap-btn i {
+        font-size: 14px;
+        transform: rotate(90deg);
+      }
+      .swap-btn:hover {
+        transform: translate(-50%, -50%) scale(1.15);
+        background: linear-gradient(135deg, var(--brand-gold) 0%, #FF8F00 100%);
+        box-shadow: 0 8px 25px rgba(255, 193, 7, 0.5);
+      }
+      .swap-btn:hover i {
+        transform: rotate(270deg);
+      }
+      .swap-btn.swapping {
+        animation: swapPulseMobile 0.6s ease;
+      }
+      @keyframes swapPulseMobile {
+        0% { transform: translate(-50%, -50%) scale(1); }
+        50% { transform: translate(-50%, -50%) scale(1.2) rotate(180deg); }
+        100% { transform: translate(-50%, -50%) scale(1) rotate(360deg); }
+      }
+      /* Mobile autocomplete - larger touch targets */
+      .custom-dropdown {
+        border-radius: 14px;
+        margin-top: 4px;
+        max-height: 200px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+      .custom-dropdown-item {
+        padding: 16px 18px;
+        font-size: 15px;
+        min-height: 48px;
+      }
+      .custom-dropdown-item:active {
+        background: var(--brand-yellow);
+        color: var(--text-dark);
       }
       .form-grid-bottom {
         flex-direction: column;
         align-items: stretch;
+        margin-top: var(--space-lg);
+        gap: var(--space-md);
+      }
+      .btn-search {
+        width: 100%;
+        height: 56px;
+        font-size: 16px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--brand-yellow) 0%, var(--brand-gold) 100%);
+        box-shadow: 0 6px 20px rgba(255, 193, 7, 0.35);
+        position: relative;
+        overflow: hidden;
+      }
+      .btn-search::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+      }
+      .btn-search:hover::before {
+        left: 100%;
+      }
+      .btn-search:active {
+        transform: scale(0.98);
       }
       .sort-row {
         max-width: 100%;
       }
-      .btn-search {
-        width: 100%;
-      }
-      .swap-btn {
-        right: 24px;
-        top: auto;
-        bottom: -24px;
-        transform: rotate(90deg);
-      }
-      .swap-btn:hover {
-        transform: rotate(270deg);
-      }
-      .stats-bar {
-        gap: var(--space-lg);
-      }
       .sort-toggle {
         flex-direction: column;
+        gap: var(--space-xs);
+      }
+      .sort-btn {
+        height: 48px;
+        border-radius: 12px;
+      }
+      /* Mobile Stats Bar - 2x2 Grid */
+      .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 12px;
+        margin-top: 12px;
+        margin-bottom: 12px;
+        border-radius: 12px;
+        max-width: 100%;
+      }
+      .stat-item {
+        min-width: auto;
+        padding: 8px 4px;
+      }
+      .stat-item .num {
+        font-size: 20px;
+      }
+      .stat-item .lbl {
+        font-size: 10px;
+      }
+      /* Mobile hero text with enhanced styling */
+      .hero h1 {
+        font-size: clamp(28px, 7vw, 36px);
+        margin-bottom: 12px;
+        font-weight: 800;
+        line-height: 1.2;
+        color: #1e293b;
+        animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        letter-spacing: -0.02em;
+      }
+      .hero p {
+        font-size: 15px;
+        margin-bottom: 16px;
+        padding: 0 8px;
+        color: #64748b;
+        line-height: 1.6;
+        animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+        font-weight: 500;
+      }
+      .hero-tag {
+        font-size: 11px;
+        padding: 8px 14px;
+        margin-bottom: 16px;
+        background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+        border: 1.5px solid rgba(216, 78, 85, 0.25);
+        color: #d84e55;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(216, 78, 85, 0.1);
+        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      .hero-tag i {
+        color: #d84e55;
+      }
+      
+      
+      /* Enhanced feature cards for mobile */
+      .features {
+        padding: 16px 12px;
+        gap: 12px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .feat-card {
+        width: 100%;
+        max-width: none;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 193, 7, 0.15);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        text-align: left;
+      }
+      .feat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(255, 193, 7, 0.15);
+        border-color: var(--brand-yellow);
+      }
+      .feat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        font-size: 20px;
+        margin-bottom: 0;
+        flex-shrink: 0;
+      }
+      .feat-card h3 {
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+      .feat-card p {
+        font-size: 13px;
+        line-height: 1.4;
+        margin: 0;
+      }
+      .feat-card .feat-content {
+        flex: 1;
+      }
+      
+      /* RedBus Mobile Styles - Compact Card Layout */
+      .search-card.redbus-style {
+        padding: 16px;
+        border-radius: 16px;
+        margin-bottom: 24px;
+        background: #ffffff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      
+      .redbus-search-bar {
+        flex-direction: column;
+        height: auto;
+        padding: 0;
+        gap: 0;
+        background: transparent;
+        border-radius: 0;
+      }
+
+      .redbus-inputs-wrap {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        position: relative;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+      }
+      
+      .redbus-field {
+        width: 100%;
+        height: 64px;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        position: relative;
+      }
+      
+      .redbus-field:first-of-type {
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      .redbus-field .redbus-icon {
+        font-size: 20px;
+        color: #64748b;
+        margin-right: 12px;
+      }
+      
+      .redbus-field .field-label {
+        font-size: 11px;
+        color: #94a3b8;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .redbus-field input {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+      }
+      
+      .redbus-field input::placeholder {
+        color: #94a3b8;
+        font-weight: 500;
+      }
+      
+      .redbus-swap-btn {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 36px;
+        height: 36px;
+        background: #ffffff;
+        border: 2px solid #e5e7eb;
+        color: #64748b;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        font-size: 14px;
+      }
+      
+      .redbus-swap-btn:hover {
+        border-color: #d84e55;
+        color: #d84e55;
+        transform: translateY(-50%) rotate(180deg);
+      }
+      
+      .redbus-search-btn {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        width: 100%;
+        margin-top: 16px;
+        border-radius: 12px;
+        height: 52px;
+        font-size: 16px;
+        font-weight: 700;
+      }
+      
+      .redbus-search-btn:hover {
+        transform: translateY(-1px);
+      }
+      
+      /* Clear button for mobile */
+      .redbus-field .clear-btn {
+        right: 60px;
+      }
+      
+      /* Fix dropdown overlap on mobile */
+      .custom-dropdown {
+        position: fixed;
+        top: auto;
+        left: var(--space-md);
+        right: var(--space-md);
+        max-height: 50vh;
+        margin-top: 8px;
+        z-index: 99999 !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Mobile Navigation Menu Button - override desktop display:none */
+      .mobile-menu-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        color: #d84e55;
+        margin-left: var(--space-sm);
+      }
+
+      .mobile-menu-btn:active {
+        transform: scale(0.95);
+      }
+
+      /* Mobile Navigation Drawer - Slides from LEFT, 80% width */
+      .mobile-nav-drawer {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: auto;
+        width: 80vw;
+        max-width: 300px;
+        height: 100vh;
+        background: #ffffff;
+        z-index: 10001;
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.25);
+        transform: translate3d(-100%, 0, 0);
+        transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+        flex-direction: column;
+        will-change: transform;
+      }
+
+      .mobile-nav-drawer.active {
+        transform: translate3d(0, 0, 0);
+      }
+
+      .mobile-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-lg) var(--space-md);
+        background: linear-gradient(135deg, #d84e55 0%, #c73e4c 100%);
+        color: #ffffff;
+        flex-shrink: 0;
+      }
+
+      .mobile-nav-brand {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        font-weight: 700;
+        font-size: 16px;
+      }
+
+      .mobile-nav-brand i {
+        font-size: 22px;
+      }
+
+      .mobile-nav-close {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        border-radius: 10px;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease;
+        min-width: 44px;
+        min-height: 44px;
+      }
+
+      .mobile-nav-close:hover,
+      .mobile-nav-close:active {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      .mobile-nav-links {
+        padding: var(--space-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-xs);
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      .mobile-nav-link {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        padding: var(--space-md);
+        color: #334155;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 15px;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        min-height: 48px;
+      }
+
+      .mobile-nav-link i {
+        width: 28px;
+        text-align: center;
+        color: #d84e55;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+
+      .mobile-nav-link span {
+        flex: 1;
+      }
+
+      .mobile-nav-link:hover,
+      .mobile-nav-link.active {
+        background: #fff5f5;
+        color: #d84e55;
+      }
+
+      /* Darker overlay for better contrast */
+      .mobile-nav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 10000;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .mobile-nav-overlay.active {
+        display: block !important;
+        opacity: 1;
+      }
+    }
+
+    /* Extra small mobile devices */
+    @media (max-width: 380px) {
+      .search-card {
+        padding: var(--space-md);
+        border-radius: 16px;
+      }
+      .form-grid .input-wrap input,
+      .form-grid .input-wrap select {
+        height: 48px !important;
+        font-size: 15px !important;
+      }
+      .btn-search {
+        height: 50px;
+      }
+      .hero h1 {
+        font-size: 24px;
+      }
+      .hero p {
+        font-size: 14px;
+      }
+      .stats-bar {
+        padding: var(--space-sm);
+      }
+      .stat-item .num {
+        font-size: 18px;
+      }
+    }
+
+    /* Performance: Reduce animations on mobile */
+    @media (max-width: 768px) {
+      .search-card,
+      .hero-tag,
+      .stats-bar {
+        animation: fadeInUp 0.6s ease both;
+      }
+      .swap-btn {
+        animation: none;
+      }
+    }
+
+    /* Accessibility: Respect prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--navy);
+      color: rgba(255, 255, 255, 0.6);
+      text-align: left;
+      padding: 48px 40px 24px;
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      margin-top: auto;
+    }
+
+    footer span {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .app-footer {
+      width: 100%;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+      gap: 32px;
+      max-width: 1200px;
+      margin: 0 auto 32px;
+      align-items: start;
+    }
+
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .footer-col h4 {
+      color: #FFFFFF;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-col ul li {
+      margin-bottom: 10px;
+    }
+
+    .footer-col ul li a {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .footer-col ul li a:hover {
+      color: #FFFFFF;
+    }
+
+    .footer-col p {
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 13px;
+    }
+
+    .footer-links a {
+      color: #94A3B8;
+      text-decoration: none;
+      margin-right: 16px;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:last-child {
+      margin-right: 0;
+    }
+
+    .footer-links a:hover {
+      color: #FFFFFF;
+    }
+
+    .footer-brand h4 {
+      color: #FFFFFF;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    /* ============================================================
+       TABLET BREAKPOINT (768px - 1024px)
+       ============================================================ */
+    @media (max-width: 1024px) and (min-width: 769px) {
+      .hero {
+        padding: 24px 20px;
+        min-height: auto;
+        height: auto;
+      }
+      .hero h1 {
+        font-size: clamp(36px, 4.5vw, 48px);
+      }
+      .search-card {
+        max-width: 700px;
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      .stats-bar {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 600px;
+        padding: 16px 20px;
+        margin-top: 16px;
+        margin-bottom: 16px;
+      }
+      .stat-item .num {
+        font-size: 24px;
+      }
+      .features {
+        padding: 24px 20px;
+        gap: 20px;
+      }
+      .feat-card {
+        width: calc(50% - 10px);
+        max-width: none;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+      }
+      .footer-col:first-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    /* ============================================================
+       MOBILE BREAKPOINT (< 768px)
+       ============================================================ */
+    @media (max-width: 768px) {
+      footer {
+        padding: 32px 20px 24px;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+      .footer-col:first-child {
+        grid-column: 1 / -1;
+      }
+      .footer-bottom {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
       }
     }
   </style>
@@ -707,7 +1719,46 @@
     <div class="nav-time" id="realTimeClock">
       --:--:--
     </div>
+    <button class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavDrawer" id="mobileMenuBtn">
+      <i class="fa-solid fa-bars" aria-hidden="true"></i>
+    </button>
   </nav>
+
+  <!-- Mobile Side Drawer -->
+  <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileNav()" aria-hidden="true"></div>
+  <div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-labelledby="mobileNavTitle">
+    <div class="mobile-nav-header">
+      <div class="mobile-nav-brand" id="mobileNavTitle">
+        <i class="fa-solid fa-bus" aria-hidden="true"></i>
+        <span>WinBus Tracker</span>
+      </div>
+      <button class="mobile-nav-close" onclick="closeMobileNav()" aria-label="Close navigation menu">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <nav class="mobile-nav-links" aria-label="Mobile navigation">
+      <a href="index.html" class="mobile-nav-link active" aria-current="page">
+        <i class="fa-solid fa-house" aria-hidden="true"></i>
+        <span>Home</span>
+      </a>
+      <a href="routes.html" class="mobile-nav-link">
+        <i class="fa-solid fa-route" aria-hidden="true"></i>
+        <span>Routes</span>
+      </a>
+      <a href="operators.html" class="mobile-nav-link">
+        <i class="fa-solid fa-building" aria-hidden="true"></i>
+        <span>Operators</span>
+      </a>
+      <a href="live-buses.html" class="mobile-nav-link">
+        <i class="fa-solid fa-satellite-dish" aria-hidden="true"></i>
+        <span>Live Buses</span>
+      </a>
+      <a href="agent-login.html" class="mobile-nav-link">
+        <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+        <span>Agent Login</span>
+      </a>
+    </nav>
+  </div>
 
   <!-- Hero -->
   <section class="hero">
@@ -721,93 +1772,45 @@
     <p>Search by operator name, choose your route, and sort by departure time &mdash; live bus locations at your
       fingertips.</p>
 
-    <!-- Search Card -->
-    <div class="search-card" id="searchSection">
-
-      <div class="search-card-header">
-        <div class="icon-circle"><i class="fa-solid fa-magnifying-glass"></i></div>
-        <div class="header-text">
-          <h2>Search Buses</h2>
-          <p>Enter details below to find matching buses</p>
-        </div>
-      </div>
-
-      <div class="form-grid">
-
-        <!-- Operator / Bus Name -->
-        <div class="form-group">
-          <label for="operatorInput"><i class="fa-solid fa-building"
-              style="margin-right:5px;color:var(--accent)"></i>Operator / Bus Name</label>
-          <div class="input-wrap">
-            <i class="fa-solid fa-bus field-icon"></i>
-            <input id="operatorInput" type="text" placeholder="Search operator name" autocomplete="off" />
+    <!-- Search Card (RedBus Style) -->
+    <div class="search-card redbus-style" id="searchSection">
+      
+      <div class="redbus-search-bar">
+        
+        <div class="redbus-inputs-wrap">
+          <!-- Boarding Point (From) -->
+          <div class="redbus-field autocomplete-wrapper">
+            <i class="fa-solid fa-bus-simple redbus-icon"></i>
+            <div class="field-content">
+              <span class="field-label">From</span>
+              <input id="boardingInput" type="text" placeholder="Enter boarding point" autocomplete="off" />
+            </div>
+            <button type="button" class="clear-btn" id="clearBoarding" onclick="clearInput('boardingInput', 'clearBoarding')">&times;</button>
+            <div class="custom-dropdown" id="boardingDropdown"></div>
           </div>
-        </div>
 
-        <!-- Boarding City Select -->
-        <div class="form-group" style="position: relative;">
-          <label for="boardingSelect"><i class="fa-solid fa-map-pin" style="margin-right:5px;color:var(--accent)"></i>Boarding City</label>
-          <div class="input-wrap">
-            <i class="fa-solid fa-location-dot field-icon"></i>
-            <select id="boardingSelect">
-              <option value="">[ Select Boarding Point ]</option>
-            </select>
-            <i class="fa-solid fa-chevron-down select-arrow"></i>
-          </div>
           <!-- Swap Button -->
-          <button type="button" class="swap-btn" onclick="swapLocations()" title="Swap Locations">
+          <button type="button" class="redbus-swap-btn" onclick="swapLocations()" title="Swap Locations">
             <i class="fa-solid fa-right-left"></i>
           </button>
-        </div>
 
-        <!-- Dropping City Select -->
-        <div class="form-group">
-          <label for="droppingSelect"><i class="fa-solid fa-route" style="margin-right:5px;color:var(--accent)"></i>Dropping City</label>
-          <div class="input-wrap">
-            <i class="fa-solid fa-location-crosshairs field-icon"></i>
-            <select id="droppingSelect">
-              <option value="">[ Select Dropping Point ]</option>
-            </select>
-            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          <!-- Dropping Point (To) -->
+          <div class="redbus-field autocomplete-wrapper">
+            <i class="fa-solid fa-bus-simple redbus-icon"></i>
+            <div class="field-content">
+              <span class="field-label">To</span>
+              <input id="droppingInput" type="text" placeholder="Enter dropping point" autocomplete="off" />
+            </div>
+            <button type="button" class="clear-btn" id="clearDropping" onclick="clearInput('droppingInput', 'clearDropping')">&times;</button>
+            <div class="custom-dropdown" id="droppingDropdown"></div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="typeSelect"><i class="fa-solid fa-bus-simple" style="margin-right:5px;color:var(--accent)"></i>Bus
-            Type</label>
-          <div class="input-wrap">
-            <i class="fa-solid fa-tags field-icon"></i>
-            <select id="typeSelect">
-              <option value="">— Choose Bus Type —</option>
-            </select>
-            <i class="fa-solid fa-chevron-down select-arrow"></i>
-          </div>
-        </div>
-
-      </div><!-- /form-grid -->
-
-      <div class="form-grid-bottom">
-        <!-- Sort Options -->
-        <div class="sort-row">
-          <label><i class="fa-solid fa-arrow-up-wide-short" style="margin-right:5px;color:var(--accent)"></i>Sort By
-            Departure</label>
-          <div class="sort-toggle">
-            <button class="sort-btn active" id="sortEarly" onclick="setSort(this)">
-              <i class="fa-solid fa-arrow-up-from-line"></i>
-              Early Departure
-            </button>
-            <button class="sort-btn" id="sortLate" onclick="setSort(this)">
-              <i class="fa-solid fa-arrow-down-to-line"></i>
-              Late Departure
-            </button>
-          </div>
-        </div>
-
-        <!-- Search Button -->
-        <button class="btn-search" onclick="handleSearch()">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          Search Buses
+        <!-- Search Button Column -->
+        <button class="redbus-search-btn" onclick="handleSearch()">
+          <i class="fa-solid fa-magnifying-glass"></i> Search Buses
         </button>
+
       </div>
 
     </div><!-- /search-card -->
@@ -838,31 +1841,39 @@
   <section class="features">
     <div class="feat-card">
       <div class="feat-icon blue"><i class="fa-solid fa-location-crosshairs"></i></div>
-      <h3>Live GPS Tracking</h3>
-      <p>Real-time bus positions updated every few seconds on an interactive map.</p>
+      <div class="feat-content">
+        <h3>Live GPS Tracking</h3>
+        <p>Real-time bus positions updated every few seconds on an interactive map.</p>
+      </div>
     </div>
     <div class="feat-card">
       <div class="feat-icon cyan"><i class="fa-solid fa-route"></i></div>
-      <h3>Route Coverage</h3>
-      <p>All major Tamil Nadu intercity and interstate routes in one place.</p>
+      <div class="feat-content">
+        <h3>Route Coverage</h3>
+        <p>All major Tamil Nadu intercity and interstate routes in one place.</p>
+      </div>
     </div>
     <div class="feat-card">
       <div class="feat-icon green"><i class="fa-solid fa-clock"></i></div>
-      <h3>Smart Scheduling</h3>
-      <p>Sort by earliest or latest departure to plan your journey perfectly.</p>
+      <div class="feat-content">
+        <h3>Smart Scheduling</h3>
+        <p>Sort by earliest or latest departure to plan your journey perfectly.</p>
+      </div>
     </div>
     <div class="feat-card">
       <div class="feat-icon orange"><i class="fa-solid fa-shield-halved"></i></div>
-      <h3>Partner Portal</h3>
-      <p>Secure operator dashboard for managing fleets and schedules live.</p>
+      <div class="feat-content">
+        <h3>Partner Portal</h3>
+        <p>Secure operator dashboard for managing fleets and schedules live.</p>
+      </div>
     </div>
   </section>
 
   <!-- Footer -->
   <footer class="app-footer">
     <div class="footer-grid">
-      <div class="footer-col">
-        <h4 style="color: #FFFFFF; font-size: 16px; font-weight: 700; margin-bottom: 16px;">WinBus Tracker</h4>
+      <div class="footer-col footer-brand">
+        <h4>WinBus Tracker</h4>
         <p>Real-time private bus tracking platform engineered for commuters across Tamil Nadu. Live locations, schedules, and operators in one place.</p>
       </div>
       <div class="footer-col">
@@ -899,9 +1910,9 @@
     </div>
     <div class="footer-bottom">
       <div>&copy; 2026 WinBus Tracker. Designed for Tamil Nadu Commuters. All rights reserved.</div>
-      <div>
-        <a href="#" style="color:#94A3B8; text-decoration:none; margin-right:16px;">Terms</a>
-        <a href="#" style="color:#94A3B8; text-decoration:none;">Privacy</a>
+      <div class="footer-links">
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
       </div>
     </div>
   </footer>
@@ -986,6 +1997,7 @@
     let cachedRoutes    = [];
     let cachedOperators = [];
     let cachedBusTypes  = [];
+    let cachedStopGroups = {};
 
     // Called once Firebase data is ready
     function applyFirebaseData() {
@@ -993,6 +2005,7 @@
       cachedRoutes    = window._fbRoutes    || [];
       cachedOperators = window._fbOperators || [];
       cachedBusTypes  = window._fbTypes     || [];
+      cachedStopGroups = window._fbStopGroups || {};
     }
 
     function getDBBuses()     { return cachedBuses;    }
@@ -1084,36 +2097,77 @@
     }
 
     function handleSearch() {
-      const operator = document.getElementById('operatorInput').value.trim();
-      const boarding = document.getElementById('boardingSelect').value;
-      const dropping = document.getElementById('droppingSelect').value;
-      const type = document.getElementById('typeSelect').value;
-      const sortBtn = document.querySelector('.sort-btn.active');
-      const sort = sortBtn ? sortBtn.id : 'sortEarly';
+      const boarding = document.getElementById('boardingInput').value.trim();
+      const dropping = document.getElementById('droppingInput').value.trim();
 
       const params = new URLSearchParams();
-      if (operator) params.append('op', operator);
       if (boarding) params.append('boarding', boarding);
       if (dropping) params.append('dropping', dropping);
-      if (type) params.append('type', type);
-      params.append('sort', sort);
 
       window.location.href = 'results.html?' + params.toString();
     }
 
-    function setSort(btn) {
-      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+    function swapLocations() {
+      const boardingInput = document.getElementById('boardingInput');
+      const droppingInput = document.getElementById('droppingInput');
+      const swapBtn = document.querySelector('.redbus-swap-btn');
+      
+      // Add swapping animation class
+      swapBtn.classList.add('swapping');
+      
+      // Swap values
+      const temp = boardingInput.value;
+      boardingInput.value = droppingInput.value;
+      droppingInput.value = temp;
+      
+      // Remove animation class after animation completes
+      setTimeout(() => {
+        swapBtn.classList.remove('swapping');
+      }, 600);
     }
 
-    // Interactive Selector Swapping Feature Helper
-    function swapLocations() {
-      const boardingSel = document.getElementById('boardingSelect');
-      const droppingSel = document.getElementById('droppingSelect');
-      const tempValue = boardingSel.value;
-      boardingSel.value = droppingSel.value;
-      droppingSel.value = tempValue;
+    // ============================================================
+    // MOBILE NAVIGATION
+    // ============================================================
+    function toggleMobileNav() {
+      const overlay = document.getElementById('mobileNavOverlay');
+      const drawer = document.getElementById('mobileNavDrawer');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      overlay.classList.add('active');
+      drawer.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      if (menuBtn) {
+        menuBtn.setAttribute('aria-expanded', 'true');
+      }
+      // Focus on first link for accessibility
+      setTimeout(() => {
+        const firstLink = drawer.querySelector('.mobile-nav-link');
+        if (firstLink) firstLink.focus();
+      }, 100);
     }
+
+    function closeMobileNav() {
+      const overlay = document.getElementById('mobileNavOverlay');
+      const drawer = document.getElementById('mobileNavDrawer');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      overlay.classList.remove('active');
+      drawer.classList.remove('active');
+      document.body.style.overflow = '';
+      if (menuBtn) {
+        menuBtn.setAttribute('aria-expanded', 'false');
+        menuBtn.focus();
+      }
+    }
+
+    // Close drawer on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const drawer = document.getElementById('mobileNavDrawer');
+        if (drawer && drawer.classList.contains('active')) {
+          closeMobileNav();
+        }
+      }
+    });
 
     // ============================================================
     // CLOCK + NAV
@@ -1145,7 +2199,10 @@
     if (homeLink) homeLink.addEventListener('click', scrollToSearch);
     if (navLogo) navLogo.addEventListener('click', scrollToSearch);
 
-    document.getElementById('operatorInput').addEventListener('keydown', e => {
+    document.getElementById('boardingInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleSearch();
+    });
+    document.getElementById('droppingInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') handleSearch();
     });
 
@@ -1275,60 +2332,258 @@
             statOps.textContent = oSet.size + '+';
           }
 
-          const boardingSel = document.getElementById('boardingSelect');
-          const droppingSel = document.getElementById('droppingSelect');
-          const typeSel  = document.getElementById('typeSelect');
+          // Save query to recent searches in localStorage
+          function saveRecentSearch(boarding, dropping) {
+            if (!boarding && !dropping) return;
+            try {
+              let recents = JSON.parse(localStorage.getItem('winbus_recent_searches') || '[]');
+              // Deduplicate
+              recents = recents.filter(r => !(r.boarding === boarding && r.dropping === dropping));
+              recents.unshift({ boarding, dropping });
+              recents = recents.slice(0, 5); // Limit to 5
+              localStorage.setItem('winbus_recent_searches', JSON.stringify(recents));
+            } catch (e) { console.error(e); }
+          }
 
-          if (boardingSel && droppingSel) {
-            const curBoarding = boardingSel.value;
-            const curDropping = droppingSel.value;
+          window.clearRecentSearches = function(e) {
+            if (e) {
+              e.stopPropagation();
+              e.preventDefault();
+            }
+            localStorage.removeItem('winbus_recent_searches');
+            // Re-render open dropdowns
+            const boardingInput = document.getElementById('boardingInput');
+            if (document.activeElement === boardingInput) {
+              boardingInput.blur(); boardingInput.focus();
+            }
+            const droppingInput = document.getElementById('droppingInput');
+            if (document.activeElement === droppingInput) {
+              droppingInput.blur(); droppingInput.focus();
+            }
+          };
 
-            boardingSel.innerHTML = '<option value="">[ Select Boarding Point ]</option>';
-            droppingSel.innerHTML = '<option value="">[ Select Dropping Point ]</option>';
+          window.clearInput = function(inputId, clearBtnId) {
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(clearBtnId);
+            if (input) input.value = '';
+            if (btn) btn.style.display = 'none';
+            input.focus();
+          };
 
-            const allCities = new Set();
-            const allBuses = mergeBusLists(cachedBuses, localYbmBuses);
-            
-            allBuses.forEach(b => {
-              const stops = getBusStops(b);
-              stops.forEach(s => {
-                if (s.city) allCities.add(s.city.trim());
+          // Override handleSearch to save search query
+          const originalHandleSearch = window.handleSearch;
+          window.handleSearch = function() {
+            const boarding = document.getElementById('boardingInput').value.trim();
+            const dropping = document.getElementById('droppingInput').value.trim();
+            if (boarding || dropping) {
+              saveRecentSearch(boarding, dropping);
+            }
+            if (typeof originalHandleSearch === 'function') {
+              originalHandleSearch();
+            } else {
+              const params = new URLSearchParams();
+              if (boarding) params.append('boarding', boarding);
+              if (dropping) params.append('dropping', dropping);
+              window.location.href = 'results.html?' + params.toString();
+            }
+          };
+
+          function setupCustomAutocomplete(inputId, dropdownId, clearBtnId) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            const clearBtn = document.getElementById(clearBtnId);
+            if (!input || !dropdown) return;
+
+            const popularCities = ['Chennai', 'Madurai', 'Coimbatore', 'Thoothukudi', 'Tirunelveli'];
+            let currentFocusIndex = -1;
+
+            function removeActive(items) {
+              for (let i = 0; i < items.length; i++) {
+                items[i].classList.remove("autocomplete-active");
+                items[i].style.backgroundColor = "";
+              }
+            }
+
+            function addActive(items) {
+              if (!items || items.length === 0) return false;
+              removeActive(items);
+              if (currentFocusIndex >= items.length) currentFocusIndex = 0;
+              if (currentFocusIndex < 0) currentFocusIndex = items.length - 1;
+              items[currentFocusIndex].classList.add("autocomplete-active");
+              items[currentFocusIndex].style.backgroundColor = "rgba(0, 0, 0, 0.05)";
+              items[currentFocusIndex].scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
               });
+            }
+
+            function filterOptions() {
+              currentFocusIndex = -1;
+              const val = input.value.trim().toLowerCase();
+              
+              // Toggle clear button
+              if (clearBtn) {
+                clearBtn.style.display = val ? 'flex' : 'none';
+              }
+
+              dropdown.innerHTML = '';
+
+              // Case 1: Empty input -> Show Recent Searches & 5 Popular Cities
+              if (!val) {
+                let hasItems = false;
+                
+                // Show Recent Searches Section
+                try {
+                  const recents = JSON.parse(localStorage.getItem('winbus_recent_searches') || '[]');
+                  if (recents.length > 0) {
+                    hasItems = true;
+                    const header = document.createElement('div');
+                    header.className = 'custom-dropdown-section-title';
+                    header.innerHTML = `<span><i class="fa-solid fa-clock-rotate-left" style="margin-right:6px;"></i>Recent Searches</span>
+                                        <span onclick="clearRecentSearches(event)" style="color:#d84e55; font-size:10px; cursor:pointer; font-weight:700;">CLEAR ALL</span>`;
+                    dropdown.appendChild(header);
+
+                    recents.forEach(r => {
+                      const item = document.createElement('div');
+                      item.className = 'custom-dropdown-item';
+                      item.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i>
+                                        <div>
+                                          <strong>${r.boarding || 'Any'}</strong> &rarr; <strong>${r.dropping || 'Any'}</strong>
+                                          <span class="dropdown-subtitle">Route</span>
+                                        </div>`;
+                      item.addEventListener('click', () => {
+                        document.getElementById('boardingInput').value = r.boarding || '';
+                        document.getElementById('droppingInput').value = r.dropping || '';
+                        saveRecentSearch(r.boarding, r.dropping);
+                        dropdown.style.display = 'none';
+                        window.handleSearch();
+                      });
+                      dropdown.appendChild(item);
+                    });
+                  }
+                } catch (e) {}
+
+                // Show Popular Cities Section
+                const popularHeader = document.createElement('div');
+                popularHeader.className = 'custom-dropdown-section-title';
+                popularHeader.innerHTML = `<i class="fa-solid fa-fire" style="margin-right:6px;color:#d84e55;"></i> Popular Cities`;
+                dropdown.appendChild(popularHeader);
+
+                popularCities.forEach(city => {
+                  const item = document.createElement('div');
+                  item.className = 'custom-dropdown-item';
+                  item.innerHTML = `<i class="fa-solid fa-location-dot" style="color:#d84e55;"></i>
+                                    <div>
+                                      <strong>${city}</strong>
+                                      <span class="dropdown-subtitle">Popular City</span>
+                                    </div>`;
+                  item.addEventListener('click', () => {
+                    input.value = city;
+                    if (clearBtn) clearBtn.style.display = 'flex';
+                    dropdown.style.display = 'none';
+                  });
+                  dropdown.appendChild(item);
+                });
+
+                dropdown.style.display = 'block';
+                return;
+              }
+
+              // Case 2: User started typing -> Show matching stops/cities
+              const matchedGroups = Object.values(cachedStopGroups || {})
+                .filter(g => g && g.name && g.name.toLowerCase().includes(val));
+
+              const allCities = new Set();
+              const buses = mergeBusLists(cachedBuses, localYbmBuses);
+              buses.forEach(b => {
+                const stops = getBusStops(b);
+                stops.forEach(s => {
+                  if (s.city) allCities.add(s.city.trim());
+                });
+              });
+              
+              const sortedCities = Array.from(allCities).sort();
+              const filtered = sortedCities.filter(city => city.toLowerCase().includes(val));
+
+              if (matchedGroups.length === 0 && filtered.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+              }
+
+              // Render matched groups first
+              matchedGroups.forEach(group => {
+                const item = document.createElement('div');
+                item.className = 'custom-dropdown-item stop-group-item';
+                item.innerHTML = `<i class="fa-solid fa-tags" style="color: var(--primary);"></i>
+                                  <div>
+                                    <strong style="color: var(--primary);">${group.name}</strong>
+                                    <span class="dropdown-subtitle" style="color: var(--primary); opacity: 0.8; font-weight: 700;">City Group</span>
+                                  </div>`;
+                item.addEventListener('click', () => {
+                  input.value = group.name;
+                  if (clearBtn) clearBtn.style.display = 'flex';
+                  dropdown.style.display = 'none';
+                });
+                dropdown.appendChild(item);
+              });
+
+              filtered.forEach(city => {
+                const item = document.createElement('div');
+                item.className = 'custom-dropdown-item';
+                item.innerHTML = `<i class="fa-solid fa-location-dot"></i>
+                                  <div>
+                                    <strong>${city}</strong>
+                                    <span class="dropdown-subtitle">City / Station</span>
+                                  </div>`;
+                item.addEventListener('click', () => {
+                  input.value = city;
+                  if (clearBtn) clearBtn.style.display = 'flex';
+                  dropdown.style.display = 'none';
+                });
+                dropdown.appendChild(item);
+              });
+
+              dropdown.style.display = 'block';
+            }
+
+            input.addEventListener('focus', filterOptions);
+            input.addEventListener('input', filterOptions);
+            input.addEventListener('click', (e) => {
+              e.stopPropagation();
+              filterOptions();
             });
 
-            Array.from(allCities).sort().forEach(city => {
-              const opt1 = document.createElement('option');
-              opt1.value = city; opt1.textContent = city;
-              boardingSel.appendChild(opt1);
-
-              const opt2 = document.createElement('option');
-              opt2.value = city; opt2.textContent = city;
-              droppingSel.appendChild(opt2);
+            input.addEventListener('keydown', (e) => {
+              const items = dropdown.getElementsByClassName('custom-dropdown-item');
+              if (dropdown.style.display !== 'none' && items.length > 0) {
+                if (e.key === 'ArrowDown') {
+                  currentFocusIndex++;
+                  addActive(items);
+                  e.preventDefault();
+                } else if (e.key === 'ArrowUp') {
+                  currentFocusIndex--;
+                  addActive(items);
+                  e.preventDefault();
+                } else if (e.key === 'Enter') {
+                  if (currentFocusIndex > -1 && items[currentFocusIndex]) {
+                    e.preventDefault();
+                    items[currentFocusIndex].click();
+                  }
+                } else if (e.key === 'Escape') {
+                  dropdown.style.display = 'none';
+                }
+              }
             });
 
-            if (curBoarding && [...boardingSel.options].some(o => o.value === curBoarding)) boardingSel.value = curBoarding;
-            if (curDropping && [...droppingSel.options].some(o => o.value === curDropping)) droppingSel.value = curDropping;
+            document.addEventListener('click', (e) => {
+              if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+              }
+            });
           }
 
-          if (typeSel) {
-            const curType = typeSel.value;
-            typeSel.innerHTML = '<option value="">— Choose Bus Type —</option>';
-            const allTypes = new Set();
-            const allBuses = mergeBusLists(cachedBuses, localYbmBuses);
-            allBuses.forEach(b => {
-              const bType = b.type || b.busType;
-              if (bType) allTypes.add(bType);
-            });
-            cachedBusTypes.forEach(t => allTypes.add(t.name));
-            if (window.initialTypeQuery) allTypes.add(window.initialTypeQuery);
-            Array.from(allTypes).sort().forEach(t => {
-              const opt = document.createElement('option');
-              opt.value = t; opt.textContent = t;
-              typeSel.appendChild(opt);
-            });
-            if (window.initialTypeQuery) { typeSel.value = window.initialTypeQuery; window.initialTypeQuery = null; }
-            else if ([...typeSel.options].some(o => o.value === curType)) typeSel.value = curType;
-          }
+          setupCustomAutocomplete('boardingInput', 'boardingDropdown', 'clearBoarding');
+          setupCustomAutocomplete('droppingInput', 'droppingDropdown', 'clearDropping');
         }
 
         window.syncCustomBuses = function() {
@@ -1365,9 +2620,10 @@
       window._fbRoutes    = Object.values(all.routes    || {}).filter(r => r && r.name);
       window._fbOperators = Object.values(all.operators || {}).filter(o => o && o.name);
       window._fbTypes     = Object.values(all.types     || {}).filter(t => t && t.name);
+      window._fbStopGroups = all.stopGroups || {};
     } catch(e) {
       console.error('[Firebase loader]', e);
-      window._fbBuses = []; window._fbRoutes = []; window._fbOperators = []; window._fbTypes = [];
+      window._fbBuses = []; window._fbRoutes = []; window._fbOperators = []; window._fbTypes = []; window._fbStopGroups = {};
       
       const msg = e.message || String(e);
       const isPermissionDenied = msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('unauthorized');
