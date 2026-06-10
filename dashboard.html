@@ -1,0 +1,2979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WinBus Admin - Fleet Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="index.css" />
+  <style>
+    /* Admin Dashboard Layout & Specific Elements */
+    :root {
+      --sidebar-width: 260px;
+      --navbar-height: 64px;
+    }
+
+    body, html {
+      height: 100%;
+      background: var(--bg-main);
+    }
+
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--surface-white);
+      border-right: 1px solid var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      overflow-y: auto;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .sidebar::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand-yellow), var(--brand-gold));
+      z-index: 102;
+    }
+
+    .sidebar-header {
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-soft);
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-weight: 700;
+      font-size: var(--font-m);
+      color: var(--primary);
+    }
+
+    .sidebar-logo i {
+      color: var(--brand-gold);
+      font-size: 20px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: var(--space-md) var(--space-sm);
+    }
+
+    .nav-section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      padding: 0 var(--space-md);
+      margin-bottom: var(--space-xs);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: 10px var(--space-md);
+      border-radius: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition);
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover {
+      background: var(--surface-soft);
+      color: var(--primary);
+    }
+
+    .nav-item.active {
+      background: var(--brand-yellow-light);
+      color: var(--brand-gold);
+      font-weight: 600;
+    }
+
+    .nav-item i {
+      width: 16px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: var(--space-lg);
+      border-top: 1px solid var(--border);
+      background: var(--surface-soft);
+    }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm);
+      background: var(--surface-white);
+      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: var(--brand-yellow);
+      color: var(--text-dark);
+      font-weight: bold;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-info { display: flex; flex-direction: column; text-align: left; }
+    .user-name { font-weight: 600; font-size: 13px; color: var(--primary); }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+
+    /* Main Content Area */
+    .main-content {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .top-navbar {
+      height: var(--navbar-height);
+      background: var(--primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-2xl);
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+
+    .navbar-left { display: flex; align-items: center; gap: var(--space-lg); }
+    .navbar-brand { display: flex; align-items: center; gap: var(--space-sm); color: #ffffff; font-weight: 700; font-size: 16px; }
+    .navbar-right { display: flex; align-items: center; gap: var(--space-md); }
+    
+    .nav-btn {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: var(--font-body);
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+      background: rgba(255,255,255,0.08);
+      border: none;
+      cursor: pointer;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,0.15); color: #ffffff; }
+    .nav-btn.logout { background: var(--danger); color: #ffffff; }
+
+    .content-area {
+      flex: 1;
+      padding: var(--space-2xl) var(--space-3xl);
+      text-align: left;
+    }
+
+    .page-header { margin-bottom: var(--space-2xl); }
+    .page-title { font-size: var(--font-l); font-weight: 700; color: var(--primary); margin-bottom: var(--space-xs); }
+    .page-subtitle { font-size: var(--font-body); color: var(--text-muted); }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-xl);
+      margin-bottom: var(--space-2xl);
+    }
+    @media (max-width: 1024px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+
+    .stat-card {
+      background: var(--surface-white);
+      border: 1px solid var(--border-soft);
+      border-radius: 20px;
+      padding: var(--space-xl);
+      box-shadow: var(--shadow-soft);
+    }
+    .stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
+    
+    .stat-icon {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .stat-icon.blue { background: var(--brand-yellow-light); color: var(--brand-gold); }
+    .stat-icon.green { background: var(--success-light); color: var(--success); }
+    .stat-icon.yellow { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.purple { background: #FAF5FF; color: #7C3AED; }
+
+    .stat-value { font-size: 24px; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: var(--font-meta); color: var(--text-muted); }
+
+    /* Quick Action Cards */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-lg);
+      margin-bottom: var(--space-2xl);
+    }
+    @media (max-width: 768px) {
+      .actions-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .action-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .action-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .action-icon {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto var(--space-sm);
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 18px;
+    }
+    .action-title { font-weight: 600; font-size: var(--font-body); color: var(--primary); }
+    .action-desc { font-size: var(--font-meta); color: var(--text-muted); }
+
+    /* Table Toolbar */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-lg);
+      gap: var(--space-md);
+    }
+    .search-box { position: relative; display: flex; align-items: center; width: 100%; max-width: 320px; }
+    .search-box i { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; }
+    .search-box input {
+      width: 100%; height: 38px;
+      padding: 0 16px 0 34px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-body);
+      outline: none;
+      transition: var(--transition);
+    }
+    .search-box input:focus { border-color: var(--accent); }
+
+    .filter-group { display: flex; gap: var(--space-sm); }
+    .filter-select {
+      height: 38px;
+      padding: 0 var(--space-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      font-size: var(--font-body);
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Actions and Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .status-badge.active { background: var(--success-light); color: var(--success); }
+    .status-badge.offline { background: var(--danger-light); color: var(--danger); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* Expanded Stops Row Details */
+    .stops-toggle {
+      border: 1px solid var(--border);
+      background: var(--bg-main);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .stops-row { display: none; background: var(--bg-main); }
+    .stops-row.expanded { display: table-row; }
+    .stops-container { padding: var(--space-lg); border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); }
+    
+    .stops-timeline { display: flex; overflow-x: auto; gap: var(--space-md); padding: var(--space-sm) 0; }
+    .timeline-item { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 120px; }
+    .timeline-node {
+      margin-top: 12px;
+      text-align: center;
+      padding: 0 8px;
+    }
+    .timeline-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .timeline-time {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #64748b;
+      background: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .stop-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 100px;
+      position: relative;
+    }
+
+    .stop-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 16px;
+      right: -50%;
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+
+    .stop-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      position: relative;
+      z-index: 1;
+    }
+
+    .stop-item:first-child .stop-number,
+    .stop-item:last-child .stop-number {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .stop-name {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-align: center;
+      max-width: 80px;
+      line-height: 1.3;
+    }
+
+    .direct-route {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #f1f5f9;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .direct-route i {
+      color: var(--primary);
+    }
+
+    /* ============================================
+       MODAL STYLES (Preserved)
+       ============================================ */
+    .modal-overlay { 
+      display: none; 
+      position: fixed; 
+      inset: 0; 
+      background: rgba(0,0,0,0.5); 
+      backdrop-filter: blur(4px); 
+      align-items: center; 
+      justify-content: center; 
+      z-index: 1000; 
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-content { 
+      background: white; 
+      width: 100%; 
+      max-width: 450px; 
+      border-radius: var(--radius-lg); 
+      overflow: hidden; 
+      animation: zoomIn 0.2s ease-out; 
+      box-shadow: var(--shadow-lg);
+    }
+    @keyframes zoomIn { 
+      from { transform: scale(0.95); opacity: 0; } 
+      to { transform: scale(1); opacity: 1; } 
+    }
+    .modal-header { 
+      padding: 20px 24px; 
+      border-bottom: 1px solid var(--border); 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+    }
+    .modal-header h3 { 
+      font-size: 1.1rem; 
+      font-weight: 700; 
+      margin: 0; 
+    }
+    .btn-close { 
+      background: none; 
+      border: none; 
+      font-size: 1.2rem; 
+      color: var(--text-muted); 
+      cursor: pointer; 
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-close:hover {
+      background: #f1f5f9;
+      color: var(--text-primary);
+    }
+    .modal-body { 
+      padding: 24px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 16px; 
+    }
+    .form-group label { 
+      display: block; 
+      font-size: 0.85rem; 
+      font-weight: 600; 
+      color: var(--text-secondary); 
+      margin-bottom: 6px; 
+    }
+    .form-group input, 
+    .form-group select { 
+      width: 100%; 
+      padding: 12px; 
+      border: 1px solid var(--border); 
+      border-radius: var(--radius-sm); 
+      font-family: inherit; 
+      font-size: 0.95rem; 
+      outline: none; 
+      transition: 0.2s; 
+      background: white; 
+    }
+    .form-group input:focus, 
+    .form-group select:focus { 
+      border-color: var(--primary); 
+      box-shadow: 0 0 0 3px rgba(251, 192, 45, 0.1);
+    }
+    .modal-footer { 
+      padding: 16px 24px; 
+      border-top: 1px solid var(--border); 
+      display: flex; 
+      justify-content: flex-end; 
+      gap: 12px; 
+      background: #f8fafc; 
+    }
+    .btn-cancel { 
+      padding: 10px 20px; 
+      border: 1px solid var(--border); 
+      background: white; 
+      border-radius: var(--radius-sm); 
+      font-weight: 600; 
+      cursor: pointer; 
+      color: var(--text-secondary); 
+      transition: all 0.2s ease;
+    }
+    .btn-cancel:hover {
+      background: #f8fafc;
+      border-color: var(--text-muted);
+    }
+    .btn-save { 
+      padding: 10px 24px; 
+      border: none; 
+      background: var(--accent); 
+      color: var(--text-primary); 
+      border-radius: var(--radius-sm); 
+      font-weight: 700; 
+      cursor: pointer; 
+      transition: all 0.2s ease;
+    }
+    .btn-save:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-icon {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-icon:hover {
+      background: var(--brand-yellow-light);
+      border-color: var(--brand-yellow);
+      color: var(--text-primary);
+    }
+    .btn-icon.delete:hover {
+      background: var(--danger-light);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* ============================================
+       FULL PAGE FORM (Add/Edit Bus)
+       ============================================ */
+    .app-page {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg-main);
+      z-index: 200;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .app-page.active {
+      display: flex;
+    }
+    .app-page-header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .app-page-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .app-page-title h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .app-page-body {
+      flex: 1;
+      padding: 32px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .app-page-footer {
+      background: white;
+      border-top: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      justify-content: space-between;
+      position: sticky;
+      bottom: 0;
+    }
+
+    /* Form Sections */
+    .form-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .form-section-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .form-section-header {
+      padding: 20px 24px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .form-section-header i {
+      color: var(--primary);
+      font-size: 1rem;
+    }
+    .form-section-header h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+    }
+    .form-section-body {
+      padding: 24px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .form-row.single {
+      grid-template-columns: 1fr;
+    }
+
+    /* Intermediate Stops in Form */
+    .intermediate-stops-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      margin-top: 24px;
+    }
+    .intermediate-stops-header {
+      padding: 16px 24px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .intermediate-stops-header i {
+      color: var(--primary);
+    }
+    .intermediate-stops-list {
+      padding: 16px 24px;
+    }
+    .stop-input-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .stop-input-row:last-child {
+      border-bottom: none;
+    }
+    .stop-input-name {
+      flex: 1;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .stop-input-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .stop-input-field i {
+      color: var(--text-muted);
+    }
+    .stop-input-field input {
+      width: 130px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    .stop-input-field input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* ============================================
+       RESPONSIVE DESIGN
+       ============================================ */
+    @media (max-width: 1200px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .actions-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 992px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .content-area {
+        padding: 20px;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .actions-grid {
+        grid-template-columns: 1fr;
+      }
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-box {
+        max-width: none;
+      }
+      .fleet-container {
+        overflow-x: auto;
+      }
+      .fleet-table {
+        min-width: 800px;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .empty-state i {
+      font-size: 3rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    .empty-state h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .empty-state p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    /* Loading State */
+    .loading-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .loading-state i {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+
+    /* Premium Switch Button styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #cbd5e1;
+      transition: .3s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+
+    input:checked + .slider {
+      background-color: #f59e0b; /* matches primary yellow color scale */
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px #f59e0b;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    input:disabled + .slider {
+      background-color: #e2e8f0;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- ============================================
+         SIDEBAR
+         ============================================ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <i class="fa-solid fa-bus-simple"></i>
+          WinBus
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Main</div>
+          <a href="#" class="nav-item" onclick="showSection('dashboard'); return false;">
+            <i class="fa-solid fa-grid-2"></i>
+            Dashboard
+          </a>
+          <a href="#" class="nav-item active" onclick="showSection('fleet'); return false;">
+            <i class="fa-solid fa-bus"></i>
+            Manage Fleet
+          </a>
+          <a href="live-buses.html" class="nav-item">
+            <i class="fa-solid fa-map-location-dot"></i>
+            Live Tracking
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">Management</div>
+          <a href="#" class="nav-item" onclick="openSimpleModal('route'); return false;">
+            <i class="fa-solid fa-route"></i>
+            Routes
+          </a>
+          <a href="#" class="nav-item" onclick="openSimpleModal('operator'); return false;">
+            <i class="fa-solid fa-building"></i>
+            Operators
+          </a>
+          <a href="#" class="nav-item" onclick="openSimpleModal('type'); return false;">
+            <i class="fa-solid fa-list"></i>
+            Bus Types
+          </a>
+          <a href="#" class="nav-item" onclick="openRoutePointsModal(); return false;">
+            <i class="fa-solid fa-map-pin"></i>
+            Route Points
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a href="#" class="nav-item" onclick="showToast('Reports - Coming Soon'); return false;">
+            <i class="fa-solid fa-chart-bar"></i>
+            Reports
+          </a>
+          <a href="#" class="nav-item" onclick="showToast('Users - Coming Soon'); return false;">
+            <i class="fa-solid fa-users"></i>
+            Users
+          </a>
+          <a href="#" class="nav-item" onclick="showToast('Settings - Coming Soon'); return false;">
+            <i class="fa-solid fa-cog"></i>
+            Settings
+          </a>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-avatar">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div class="user-info">
+            <div class="user-name">Admin User</div>
+            <div class="user-role">Fleet Manager</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============================================
+         MAIN CONTENT
+         ============================================ -->
+    <main class="main-content">
+      <!-- Top Navbar -->
+      <header class="top-navbar">
+        <div class="navbar-left">
+          <button class="nav-btn" onclick="toggleSidebar()" style="display: none;" id="menuToggle">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="navbar-brand">
+            <i class="fa-solid fa-bus-simple"></i>
+            WinBus Admin
+          </div>
+        </div>
+        <div class="navbar-right">
+          <a href="live-buses.html" class="nav-btn">
+            <i class="fa-solid fa-map"></i>
+            Live Map
+          </a>
+          <a href="index.html" class="nav-btn">
+            <i class="fa-solid fa-globe"></i>
+            Go to Main Site
+          </a>
+          <button class="nav-btn logout" onclick="logout()">
+            <i class="fa-solid fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <!-- Page Header -->
+        <div class="page-header">
+          <h1 class="page-title">Manage Fleet</h1>
+          <p class="page-subtitle">View and manage all buses in your fleet</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon blue">
+                <i class="fa-solid fa-bus"></i>
+              </div>
+              <span class="stat-trend">+2 this week</span>
+            </div>
+            <div class="stat-value" id="statTotalBuses">0</div>
+            <div class="stat-label">Total Buses</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon green">
+                <i class="fa-solid fa-signal"></i>
+              </div>
+              <span class="stat-trend">Live</span>
+            </div>
+            <div class="stat-value" id="statActiveBuses">0</div>
+            <div class="stat-label">Active Buses</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon yellow">
+                <i class="fa-solid fa-building"></i>
+              </div>
+            </div>
+            <div class="stat-value" id="statOperators">0</div>
+            <div class="stat-label">Operators</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon purple">
+                <i class="fa-solid fa-route"></i>
+              </div>
+            </div>
+            <div class="stat-value" id="statRoutes">0</div>
+            <div class="stat-label">Routes</div>
+          </div>
+        </div>
+
+        <!-- Action Cards -->
+        <div class="actions-grid">
+          <div class="action-card" onclick="openBusForm()">
+            <div class="action-icon">
+              <i class="fa-solid fa-plus"></i>
+            </div>
+            <div class="action-title">Add New Bus</div>
+            <div class="action-desc">Register a new bus</div>
+          </div>
+          
+          <div class="action-card" onclick="openSimpleModal('route')">
+            <div class="action-icon">
+              <i class="fa-solid fa-route"></i>
+            </div>
+            <div class="action-title">Add Route</div>
+            <div class="action-desc">Create new route</div>
+          </div>
+          
+          <div class="action-card" onclick="openSimpleModal('operator')">
+            <div class="action-icon">
+              <i class="fa-solid fa-building"></i>
+            </div>
+            <div class="action-title">Add Operator</div>
+            <div class="action-desc">New bus operator</div>
+          </div>
+          
+          <div class="action-card" onclick="openSimpleModal('type')">
+            <div class="action-icon">
+              <i class="fa-solid fa-bus"></i>
+            </div>
+            <div class="action-title">Bus Type</div>
+            <div class="action-desc">Add bus category</div>
+          </div>
+          
+          <div class="action-card" onclick="openRoutePointsModal()">
+            <div class="action-icon">
+              <i class="fa-solid fa-map-pin"></i>
+            </div>
+            <div class="action-title">Route Points</div>
+            <div class="action-desc">Manage stops</div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search bus, operator or route..." onkeyup="filterFleet()">
+          </div>
+          <div class="filter-group">
+            <select class="filter-select" id="statusFilter" onchange="filterFleet()">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="offline">Offline</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Fleet Table -->
+        <div class="fleet-container">
+          <table class="fleet-table">
+            <thead>
+              <tr>
+                <th>Bus / Operator</th>
+                <th>Route</th>
+                <th>Departure → Arrival</th>
+                <th>Bus Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="fleetTableBody">
+              <tr>
+                <td colspan="6" class="loading-state">
+                  <i class="fa-solid fa-spinner fa-spin"></i>
+                  <p>Loading fleet data...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================
+       ADD/EDIT BUS - FULL PAGE FORM
+       ============================================ -->
+  <div id="busFormPage" class="app-page">
+    <div class="app-page-header">
+      <div class="app-page-title">
+        <button class="btn-icon" onclick="closeBusForm()" style="margin-right: 8px;">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h2 id="formTitle">Add New Bus</h2>
+      </div>
+      <button class="btn-close" onclick="closeBusForm()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    
+    <div class="app-page-body">
+      <input type="hidden" id="editingBusId">
+      <input type="hidden" id="editingRouteKey">
+      <input type="hidden" id="editingOpKey">
+      
+      <div class="form-sections">
+        <!-- Bus Information -->
+        <div class="form-section-card">
+          <div class="form-section-header">
+            <i class="fa-solid fa-bus"></i>
+            <h3>Bus Information</h3>
+          </div>
+          <div class="form-section-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Operator Name</label>
+                <select id="busOpSelect" onchange="handleDropdownChange('busOpSelect', 'busOpCustom')">
+                  <option value="">-- Select Operator --</option>
+                  <option value="__custom__">+ Add New Operator</option>
+                </select>
+                <input type="text" id="busOpCustom" placeholder="Type new operator name..." style="display:none; margin-top:8px;">
+              </div>
+              <div class="form-group">
+                <label>Route</label>
+                <select id="busRouteSelect" onchange="handleRouteSelectionForBus(); handleDropdownChange('busRouteSelect', 'busRouteCustom')">
+                  <option value="">-- Select Route --</option>
+                  <option value="__custom__">+ Add New Route</option>
+                </select>
+                <input type="text" id="busRouteCustom" placeholder="Type new route..." style="display:none; margin-top:8px;">
+              </div>
+            </div>
+            <div class="form-row single" style="margin-top: 20px;">
+              <div class="form-group">
+                <label>Bus Type</label>
+                <select id="busTypeSelect" onchange="handleDropdownChange('busTypeSelect', 'busTypeCustom')">
+                  <option value="">-- Select Bus Type --</option>
+                  <option value="__custom__">+ Add New Bus Type</option>
+                </select>
+                <input type="text" id="busTypeCustom" placeholder="Type new bus type..." style="display:none; margin-top:8px;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Route Details -->
+        <div class="form-section-card">
+          <div class="form-section-header">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <h3>Route Details</h3>
+          </div>
+          <div class="form-section-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Departure Point</label>
+                <input type="text" id="busDeparturePoint" placeholder="e.g. Chennai">
+              </div>
+              <div class="form-group">
+                <label>Destination Point</label>
+                <input type="text" id="busDestinationPoint" placeholder="e.g. Tirunelveli">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Schedule -->
+        <div class="form-section-card">
+          <div class="form-section-header">
+            <i class="fa-solid fa-clock"></i>
+            <h3>Schedule</h3>
+          </div>
+          <div class="form-section-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Departure Time</label>
+                <input type="text" id="busTime" placeholder="e.g. 10:30 PM">
+              </div>
+              <div class="form-group">
+                <label>Arrival Time</label>
+                <input type="text" id="busArrivalTime" placeholder="e.g. 06:00 AM">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tracking -->
+        <div class="form-section-card">
+          <div class="form-section-header">
+            <i class="fa-solid fa-satellite-dish"></i>
+            <h3>Tracking</h3>
+          </div>
+          <div class="form-section-body">
+            <div class="form-row single">
+              <div class="form-group">
+                <label>Tracking Link</label>
+                <input type="url" id="busLink" placeholder="https://...">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bus Feature Controls -->
+        <div class="form-section-card">
+          <div class="form-section-header">
+            <i class="fa-solid fa-sliders"></i>
+            <h3>Bus Feature Controls</h3>
+          </div>
+          <div class="form-section-body">
+            <div class="form-row">
+              <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between; background: #f8fafc; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px;">
+                <div>
+                  <label style="font-weight: 700; margin: 0;">Live Tracking</label>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 2px;">Enable Track Live &amp; WebSockets</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="busTrackingEnabled" checked>
+                  <span class="slider round"></span>
+                </label>
+              </div>
+              <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between; background: #f8fafc; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px;">
+                <div>
+                  <label style="font-weight: 700; margin: 0;">Actual Timing</label>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 2px;">Enable 200m stop detection</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="busActualTimingEnabled">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+            <div class="form-row" style="margin-top: 16px;">
+              <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between; background: #f8fafc; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px;">
+                <div>
+                  <label style="font-weight: 700; margin: 0;">Journey History</label>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 2px;">Enable history snapshot &amp; accordion</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="busHistoryTrackingEnabled">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+              <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between; background: #f8fafc; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px;">
+                <div>
+                  <label style="font-weight: 700; margin: 0;">Delay Analytics</label>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 2px;">Show delay stats inside cards</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="busDelayAnalyticsEnabled">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Intermediate Stops -->
+      <div class="intermediate-stops-card" id="intermediateStopsSection" style="display: none;">
+        <div class="intermediate-stops-header">
+          <i class="fa-solid fa-route"></i>
+          Intermediate Stops
+        </div>
+        <div class="intermediate-stops-list" id="intermediateStopsList">
+          <!-- Stops populated here -->
+        </div>
+      </div>
+    </div>
+    
+    <div class="app-page-footer">
+      <button class="btn-cancel" onclick="closeBusForm()">Cancel</button>
+      <button class="btn-save" id="saveBusBtn" onclick="saveBus()">Save Bus</button>
+    </div>
+  </div>
+
+  <div id="simpleModal" class="modal-overlay" onclick="if(event.target===this) closeSimpleModal()">
+    <div class="modal-content" style="max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <h3 id="simpleModalTitle">Manage Items</h3>
+        <button class="btn-close" onclick="closeSimpleModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="flex: 1; overflow-y: auto;">
+        <input type="hidden" id="simpleModalEditKey">
+        <div class="form-group">
+          <label id="simpleModalLabel">Name</label>
+          <input type="text" id="simpleModalInput" placeholder="Enter name...">
+        </div>
+        <div class="form-group" id="simpleModalImageGroup" style="display: none;">
+          <label>Image URL</label>
+          <input type="text" id="simpleModalImageInput" placeholder="Enter image URL (optional)...">
+        </div>
+        
+        <!-- Existing Items List -->
+        <div style="border-top: 1px solid var(--border); margin-top: 20px; padding-top: 16px;">
+          <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 12px; color: var(--text-muted);">Existing Items</h4>
+          <div id="simpleModalList" style="display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeSimpleModal()">Close</button>
+        <button class="btn-save" id="simpleModalSaveBtn" onclick="saveSimple()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Route Points Modal -->
+  <div id="routePointsModal" class="modal-overlay" onclick="if(event.target===this) closeRoutePointsModal()">
+    <div class="modal-content" style="max-width: 700px; max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <h3 id="routePointsModalTitle">Route Points (Waypoints)</h3>
+        <button class="btn-close" onclick="closeRoutePointsModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <!-- Step 1: Route Selection -->
+      <div id="routeSelectionStep" class="modal-body" style="flex: 1; overflow-y: auto;">
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
+          Select a route to add or manage its waypoints.
+        </p>
+        <div class="form-group">
+          <label>Select Route</label>
+          <select id="routeSelectForPoints" onchange="onRouteSelected()" style="width: 100%;">
+            <option value="">-- Select Route --</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Step 2: Waypoint Management -->
+      <div id="waypointStep" class="modal-body" style="flex: 1; overflow-y: auto; display: none;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <button onclick="goBackToRouteSelection()" class="btn-cancel" style="padding: 8px 16px;">
+            <i class="fa-solid fa-arrow-left"></i> Back
+          </button>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Managing Route</label>
+            <div id="selectedRouteName" style="font-weight: 700; font-size: 1.1rem;"></div>
+          </div>
+        </div>
+        
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px;">
+          Click on the map to set a stop's location, then select or enter the stop name.
+        </p>
+        
+        <!-- Map Container -->
+        <div id="routePointsMap" style="width: 100%; height: 250px; border-radius: 12px; margin-bottom: 12px; border: 2px solid var(--border);"></div>
+        
+        <!-- Coordinates Display -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 0.75rem;">Latitude</label>
+            <input type="text" id="pointLat" readonly placeholder="Click map" style="background: #f8fafc;">
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 0.75rem;">Longitude</label>
+            <input type="text" id="pointLng" readonly placeholder="Click map" style="background: #f8fafc;">
+          </div>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size: 0.85rem;">Stop Name</label>
+          <div style="display: flex; gap: 8px;">
+            <select id="pointNameSelect" onchange="handlePointNameChange()" style="flex: 1;">
+              <option value="">-- Select or Type New --</option>
+              <option value="__custom__">+ Add New Stop</option>
+            </select>
+            <input type="text" id="pointNameCustom" placeholder="Enter new stop name" style="display: none; flex: 1;">
+          </div>
+        </div>
+        
+        <button onclick="addRoutePoint()" class="btn-save" style="width: 100%; margin-bottom: 16px;">
+          <i class="fa-solid fa-plus"></i> Save Stop
+        </button>
+        
+        <!-- Saved Stops -->
+        <div style="border-top: 1px solid var(--border); padding-top: 12px;">
+          <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 8px;">
+            Saved Stops for this Route
+          </label>
+          <div id="routePointsDisplay" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 200px; overflow-y: auto;">
+            <!-- Route points will be displayed here -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeRoutePointsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase and App Logic -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getDatabase, ref, onValue, set, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZXryu-NQ-Jv4hRRPCnmc8shKgLQPQP94",
+      authDomain: "realtime-tracking-3809e.firebaseapp.com",
+      databaseURL: "https://realtime-tracking-3809e-default-rtdb.firebaseio.com",
+      projectId: "realtime-tracking-3809e",
+      storageBucket: "realtime-tracking-3809e.firebasestorage.app",
+      messagingSenderId: "1085653591220",
+      appId: "1:1085653591220:web:5789826b047764c2ada3e1",
+      measurementId: "G-HT2HGW1RVE"
+    };
+
+    console.log("Firebase Project:", firebaseConfig.projectId);
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // Global cache
+    let cachedBuses = [];
+    let cachedOperators = [];
+    let cachedRoutes = [];
+    let cachedBusTypes = [];
+    let cachedRoutePoints = {};
+    let loadedRoutes = [];
+    let loadedOperators = [];
+    let loadedBusTypes = [];
+    let existingStopTimes = [];
+
+    // Auth guard - prevent redirect loops
+    let authInitialized = false;
+    let redirecting = false;
+
+    // Wait for Firebase auth restoration
+    onAuthStateChanged(auth, (user) => {
+      console.log("Auth callback:", user?.uid || null);
+      
+      // Prevent duplicate handling
+      if (authInitialized) return;
+      authInitialized = true;
+
+      if (user) {
+        // User exists - stay on dashboard
+        console.log("Dashboard auth OK");
+        loadAllDataFromFirebase();
+        return;
+      }
+
+      // User does NOT exist - redirect ONCE to login
+      if (!redirecting) {
+        redirecting = true;
+        console.log("Redirecting to login");
+        window.location.replace("agent-login.html");
+      }
+    });
+
+    function logout() {
+      signOut(auth).then(() => {
+        window.location.href = 'agent-login.html';
+      });
+    }
+    window.logout = logout;
+
+    // ============================================
+    // FIREBASE DATA LOADING
+    // ============================================
+    function loadAllDataFromFirebase() {
+      // Buses
+      onValue(ref(db, '/buses'), snapshot => {
+        const data = snapshot.val() || {};
+        cachedBuses = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+        updateStats();
+        renderFleetTable();
+      });
+
+      // Operators
+      onValue(ref(db, '/operators'), snapshot => {
+        const data = snapshot.val() || {};
+        cachedOperators = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+        loadAllData();
+        updateStats();
+        if (document.getElementById('simpleModal').classList.contains('open') && currentSimpleType === 'operator') {
+          renderSimpleItemsList();
+        }
+      });
+
+      // Routes
+      onValue(ref(db, '/routes'), snapshot => {
+        const data = snapshot.val() || {};
+        cachedRoutes = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+        loadAllData();
+        populateRouteSelectForPoints();
+        updateStats();
+        if (document.getElementById('simpleModal').classList.contains('open') && currentSimpleType === 'route') {
+          renderSimpleItemsList();
+        }
+      });
+
+      // Bus Types
+      onValue(ref(db, '/types'), snapshot => {
+        const data = snapshot.val() || {};
+        cachedBusTypes = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+        loadAllData();
+        if (document.getElementById('simpleModal').classList.contains('open') && currentSimpleType === 'type') {
+          renderSimpleItemsList();
+        }
+      });
+
+      // Route Points
+      onValue(ref(db, '/routePoints'), snapshot => {
+        cachedRoutePoints = snapshot.val() || {};
+        console.log('Route points loaded:', cachedRoutePoints);
+        renderFleetTable();
+      });
+    }
+
+    function updateStats() {
+      document.getElementById('statTotalBuses').textContent = cachedBuses.length;
+      document.getElementById('statActiveBuses').textContent = Math.floor(cachedBuses.length * 0.7); // Simulated
+      document.getElementById('statOperators').textContent = cachedOperators.length;
+      document.getElementById('statRoutes').textContent = cachedRoutes.length;
+    }
+
+    // ============================================
+    // HEALTH & MONITORING ENGINE (Phase 3B)
+    // ============================================
+    function parseTimeToMinutes(str) {
+      if (!str) return -1;
+      const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!m) return -1;
+      let h = parseInt(m[1], 10), min = parseInt(m[2], 10);
+      const pm = m[3].toUpperCase() === 'PM';
+      if (pm && h !== 12) h += 12;
+      if (!pm && h === 12) h = 0;
+      return h * 60 + min;
+    }
+
+    function getTrackingState(bus) {
+      const depMins = parseTimeToMinutes(bus.time);
+      let arrMins   = parseTimeToMinutes(bus.arrivalTime);
+
+      if (depMins === -1) {
+        return { enabled: true, state: 'active' };
+      }
+
+      if (arrMins === -1) {
+        arrMins = (depMins + 600) % 1440;
+      }
+
+      const trackStart = depMins - 60;
+
+      let adjustedArr = arrMins;
+      if (arrMins < depMins) {
+        adjustedArr = arrMins + 1440;
+      }
+      const trackEnd = adjustedArr + 180;
+
+      const now = new Date();
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+      const nowSecs = now.getSeconds();
+      const nowTotalSecs = nowMins * 60 + nowSecs;
+
+      const trackStartSecs = trackStart * 60;
+      const trackEndSecs   = trackEnd * 60;
+
+      const DAY_SECS = 1440 * 60;
+
+      let tStart = trackStartSecs;
+      let tEnd   = trackEndSecs;
+
+      const spansDay = (tStart < 0 || tEnd >= DAY_SECS);
+
+      let isActive = false;
+      let secsUntilStart = 0;
+      let secsUntilNextStart = 0;
+
+      if (!spansDay) {
+        if (nowTotalSecs >= tStart && nowTotalSecs < tEnd) {
+          isActive = true;
+        } else if (nowTotalSecs < tStart) {
+          secsUntilStart = tStart - nowTotalSecs;
+        } else {
+          secsUntilNextStart = (DAY_SECS - nowTotalSecs) + tStart;
+        }
+      } else {
+        let normStart = tStart < 0 ? tStart + DAY_SECS : tStart;
+        let normEnd   = tEnd >= DAY_SECS ? tEnd - DAY_SECS : tEnd;
+
+        if (tStart < 0) {
+          if (nowTotalSecs >= normStart || nowTotalSecs < normEnd) {
+            isActive = true;
+          } else if (nowTotalSecs < normStart && nowTotalSecs >= normEnd) {
+            secsUntilStart = normStart - nowTotalSecs;
+          }
+        } else {
+          if (nowTotalSecs >= tStart || nowTotalSecs < normEnd) {
+            isActive = true;
+          } else {
+            secsUntilStart = tStart - nowTotalSecs;
+            if (secsUntilStart < 0) secsUntilStart += DAY_SECS;
+          }
+        }
+      }
+
+      if (isActive) {
+        return { enabled: true, state: 'active' };
+      }
+
+      const state = secsUntilStart > 0 ? 'before-start' : 'expired';
+      return { enabled: false, state };
+    }
+
+    function getJourneyStatus(bus) {
+      const trackingEnabled = bus.trackingEnabled !== false;
+      if (!trackingEnabled) {
+        return { label: 'Tracking Disabled', color: '#64748b', icon: 'fa-ban' };
+      }
+
+      // Check if offline (GPS age > 5 minutes)
+      const lastUpdated = bus.lastUpdated;
+      if (lastUpdated) {
+        const lastMins = parseTimeToMinutes(lastUpdated);
+        if (lastMins !== -1) {
+          const now = new Date();
+          const nowMins = now.getHours() * 60 + now.getMinutes();
+          let diff = nowMins - lastMins;
+          if (diff < 0) diff += 1440;
+          if (diff > 5) {
+            return { label: 'Offline', color: '#ef4444', icon: 'fa-signal' };
+          }
+        }
+      }
+
+      const trackingState = getTrackingState(bus);
+      if (trackingState.state === 'before-start') {
+        return { label: 'Scheduled', color: '#eab308', icon: 'fa-calendar' };
+      }
+      if (trackingState.state === 'expired') {
+        return { label: 'Completed', color: '#3b82f6', icon: 'fa-circle-check' };
+      }
+      if (trackingState.state === 'active') {
+        return { label: 'Journey Active', color: '#22c55e', icon: 'fa-circle-play' };
+      }
+
+      return { label: 'Offline', color: '#ef4444', icon: 'fa-signal' };
+    }
+
+    function getJourneyProgress(bus) {
+      const stops = bus.stopTimes || [];
+      const totalStops = stops.length;
+      if (totalStops === 0) {
+        return { completedStops: 0, totalStops: 0, percent: 0 };
+      }
+      const completedStops = stops.filter(st => st.actual).length;
+      const percent = Math.round((completedStops / totalStops) * 100);
+      return { completedStops, totalStops, percent };
+    }
+
+    // ============================================
+    // FLEET TABLE RENDERING
+    // ============================================
+    function renderFleetTable() {
+      const tbody = document.getElementById('fleetTableBody');
+      const searchTerm = document.getElementById('searchInput')?.value?.toLowerCase() || '';
+      const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+
+      let filteredBuses = cachedBuses.filter(bus => {
+        const matchesSearch = !searchTerm || 
+          bus.op?.toLowerCase().includes(searchTerm) ||
+          bus.route?.toLowerCase().includes(searchTerm) ||
+          bus.departurePoint?.toLowerCase().includes(searchTerm) ||
+          bus.destinationPoint?.toLowerCase().includes(searchTerm);
+        
+        // Simulate status check - in real app would check live tracking
+        const isActive = Math.random() > 0.3; // Simulated
+        const matchesStatus = statusFilter === 'all' || 
+          (statusFilter === 'active' && isActive) ||
+          (statusFilter === 'offline' && !isActive);
+        
+        return matchesSearch && matchesStatus;
+      });
+
+      if (filteredBuses.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="fa-solid fa-bus-simple"></i>
+                <h3>No buses found</h3>
+                <p>Add a new bus to get started</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      // Debug: Show route points status
+      console.log('=== renderFleetTable ===');
+      console.log('cachedRoutePoints:', cachedRoutePoints);
+      console.log('cachedRoutePoints keys:', Object.keys(cachedRoutePoints));
+      
+      tbody.innerHTML = filteredBuses.map((bus, index) => {
+        const routeKey = sanitizeKey(bus.route || '');
+        const opKey = sanitizeKey(bus.op);
+        const isActive = Math.random() > 0.3; // Simulated - would check real tracking
+        
+        const tracking = bus.trackingEnabled !== false;
+        const actual = tracking && (bus.actualTimingEnabled === true || bus.actualTimingEnabled === "true");
+        const history = actual && (bus.historyTrackingEnabled === true || bus.historyTrackingEnabled === "true");
+        const analytics = history && (bus.delayAnalyticsEnabled === true || bus.delayAnalyticsEnabled === "true");
+
+        const statusInfo = getJourneyStatus(bus);
+        const progress = getJourneyProgress(bus);
+        const lastGps = bus.lastUpdated || 'No GPS';
+
+        // Debug logging
+        console.log('=== Bus', index, '===');
+        console.log('bus.route:', bus.route);
+        console.log('routeKey:', routeKey);
+        console.log('cachedRoutePoints:', cachedRoutePoints);
+        
+        // Try multiple lookup strategies
+        let routePoints =
+            cachedRoutePoints[routeKey] ||
+            cachedRoutePoints[bus.route] ||
+            Object.entries(cachedRoutePoints).find(
+                ([key]) => sanitizeKey(key) === routeKey
+            )?.[1] ||
+            [];
+        
+        console.log('resolved routePoints:', routePoints);
+        const hasStops = Array.isArray(routePoints) && routePoints.length > 0;
+        console.log('hasStops:', hasStops);
+        
+        // Build stops HTML
+        const stopsHtml = hasStops ? `
+          <tr class="stops-row" id="stops-${routeKey}-${index}" style="display:none;">
+            <td colspan="6">
+              <div class="stops-container">
+                <div class="stops-header">
+                  <i class="fa-solid fa-route"></i> Route Timeline (${routePoints.length} Stops)
+                </div>
+                <div class="stops-timeline">
+                  ${routePoints.map((point, i) => {
+                    const pointName = typeof point === 'object' ? (point.name || point.stop || point) : point;
+                    const isLast = i === routePoints.length - 1;
+                    const stopTime = bus.stopTimes?.[i]?.time || '--:--';
+                    return `
+                      <div class="timeline-item ${isLast ? '' : 'active-stop'}">
+                        <div class="timeline-node">
+                          ${isLast ? '🏁' : (i + 1)}
+                        </div>
+                        <div class="timeline-content">
+                          <div class="timeline-name">${pointName}</div>
+                          <div class="timeline-time">
+                            <i class="fa-regular fa-clock"></i>
+                            <span>${stopTime}</span>
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            </td>
+          </tr>
+        ` : '';
+        
+        return `
+          <tr data-route-key="${routeKey}" data-op-key="${opKey}">
+            <td>
+              <div class="bus-info">
+                <div class="bus-avatar">
+                  <i class="fa-solid fa-bus"></i>
+                </div>
+                <div class="bus-details">
+                  <h4>${bus.op || 'Unknown'}</h4>
+                  <p>${bus.departurePoint || 'Unknown'} → ${bus.destinationPoint || 'Unknown'}</p>
+                  
+                  <!-- Premium SaaS Operational Health Panel (Phase 3B) -->
+                  <div class="health-monitoring-panel" style="margin-top: 8px; padding: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; width: 100%; max-width: 250px; font-size: 11px; display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f7; padding-bottom: 4px;">
+                      <span style="font-weight: 700; color: ${statusInfo.color}; display: flex; align-items: center; gap: 4px;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background-color: ${statusInfo.color}; display: inline-block;"></span>
+                        <i class="fa-solid ${statusInfo.icon}" style="font-size: 10px;"></i> ${statusInfo.label}
+                      </span>
+                      <span style="color: #64748b; font-size: 10px;">
+                        GPS: <strong style="color: #334155;">${lastGps}</strong>
+                      </span>
+                    </div>
+
+                    ${progress.totalStops > 0 ? `
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                      <div style="display: flex; justify-content: space-between; color: #64748b; font-size: 10px;">
+                        <span>Progress: <strong>${progress.completedStops} / ${progress.totalStops} Stops</strong></span>
+                        <span><strong>${progress.percent}%</strong></span>
+                      </div>
+                      <div style="width: 100%; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden;">
+                        <div style="width: ${progress.percent}%; height: 100%; background: #3b82f6; border-radius: 2px;"></div>
+                      </div>
+                    </div>
+                    ` : ''}
+
+                    <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+                      <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${tracking ? '#e6f4ea' : '#f1f5f9'}; color: ${tracking ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                        ${tracking ? '🟢' : '⚪'} Trk
+                      </span>
+                      <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${actual ? '#e6f4ea' : '#f1f5f9'}; color: ${actual ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                        ${actual ? '🟢' : '⚪'} Time
+                      </span>
+                      <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${history ? '#e6f4ea' : '#f1f5f9'}; color: ${history ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                        ${history ? '🟢' : '⚪'} Hist
+                      </span>
+                      <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; background: ${analytics ? '#e6f4ea' : '#f1f5f9'}; color: ${analytics ? '#137333' : '#475569'}; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                        ${analytics ? '🟢' : '⚪'} Anlyt
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="route-info">
+                <div class="route-path">
+                  ${bus.departurePoint || 'Start'} <i class="fa-solid fa-arrow-right"></i> ${bus.destinationPoint || 'End'}
+                </div>
+                <span class="route-name">${bus.route || 'Unknown Route'}</span>
+                ${hasStops ? `<button class="stops-toggle" onclick="toggleStops('${routeKey}-${index}')">
+                  <i class="fa-solid fa-chevron-down"></i> View Stops
+                </button>` : ''}
+              </div>
+            </td>
+            <td>
+              <div class="time-info">
+                <div class="time-row">
+                  <i class="fa-regular fa-clock"></i>
+                  ${bus.time || '--:--'}
+                </div>
+                <div class="time-row">
+                  <i class="fa-solid fa-arrow-down" style="color: var(--primary);"></i>
+                  ${bus.arrivalTime || '--:--'}
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="bus-type-badge">
+                <i class="fa-solid fa-bus"></i>
+                ${bus.type || 'Standard'}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge ${isActive ? 'active' : 'offline'}">
+                <span class="status-dot"></span>
+                ${isActive ? 'Active' : 'Offline'}
+              </span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-icon edit" onclick="editBus('${routeKey}', '${opKey}')" title="Edit">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button class="btn-icon delete" onclick="deleteBus('${bus.id}')" title="Delete">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          ${stopsHtml}
+        `;
+      }).join('');
+    }
+
+    window.filterFleet = function() {
+      renderFleetTable();
+    };
+    
+    // Debug function to check route points
+    window.debugRoutePoints = function() {
+      console.log('=== DEBUG ROUTE POINTS ===');
+      console.log('cachedRoutePoints:', cachedRoutePoints);
+      console.log('All keys:', Object.keys(cachedRoutePoints));
+      alert('Route points keys: ' + Object.keys(cachedRoutePoints).join(', '));
+      return cachedRoutePoints;
+    };
+
+    window.toggleStops = function(id) {
+      const row = document.getElementById('stops-' + id);
+      const btn = document.querySelector(`[onclick="toggleStops('${id}')"]`);
+      if (row) {
+        if (row.style.display === 'none') {
+          row.style.display = 'table-row';
+          btn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> Hide Stops';
+        } else {
+          row.style.display = 'none';
+          btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> View Stops';
+        }
+      }
+    };
+
+    window.editBus = function(routeKey, opKey) {
+      const bus = cachedBuses.find(b => sanitizeKey(b.route) === routeKey && sanitizeKey(b.op) === opKey);
+      if (bus) {
+        openBusForm(bus.id, routeKey, opKey, bus.op, bus.time, bus.arrivalTime || '', bus.departurePoint || '', bus.destinationPoint || '', bus.route, bus.link || '', bus.type || '', bus.stopTimes || [], bus);
+      }
+    };
+
+    // ============================================
+    // DROPDOWN HELPERS
+    // ============================================
+    function updateDropdown(selectId, dataList, defaultLabel, customLabel) {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+      const currentVal = select.value;
+      select.innerHTML = `<option value="">${defaultLabel}</option>`;
+      dataList.forEach(item => {
+        select.innerHTML += `<option value="${item}">${item}</option>`;
+      });
+      select.innerHTML += `<option value="__custom__">${customLabel}</option>`;
+      if (currentVal && dataList.includes(currentVal)) select.value = currentVal;
+    }
+
+    function loadAllData() {
+      loadedOperators = cachedOperators.map(o => o.name).sort();
+      updateDropdown('busOpSelect', loadedOperators, '-- Select Operator --', '+ Add New Operator');
+      
+      loadedRoutes = cachedRoutes.map(r => r.name).sort();
+      updateDropdown('busRouteSelect', loadedRoutes, '-- Select Route --', '+ Add New Route');
+      
+      loadedBusTypes = cachedBusTypes.map(t => t.name).sort();
+      updateDropdown('busTypeSelect', loadedBusTypes, '-- Select Bus Type --', '+ Add New Bus Type');
+    }
+
+    window.handleDropdownChange = function(selectId, customId) {
+      const select = document.getElementById(selectId);
+      const customInput = document.getElementById(customId);
+      if (select.value === '__custom__') {
+        customInput.style.display = 'block';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+        customInput.value = '';
+      }
+    };
+
+    // ============================================
+    // BUS FORM (Add/Edit)
+    // ============================================
+    window.openBusForm = function(busId='', routeKey='', opKey='', op='', time='', arrivalTime='', departurePoint='', destinationPoint='', route='', link='', type='', stopTimes=[], busObj=null) {
+      // Support both old format (stopTimes) and new format (intermediateStops)
+      if (busObj && busObj.intermediateStops) {
+        existingStopTimes = busObj.intermediateStops;
+      } else {
+        existingStopTimes = stopTimes || [];
+      }
+      const isEdit = !!busId;
+      document.getElementById('formTitle').textContent = isEdit ? 'Edit Bus' : 'Add New Bus';
+      document.getElementById('saveBusBtn').textContent = isEdit ? 'Update Bus' : 'Save Bus';
+      document.getElementById('editingBusId').value = busId;
+      document.getElementById('editingRouteKey').value = routeKey;
+      document.getElementById('editingOpKey').value = opKey;
+      document.getElementById('busTime').value = time;
+      document.getElementById('busArrivalTime').value = arrivalTime;
+      document.getElementById('busDeparturePoint').value = departurePoint;
+      document.getElementById('busDestinationPoint').value = destinationPoint;
+      document.getElementById('busLink').value = link;
+
+      // Prefill toggles with backward compatibility defaults
+      const tracking = busObj ? (busObj.trackingEnabled ?? true) : true;
+      const actualTiming = busObj ? (busObj.actualTimingEnabled ?? false) : false;
+      const history = busObj ? (busObj.historyTrackingEnabled ?? false) : false;
+      const analytics = busObj ? (busObj.delayAnalyticsEnabled ?? false) : false;
+
+      const trackingToggle = document.getElementById('busTrackingEnabled');
+      const actualTimingToggle = document.getElementById('busActualTimingEnabled');
+      const historyToggle = document.getElementById('busHistoryTrackingEnabled');
+      const analyticsToggle = document.getElementById('busDelayAnalyticsEnabled');
+
+      trackingToggle.checked = (tracking === true || tracking === "true");
+      actualTimingToggle.checked = (actualTiming === true || actualTiming === "true");
+      historyToggle.checked = (history === true || history === "true");
+      analyticsToggle.checked = (analytics === true || analytics === "true");
+
+      function enforceDependencies() {
+        if (!trackingToggle.checked) {
+          actualTimingToggle.checked = false;
+          actualTimingToggle.disabled = true;
+          historyToggle.checked = false;
+          historyToggle.disabled = true;
+          analyticsToggle.checked = false;
+          analyticsToggle.disabled = true;
+        } else {
+          actualTimingToggle.disabled = false;
+          if (!actualTimingToggle.checked) {
+            historyToggle.checked = false;
+            historyToggle.disabled = true;
+            analyticsToggle.checked = false;
+            analyticsToggle.disabled = true;
+          } else {
+            historyToggle.disabled = false;
+            if (!historyToggle.checked) {
+              analyticsToggle.checked = false;
+              analyticsToggle.disabled = true;
+            } else {
+              analyticsToggle.disabled = false;
+            }
+          }
+        }
+      }
+
+      // Bind events with hierarchical logic
+      trackingToggle.onchange = () => {
+        if (!trackingToggle.checked) {
+          actualTimingToggle.checked = false;
+          historyToggle.checked = false;
+          analyticsToggle.checked = false;
+        }
+        enforceDependencies();
+      };
+      
+      actualTimingToggle.onchange = () => {
+        if (actualTimingToggle.checked) {
+          trackingToggle.checked = true;
+        } else {
+          historyToggle.checked = false;
+          analyticsToggle.checked = false;
+        }
+        enforceDependencies();
+      };
+      
+      historyToggle.onchange = () => {
+        if (historyToggle.checked) {
+          trackingToggle.checked = true;
+          actualTimingToggle.checked = true;
+        } else {
+          analyticsToggle.checked = false;
+        }
+        enforceDependencies();
+      };
+
+      analyticsToggle.onchange = () => {
+        if (analyticsToggle.checked) {
+          trackingToggle.checked = true;
+          actualTimingToggle.checked = true;
+          historyToggle.checked = true;
+        }
+        enforceDependencies();
+      };
+
+      // Run once on load to disable fields if starting state warrants it
+      enforceDependencies();
+
+      function setDropdownVal(selectId, customId, val, list) {
+        const sel = document.getElementById(selectId);
+        const inp = document.getElementById(customId);
+        if (val && list.includes(val)) {
+          sel.value = val;
+          inp.style.display = 'none';
+        } else if (val) {
+          sel.value = '__custom__';
+          inp.style.display = 'block';
+          inp.value = val;
+        } else {
+          sel.value = '';
+          inp.style.display = 'none';
+          inp.value = '';
+        }
+      }
+      
+      setDropdownVal('busOpSelect', 'busOpCustom', op, loadedOperators);
+      setDropdownVal('busRouteSelect', 'busRouteCustom', route, loadedRoutes);
+      setDropdownVal('busTypeSelect', 'busTypeCustom', type, loadedBusTypes);
+      
+      document.getElementById('busFormPage').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      if (route) {
+        handleRouteSelectionForBus();
+        setTimeout(() => populateExistingStopTimes(), 100);
+      }
+    };
+
+    window.closeBusForm = function() {
+      document.getElementById('busFormPage').classList.remove('active');
+      document.body.style.overflow = '';
+      
+      document.getElementById('editingBusId').value = '';
+      document.getElementById('editingRouteKey').value = '';
+      document.getElementById('editingOpKey').value = '';
+      document.getElementById('intermediateStopsSection').style.display = 'none';
+      document.getElementById('intermediateStopsList').innerHTML = '';
+      existingStopTimes = [];
+      handleDropdownChange('busOpSelect', 'busOpCustom');
+      handleDropdownChange('busRouteSelect', 'busRouteCustom');
+      handleDropdownChange('busTypeSelect', 'busTypeCustom');
+    };
+
+    function populateExistingStopTimes() {
+      if (!existingStopTimes || existingStopTimes.length === 0) return;
+      
+      existingStopTimes.forEach(stop => {
+        const stopName = stop.name || stop.stopName;
+        if (!stopName) return;
+        
+        // Find the row for this stop
+        const timeInput = document.querySelector(`.stop-time-input[data-stop-name="${stopName.replace(/"/g, '\\"')}"]`);
+        if (!timeInput) return;
+        
+        const row = timeInput.closest('.stop-input-row');
+        if (!row) return;
+        
+        // Populate time
+        timeInput.value = stop.time || stop.scheduledTime || '';
+        
+        // Populate GPS fields if they exist
+        const latInput = row.querySelector('.stop-lat-input');
+        const lngInput = row.querySelector('.stop-lng-input');
+        const radiusInput = row.querySelector('.stop-radius-input');
+        const showInput = row.querySelector('.stop-show-on-card');
+        
+        if (latInput && stop.lat) latInput.value = stop.lat;
+        if (lngInput && stop.lng) lngInput.value = stop.lng;
+        if (radiusInput && stop.radius) radiusInput.value = stop.radius;
+        if (showInput) {
+          showInput.checked = (stop.showOnCard === true || stop.showOnCard === "true");
+        }
+      });
+    }
+
+    window.saveBus = async function() {
+      const opSelect = document.getElementById('busOpSelect').value;
+      const opCustom = document.getElementById('busOpCustom').value.trim();
+      const op = opSelect === '__custom__' ? opCustom : opSelect;
+
+      const routeSelect = document.getElementById('busRouteSelect').value;
+      const routeCustom = document.getElementById('busRouteCustom').value.trim();
+      const route = routeSelect === '__custom__' ? routeCustom : routeSelect;
+
+      const typeSelect = document.getElementById('busTypeSelect').value;
+      const typeCustom = document.getElementById('busTypeCustom').value.trim();
+      const type = typeSelect === '__custom__' ? typeCustom : typeSelect;
+
+      const time = document.getElementById('busTime').value.trim();
+      const arrivalTime = document.getElementById('busArrivalTime').value.trim();
+      const departurePoint = document.getElementById('busDeparturePoint').value.trim();
+      const destinationPoint = document.getElementById('busDestinationPoint').value.trim();
+      const link = document.getElementById('busLink').value.trim();
+
+      if (!op || !route || !time) {
+        showError('Please fill in all required fields (Operator, Route, Departure Time)');
+        return;
+      }
+
+      // Collect intermediate stops with GPS coordinates
+      const stopTimeInputs = document.querySelectorAll('.stop-time-input');
+      const intermediateStops = Array.from(stopTimeInputs).map((input, index) => {
+        const stopName = input.dataset.stopName;
+        const scheduledTime = input.value.trim();
+        
+        // Find corresponding lat/lng/show inputs
+        const row = input.closest('.stop-input-row');
+        const latInput = row?.querySelector('.stop-lat-input');
+        const lngInput = row?.querySelector('.stop-lng-input');
+        const showInput = row?.querySelector('.stop-show-on-card');
+        
+        const lat = latInput?.value ? parseFloat(latInput.value) : null;
+        const lng = lngInput?.value ? parseFloat(lngInput.value) : null;
+        const radius = 1000; // Default radius of detection set to 1km
+        const showOnCard = showInput ? showInput.checked : false;
+        
+        // Merge with existing stop data if editing
+        const existing = existingStopTimes.find(s => s.name === stopName) || {};
+        
+        return {
+          ...existing,
+          name: stopName,
+          scheduledTime: scheduledTime,
+          time: scheduledTime, // backward compatibility
+          lat: lat,
+          lng: lng,
+          radius: radius,
+          showOnCard: showOnCard,
+          sequence: index + 1
+        };
+      });
+      
+      // Backward compatibility: also create stopTimes array
+      const stopTimes = intermediateStops.map(stop => ({
+        name: stop.name,
+        time: stop.scheduledTime,
+        lat: stop.lat,
+        lng: stop.lng,
+        radius: stop.radius,
+        showOnCard: stop.showOnCard
+      }));
+
+      const editingBusId = document.getElementById('editingBusId').value;
+      const newRouteKey = sanitizeKey(route);
+      const newOpKey = sanitizeKey(op);
+
+      const trackingEnabled = document.getElementById('busTrackingEnabled').checked;
+      const actualTimingEnabled = trackingEnabled && document.getElementById('busActualTimingEnabled').checked;
+      const historyTrackingEnabled = actualTimingEnabled && document.getElementById('busHistoryTrackingEnabled').checked;
+      const delayAnalyticsEnabled = historyTrackingEnabled && document.getElementById('busDelayAnalyticsEnabled').checked;
+
+      const busData = { 
+        op, 
+        time, 
+        arrivalTime, 
+        departurePoint, 
+        destinationPoint, 
+        route, 
+        link, 
+        type, 
+        stopTimes,
+        intermediateStops,  // New format with GPS coordinates
+        trackingEnabled,
+        actualTimingEnabled,
+        historyTrackingEnabled,
+        delayAnalyticsEnabled
+      };
+
+      // Check if in edit mode
+      const isEditMode = !!editingBusId;
+
+      closeBusForm();
+      
+      try {
+        if (isEditMode) {
+          // EDIT MODE: Update the existing Firebase record using its real id
+          await set(ref(db, `/buses/${editingBusId}`), busData);
+          showToast('Bus updated successfully!');
+        } else {
+          // CREATE MODE: Add new bus
+          const newBusKey = `${newRouteKey}_${newOpKey}`;
+          await set(ref(db, `/buses/${newBusKey}`), busData);
+          showToast('Bus saved successfully!');
+        }
+
+        // Save new operator/route/type if custom
+        if (opSelect === '__custom__' && op && !cachedOperators.some(o => sanitizeKey(o.name) === sanitizeKey(op))) {
+          await set(ref(db, `/operators/${sanitizeKey(op)}`), { name: op });
+        }
+        if (routeSelect === '__custom__' && route && !cachedRoutes.some(r => sanitizeKey(r.name) === sanitizeKey(route))) {
+          await set(ref(db, `/routes/${sanitizeKey(route)}`), { name: route });
+        }
+        if (typeSelect === '__custom__' && type && !cachedBusTypes.some(t => sanitizeKey(t.name) === sanitizeKey(type))) {
+          await set(ref(db, `/types/${sanitizeKey(type)}`), { name: type });
+        }
+      } catch (e) {
+        console.error('Save error:', e);
+        showError('Save failed! Check Firebase Rules.');
+      }
+    };
+
+    window.deleteBus = async function(busId) {
+      if (!confirm('Are you sure you want to delete this bus?')) return;
+      
+      try {
+        await set(ref(db, `/buses/${busId}`), null);
+        showToast('Bus deleted successfully!');
+      } catch (e) {
+        showError('Delete failed!');
+      }
+    };
+
+    // ============================================
+    // INTERMEDIATE STOPS
+    // ============================================
+    window.handleRouteSelectionForBus = function() {
+      const routeSelect = document.getElementById('busRouteSelect').value;
+      const stopsSection = document.getElementById('intermediateStopsSection');
+      const stopsList = document.getElementById('intermediateStopsList');
+      
+      console.log('Route selected:', routeSelect);
+      console.log('cachedRoutePoints:', cachedRoutePoints);
+      
+      if (!routeSelect || routeSelect === '__custom__') {
+        stopsSection.style.display = 'none';
+        stopsList.innerHTML = '';
+        return;
+      }
+      
+      const routeKey = sanitizeKey(routeSelect);
+      console.log('Looking for routeKey:', routeKey);
+      
+      // Try different possible data structures
+      let points = [];
+      
+      // Option 1: Direct array under sanitized routeKey
+      if (cachedRoutePoints[routeKey] && Array.isArray(cachedRoutePoints[routeKey])) {
+        points = cachedRoutePoints[routeKey];
+      }
+      // Option 2: Object with points property
+      else if (cachedRoutePoints[routeKey] && cachedRoutePoints[routeKey].points) {
+        points = cachedRoutePoints[routeKey].points;
+      }
+      // Option 3: Route key stored differently (original route name)
+      else if (cachedRoutePoints[routeSelect]) {
+        points = cachedRoutePoints[routeSelect];
+      }
+      // Option 4: Check all keys to find matching route
+      else {
+        for (const key in cachedRoutePoints) {
+          if (sanitizeKey(key) === routeKey) {
+            points = cachedRoutePoints[key];
+            console.log('Found match with key:', key);
+            break;
+          }
+        }
+      }
+      
+      console.log('Found points:', points);
+      
+      if (!points || points.length === 0) {
+        console.warn('No stops found for route:', routeSelect);
+        stopsSection.style.display = 'none';
+        stopsList.innerHTML = '';
+        return;
+      }
+      
+      stopsSection.style.display = 'block';
+      stopsList.innerHTML = '';
+      
+      // Add header row
+      const headerRow = document.createElement('div');
+      headerRow.className = 'stop-input-header';
+      headerRow.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 100px 90px 90px 60px 40px; gap: 8px; padding: 10px; background: #f8fafc; border-radius: 8px; margin-bottom: 12px; font-size: 12px; font-weight: 600; color: #64748b; text-align: center;">
+          <div style="text-align: left;">Stop Name</div>
+          <div>Time</div>
+          <div>Latitude</div>
+          <div>Longitude</div>
+          <div>Show</div>
+          <div>Seq</div>
+        </div>
+      `;
+      stopsList.appendChild(headerRow);
+      
+      points.forEach((point, index) => {
+        const pointName = typeof point === 'object' ? point.name : point;
+        const row = document.createElement('div');
+        row.className = 'stop-input-row';
+        row.style.cssText = 'display: grid; grid-template-columns: 1fr 100px 90px 90px 60px 40px; gap: 8px; align-items: center; padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center;';
+        row.innerHTML = `
+          <div class="stop-input-name" style="font-weight: 500; color: #1e293b; text-align: left;">${pointName}</div>
+          <div class="stop-input-field">
+            <input type="text" 
+                   class="stop-time-input" 
+                   data-stop-name="${pointName.replace(/"/g, '&quot;')}" 
+                   data-field="time"
+                   placeholder="8:45 PM"
+                   style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; text-align: center;">
+          </div>
+          <div class="stop-input-field">
+            <input type="number" 
+                   class="stop-lat-input" 
+                   data-stop-name="${pointName.replace(/"/g, '&quot;')}" 
+                   data-field="lat"
+                   placeholder="12.818"
+                   step="0.00001"
+                   style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; text-align: center;">
+          </div>
+          <div class="stop-input-field">
+            <input type="number" 
+                   class="stop-lng-input" 
+                   data-stop-name="${pointName.replace(/"/g, '&quot;')}" 
+                   data-field="lng"
+                   placeholder="80.021"
+                   step="0.00001"
+                   style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; text-align: center;">
+          </div>
+          <div class="stop-input-field" style="display: flex; align-items: center; justify-content: center;">
+            <input type="checkbox" 
+                   class="stop-show-on-card" 
+                   data-stop-name="${pointName.replace(/"/g, '&quot;')}"
+                   style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--brand-gold);">
+          </div>
+          <div class="stop-sequence" style="text-align: center; color: #94a3b8; font-size: 12px; font-weight: 600;">${index + 1}</div>
+        `;
+        stopsList.appendChild(row);
+      });
+      
+      // Add help text
+      const helpText = document.createElement('div');
+      helpText.style.cssText = 'margin-top: 12px; padding: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534;';
+      helpText.innerHTML = `
+        <i class="fa-solid fa-circle-info" style="margin-right: 6px;"></i>
+        <strong>GPS Stop Detection:</strong> Enter latitude and longitude for each stop. 
+        The system will automatically detect when the bus is within the default 1km radius and record actual arrival times.
+        <br><small style="color: #15803d;">Tip: You can find coordinates using Google Maps (right-click → "What's here?")</small>
+      `;
+      stopsList.appendChild(helpText);
+    };
+
+    // ============================================
+    // SIMPLE MODAL (Routes/Operators/Types)
+    // ============================================
+    // ============================================
+    // SIMPLE MODAL (Routes/Operators/Types CRUD)
+    // ============================================
+    let currentSimpleType = '';
+
+    function renderSimpleItemsList() {
+      const container = document.getElementById('simpleModalList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      let items = [];
+      if (currentSimpleType === 'route') items = cachedRoutes;
+      else if (currentSimpleType === 'operator') items = cachedOperators;
+      else if (currentSimpleType === 'type') items = cachedBusTypes;
+
+      if (items.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 10px;">No items found</p>';
+        return;
+      }
+
+      items.forEach(item => {
+        const itemKey = item.id || sanitizeKey(item.name);
+        const name = item.name;
+        const imageUrl = item.image || '';
+        const imgBadge = imageUrl ? ' <span style="font-size: 10px; color: #10b981; background: #e6f4ea; padding: 2px 6px; border-radius: 4px; font-weight:600; margin-left: 6px;">Image</span>' : '';
+        
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--border);';
+        row.innerHTML = `
+          <div style="font-size: 0.9rem; font-weight: 500; color: var(--primary); display: flex; align-items: center; gap: 4px;">
+            <span>${name}</span>
+            ${imgBadge}
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn-icon" onclick="editSimpleItem('${itemKey}', '${name.replace(/'/g, "\\'")}', '${imageUrl.replace(/'/g, "\\'")}')" title="Edit" style="width: 28px; height: 28px; font-size: 11px;">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icon delete" onclick="deleteSimpleItem('${itemKey}')" title="Delete" style="width: 28px; height: 28px; font-size: 11px;">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    window.openSimpleModal = function(type) {
+      currentSimpleType = type;
+      const titles = {
+        route: 'Manage Routes',
+        operator: 'Manage Operators',
+        type: 'Manage Bus Types'
+      };
+      const labels = {
+        route: 'Route Name',
+        operator: 'Operator Name',
+        type: 'Bus Type'
+      };
+      
+      document.getElementById('simpleModalTitle').textContent = titles[type];
+      document.getElementById('simpleModalLabel').textContent = labels[type];
+      document.getElementById('simpleModalInput').value = '';
+      document.getElementById('simpleModalEditKey').value = '';
+      document.getElementById('simpleModalSaveBtn').textContent = 'Save';
+      
+      const imageGroup = document.getElementById('simpleModalImageGroup');
+      const imageInput = document.getElementById('simpleModalImageInput');
+      if (imageInput) imageInput.value = '';
+      
+      if (type === 'route' || type === 'operator') {
+        if (imageGroup) imageGroup.style.display = 'block';
+      } else {
+        if (imageGroup) imageGroup.style.display = 'none';
+      }
+      
+      renderSimpleItemsList();
+      document.getElementById('simpleModal').classList.add('open');
+    };
+
+    window.closeSimpleModal = function() {
+      document.getElementById('simpleModal').classList.remove('open');
+    };
+
+    window.editSimpleItem = function(key, name, image) {
+      document.getElementById('simpleModalEditKey').value = key;
+      document.getElementById('simpleModalInput').value = name;
+      if (currentSimpleType === 'route' || currentSimpleType === 'operator') {
+        document.getElementById('simpleModalImageInput').value = image || '';
+      }
+      document.getElementById('simpleModalSaveBtn').textContent = 'Update';
+    };
+
+    window.deleteSimpleItem = async function(key) {
+      if (!confirm('Are you sure you want to delete this item?')) return;
+      
+      let path = '';
+      if (currentSimpleType === 'route') path = `/routes/${key}`;
+      else if (currentSimpleType === 'operator') path = `/operators/${key}`;
+      else if (currentSimpleType === 'type') path = `/types/${key}`;
+
+      try {
+        await set(ref(db, path), null);
+        showToast('Item deleted successfully!');
+        
+        const editKey = document.getElementById('simpleModalEditKey').value;
+        if (editKey === key) {
+          document.getElementById('simpleModalEditKey').value = '';
+          document.getElementById('simpleModalInput').value = '';
+          if (currentSimpleType === 'route' || currentSimpleType === 'operator') {
+            document.getElementById('simpleModalImageInput').value = '';
+          }
+          document.getElementById('simpleModalSaveBtn').textContent = 'Save';
+        }
+      } catch (e) {
+        showError('Delete failed!');
+      }
+    };
+
+    window.saveSimple = async function() {
+      const value = document.getElementById('simpleModalInput').value.trim();
+      if (!value) {
+        showError('Please enter a name');
+        return;
+      }
+
+      const editKey = document.getElementById('simpleModalEditKey').value;
+      const key = sanitizeKey(value);
+      let path = '';
+      let data = {};
+
+      let typeNode = '';
+      if (currentSimpleType === 'route') typeNode = 'routes';
+      else if (currentSimpleType === 'operator') typeNode = 'operators';
+      else if (currentSimpleType === 'type') typeNode = 'types';
+
+      path = `/${typeNode}/${key}`;
+      if (currentSimpleType === 'route' || currentSimpleType === 'operator') {
+        const imageVal = document.getElementById('simpleModalImageInput').value.trim();
+        data = { name: value, image: imageVal };
+      } else {
+        data = { name: value };
+      }
+
+      try {
+        if (editKey && editKey !== key) {
+          await set(ref(db, `/${typeNode}/${editKey}`), null);
+        }
+        await set(ref(db, path), data);
+        
+        document.getElementById('simpleModalInput').value = '';
+        document.getElementById('simpleModalEditKey').value = '';
+        if (currentSimpleType === 'route' || currentSimpleType === 'operator') {
+          document.getElementById('simpleModalImageInput').value = '';
+        }
+        document.getElementById('simpleModalSaveBtn').textContent = 'Save';
+        
+        showToast(`${value} saved successfully!`);
+      } catch (e) {
+        showError('Save failed! Check Firebase Rules.');
+      }
+    };
+
+    // ============================================
+    // ROUTE POINTS MODAL
+    // ============================================
+    let routePointsMap = null;
+    let routePointsMapMarker = null;
+    let currentSelectedRoute = '';
+
+    window.openRoutePointsModal = function() {
+      document.getElementById('routePointsModal').classList.add('open');
+      resetRoutePointsModal();
+      populateRouteSelectForPoints();
+    };
+
+    window.closeRoutePointsModal = function() {
+      document.getElementById('routePointsModal').classList.remove('open');
+      if (routePointsMap) {
+        routePointsMap.remove();
+        routePointsMap = null;
+        routePointsMapMarker = null;
+      }
+    };
+
+    function resetRoutePointsModal() {
+      document.getElementById('routeSelectionStep').style.display = 'block';
+      document.getElementById('waypointStep').style.display = 'none';
+      document.getElementById('routeSelectForPoints').value = '';
+      currentSelectedRoute = '';
+      
+      if (routePointsMap) {
+        routePointsMap.remove();
+        routePointsMap = null;
+        routePointsMapMarker = null;
+      }
+      
+      document.getElementById('pointLat').value = '';
+      document.getElementById('pointLng').value = '';
+      document.getElementById('pointNameSelect').value = '';
+      document.getElementById('pointNameCustom').value = '';
+      document.getElementById('pointNameCustom').style.display = 'none';
+    }
+
+    function populateRouteSelectForPoints() {
+      const select = document.getElementById('routeSelectForPoints');
+      select.innerHTML = '<option value="">-- Select Route --</option>';
+      loadedRoutes.forEach(routeName => {
+        const opt = document.createElement('option');
+        opt.value = routeName;
+        opt.textContent = routeName;
+        select.appendChild(opt);
+      });
+    }
+
+    window.onRouteSelected = function() {
+      const route = document.getElementById('routeSelectForPoints').value;
+      if (!route) return;
+      
+      currentSelectedRoute = route;
+      document.getElementById('selectedRouteName').textContent = route;
+      
+      document.getElementById('routeSelectionStep').style.display = 'none';
+      document.getElementById('waypointStep').style.display = 'block';
+      
+      setTimeout(() => {
+        initRoutePointsMap();
+        populatePointNameDropdown();
+        displayRoutePoints();
+      }, 100);
+    };
+
+    window.goBackToRouteSelection = function() {
+      resetRoutePointsModal();
+    };
+
+    function initRoutePointsMap() {
+      if (routePointsMap) return;
+      
+      routePointsMap = L.map('routePointsMap').setView([11.1271, 78.6569], 7);
+      
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        maxZoom: 19
+      }).addTo(routePointsMap);
+      
+      routePointsMap.on('click', function(e) {
+        const { lat, lng } = e.latlng;
+        document.getElementById('pointLat').value = lat.toFixed(6);
+        document.getElementById('pointLng').value = lng.toFixed(6);
+        
+        if (routePointsMapMarker) {
+          routePointsMapMarker.setLatLng([lat, lng]);
+        } else {
+          routePointsMapMarker = L.marker([lat, lng]).addTo(routePointsMap);
+        }
+      });
+    }
+
+    function populatePointNameDropdown() {
+      const select = document.getElementById('pointNameSelect');
+      select.innerHTML = '<option value="">-- Select or Type New --</option>';
+      
+      // Add existing points
+      const allPoints = new Set();
+      Object.values(cachedRoutePoints).forEach(points => {
+        points.forEach(p => {
+          const name = typeof p === 'object' ? p.name : p;
+          allPoints.add(name);
+        });
+      });
+      
+      allPoints.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+      
+      const customOpt = document.createElement('option');
+      customOpt.value = '__custom__';
+      customOpt.textContent = '+ Add New Stop';
+      select.appendChild(customOpt);
+    }
+
+    window.handlePointNameChange = function() {
+      const select = document.getElementById('pointNameSelect');
+      const customInput = document.getElementById('pointNameCustom');
+      const selectedValue = select.value;
+      
+      console.log(`[STOP SELECT] ${selectedValue}`);
+      
+      if (selectedValue === '__custom__') {
+        customInput.style.display = 'block';
+        customInput.focus();
+        
+        // Clear inputs for custom stops
+        document.getElementById('pointLat').value = '';
+        document.getElementById('pointLng').value = '';
+        if (routePointsMapMarker && routePointsMap) {
+          routePointsMap.removeLayer(routePointsMapMarker);
+          routePointsMapMarker = null;
+        }
+      } else {
+        customInput.style.display = 'none';
+        customInput.value = '';
+        
+        if (selectedValue) {
+          // Search from already saved route points
+          let foundStop = null;
+          for (const routeKey in cachedRoutePoints) {
+            const points = cachedRoutePoints[routeKey] || [];
+            foundStop = points.find(p => {
+              const pName = typeof p === 'object' ? p.name : p;
+              return pName === selectedValue && typeof p === 'object' && p.lat !== undefined && p.lng !== undefined;
+            });
+            if (foundStop) break;
+          }
+          
+          if (foundStop) {
+            console.log(`[SAVED STOP FOUND] lat=${foundStop.lat} lng=${foundStop.lng}`);
+            const latVal = parseFloat(foundStop.lat);
+            const lngVal = parseFloat(foundStop.lng);
+            document.getElementById('pointLat').value = latVal.toFixed(6);
+            document.getElementById('pointLng').value = lngVal.toFixed(6);
+            
+            if (routePointsMap) {
+              if (routePointsMapMarker) {
+                routePointsMapMarker.setLatLng([latVal, lngVal]);
+              } else {
+                routePointsMapMarker = L.marker([latVal, lngVal]).addTo(routePointsMap);
+              }
+              routePointsMap.setView([latVal, lngVal], 12);
+            }
+            console.log(`[WAYPOINT LOAD] inputs updated`);
+          } else {
+            console.log(`[STOP SELECT] Stop ${selectedValue} not found in saved points. Clearing inputs.`);
+            document.getElementById('pointLat').value = '';
+            document.getElementById('pointLng').value = '';
+            if (routePointsMapMarker && routePointsMap) {
+              routePointsMap.removeLayer(routePointsMapMarker);
+              routePointsMapMarker = null;
+            }
+          }
+        } else {
+          // Empty selection
+          document.getElementById('pointLat').value = '';
+          document.getElementById('pointLng').value = '';
+          if (routePointsMapMarker && routePointsMap) {
+            routePointsMap.removeLayer(routePointsMapMarker);
+            routePointsMapMarker = null;
+          }
+        }
+      }
+    };
+
+    window.addRoutePoint = async function() {
+      const lat = document.getElementById('pointLat').value;
+      const lng = document.getElementById('pointLng').value;
+      const nameSelect = document.getElementById('pointNameSelect').value;
+      const nameCustom = document.getElementById('pointNameCustom').value.trim();
+      
+      const name = nameSelect === '__custom__' ? nameCustom : nameSelect;
+      
+      if (!name || !lat || !lng) {
+        showError('Please select a location on the map and enter a stop name');
+        return;
+      }
+      
+      const routeKey = sanitizeKey(currentSelectedRoute);
+      const currentPoints = cachedRoutePoints[routeKey] || [];
+      
+      // Check if point already exists
+      const exists = currentPoints.some(p => {
+        const pName = typeof p === 'object' ? p.name : p;
+        return pName === name;
+      });
+      
+      if (exists) {
+        showError('This stop already exists for this route');
+        return;
+      }
+      
+      const newPoint = { name, lat: parseFloat(lat), lng: parseFloat(lng) };
+      const updatedPoints = [...currentPoints, newPoint];
+      
+      try {
+        await set(ref(db, `/routePoints/${routeKey}`), updatedPoints);
+        
+        // Reset form
+        document.getElementById('pointLat').value = '';
+        document.getElementById('pointLng').value = '';
+        document.getElementById('pointNameSelect').value = '';
+        document.getElementById('pointNameCustom').value = '';
+        document.getElementById('pointNameCustom').style.display = 'none';
+        
+        if (routePointsMapMarker) {
+          routePointsMap.removeLayer(routePointsMapMarker);
+          routePointsMapMarker = null;
+        }
+        
+        displayRoutePoints();
+        showToast('Stop added successfully!');
+      } catch (e) {
+        showError('Failed to save stop');
+      }
+    };
+
+    window.removeRoutePoint = async function(pointName) {
+      if (!confirm(`Remove "${pointName}" from this route?`)) return;
+      
+      const routeKey = sanitizeKey(currentSelectedRoute);
+      const currentPoints = cachedRoutePoints[routeKey] || [];
+      const updatedPoints = currentPoints.filter(p => {
+        const pName = typeof p === 'object' ? p.name : p;
+        return pName !== pointName;
+      });
+      
+      try {
+        await set(ref(db, `/routePoints/${routeKey}`), updatedPoints);
+        displayRoutePoints();
+        showToast('Stop removed successfully!');
+      } catch (e) {
+        showError('Failed to remove stop');
+      }
+    };
+
+    function displayRoutePoints() {
+      const container = document.getElementById('routePointsDisplay');
+      const routeKey = sanitizeKey(currentSelectedRoute);
+      const points = cachedRoutePoints[routeKey] || [];
+      
+      if (points.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">No stops added yet</p>';
+        return;
+      }
+      
+      container.innerHTML = points.map((point, index) => {
+        const pointName = typeof point === 'object' ? point.name : point;
+        return `
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--border);">
+            <span style="font-weight: 600; color: var(--primary); font-size: 0.85rem;">${index + 1}</span>
+            <span style="flex: 1; font-size: 0.85rem;">${pointName}</span>
+            <button onclick="removeRoutePoint('${pointName.replace(/'/g, "\\'")}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ============================================
+    // UTILITIES
+    // ============================================
+    function sanitizeKey(str) {
+      return str.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    }
+
+    function showToast(message) {
+      // Simple toast implementation
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: var(--navy);
+        color: white;
+        padding: 14px 24px;
+        border-radius: 12px;
+        font-weight: 500;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+        box-shadow: var(--shadow-lg);
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function showError(message) {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #ef4444;
+        color: white;
+        padding: 14px 24px;
+        border-radius: 12px;
+        font-weight: 500;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+        box-shadow: var(--shadow-lg);
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    window.showToast = showToast;
+
+    // Sidebar toggle for mobile
+    window.toggleSidebar = function() {
+      document.getElementById('sidebar').classList.toggle('open');
+    };
+
+    window.showSection = function(section) {
+      // Navigation handling
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    };
+
+    // Animation keyframes
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

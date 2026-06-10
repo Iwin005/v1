@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Win Bus Tracker – Operators</title>
+  <meta name="description" content="Browse all bus operators on the Win Bus Tracker platform. Find and track buses by operator." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <!-- No database/auth backend script imports needed -->
+  <link rel="stylesheet" href="index.css" />
+  <style>
+    /* Operators Listing Page Specific Styles */
+    .page-header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: var(--space-3xl) var(--space-lg) var(--space-xl);
+      background: linear-gradient(180deg, rgba(37, 99, 235, 0.03) 0%, rgba(248, 250, 252, 0) 100%);
+    }
+
+    .page-header .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--accent-light);
+      border: 1px solid rgba(37, 99, 235, 0.15);
+      color: var(--accent);
+      font-size: var(--font-meta);
+      font-weight: 600;
+      padding: var(--space-sm) var(--space-lg);
+      border-radius: 50px;
+      margin-bottom: var(--space-xl);
+    }
+
+    .page-header h1 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: var(--space-md);
+    }
+
+    .page-header p {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 580px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Search Box Centering */
+    .search-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: var(--space-2xl) auto 0;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      height: 48px;
+      padding: 0 var(--space-xl) 0 44px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: var(--font-body);
+      font-weight: 500;
+      color: var(--text-primary);
+      background: #ffffff;
+      outline: none;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .search-wrap .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent);
+      font-size: 15px;
+      pointer-events: none;
+    }
+
+    .op-count-label {
+      text-align: center;
+      margin: var(--space-xl) 0 var(--space-sm);
+      font-size: var(--font-meta);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Operator Card Grid */
+    .ops-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-xl);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--space-xl) var(--space-3xl);
+    }
+
+    .op-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-xl);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .op-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--accent);
+    }
+
+    .op-avatar {
+      width: 44px;
+      height: 44px;
+      background: var(--accent-light);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--font-m);
+      color: var(--accent);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .op-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .op-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: var(--space-md);
+      border-top: 1px dashed var(--border);
+    }
+
+    .op-badge {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: var(--font-meta);
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 50px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .op-arrow {
+      font-size: var(--font-meta);
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: var(--transition);
+    }
+
+    .op-card:hover .op-arrow {
+      color: var(--accent);
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: var(--space-3xl) var(--space-lg);
+      color: var(--text-muted);
+    }
+
+    .spinner-wrap {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-3xl) 0;
+      gap: var(--space-md);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="app-nav">
+    <a class="nav-brand" href="index.html">
+      <i class="fa-solid fa-bus"></i>
+      <div>Win<span>Bus</span> Tracker</div>
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="routes.html" class="nav-link">Route</a>
+      <a href="operators.html" class="nav-link active">Operator</a>
+      <a href="live-buses.html" class="nav-link">Live Buses</a>
+      <a href="agent-login.html" class="nav-link">Agent Login</a>
+    </div>
+    <div class="nav-time" id="realTimeClock">--:--:--</div>
+  </nav>
+
+  <section class="page-header">
+    <div class="badge"><i class="fa-solid fa-building"></i> Live from Database</div>
+    <h1>Bus Operators</h1>
+    <p>Browse all operators on the Win Bus Tracker platform. Click any card to view live running buses for that operator.</p>
+
+    <div class="search-wrap">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input id="opSearch" type="text" placeholder="Search operator name…" oninput="filterOps()" autocomplete="off" />
+    </div>
+  </section>
+
+  <div class="op-count-label" id="opCountLabel"></div>
+
+  <div class="ops-grid" id="opsGrid">
+    <div class="spinner-wrap">
+      <div class="spinner"></div>
+      <span>Loading operators…</span>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4 style="color: #FFFFFF; font-size: 16px; font-weight: 700; margin-bottom: 16px;">WinBus Tracker</h4>
+        <p>Real-time private bus tracking platform engineered for commuters across Tamil Nadu. Live locations, schedules, and operators in one place.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="index.html">About Us</a></li>
+          <li><a href="index.html">Careers</a></li>
+          <li><a href="index.html">Press Kit</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Routes</h4>
+        <ul>
+          <li><a href="routes.html">Chennai Routes</a></li>
+          <li><a href="routes.html">Madurai Routes</a></li>
+          <li><a href="routes.html">Coimbatore Routes</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Operators</h4>
+        <ul>
+          <li><a href="operators.html">All Operators</a></li>
+          <li><a href="operators.html">Partner Portal</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="index.html">Help Center</a></li>
+          <li><a href="index.html">Contact Us</a></li>
+          <li><a href="index.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>&copy; 2026 WinBus Tracker. Designed for Tamil Nadu Commuters. All rights reserved.</div>
+      <div>
+        <a href="#" style="color:#94A3B8; text-decoration:none; margin-right:16px;">Terms</a>
+        <a href="#" style="color:#94A3B8; text-decoration:none;">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // One-time cleanup of old seed data
+    if (!localStorage.getItem('win_db_cleared_v2')) {
+      localStorage.removeItem('win_buses');
+      localStorage.removeItem('win_operators');
+      localStorage.removeItem('win_routes');
+      localStorage.removeItem('win_bus_types');
+      localStorage.removeItem('ybm_local_buses');
+      localStorage.setItem('win_db_cleared_v2', 'true');
+    }
+
+    // ── Clock ──
+    function updateClock() {
+      const now = new Date();
+      let h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      const str = h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + ' ' + ampm;
+      const el = document.getElementById('realTimeClock');
+      if (el) el.textContent = str;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ── Firebase data (loaded via firebase-data.js module below) ──
+    let cachedBuses = [];
+
+    function applyFirebaseData() {
+      cachedBuses = window._fbBuses || [];
+    }
+    function getDBBuses() { return cachedBuses; }
+
+    let allOperators = [];
+
+    function normalizeRouteName(route) {
+      return (route || '').trim().replace(/Tuty/gi, 'Tuticorin');
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      function init() {
+        applyFirebaseData();
+
+        window.rebuildOperators = function() {
+          const opMap = {};
+          cachedBuses.forEach(bus => {
+            if (bus && bus.op) {
+              const name = bus.op.trim();
+              if (!opMap[name]) opMap[name] = { busCount: 0, routes: new Set() };
+              opMap[name].busCount++;
+              if (bus.route) opMap[name].routes.add(normalizeRouteName(bus.route));
+            }
+          });
+          allOperators = Object.entries(opMap)
+            .map(([name, info]) => ({ name, busCount: info.busCount, routes: Array.from(info.routes) }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+          renderOps(allOperators);
+        };
+        window.rebuildOperators();
+      }
+
+      if (window._fbBuses !== undefined) { init(); }
+      else { window.addEventListener('firebaseDataReady', init, { once: true }); }
+    });
+
+    function getInitials(name) {
+      return name.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || '?';
+    }
+
+    function renderOps(list) {
+      const grid = document.getElementById('opsGrid');
+      const label = document.getElementById('opCountLabel');
+
+      if (list.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-bus-slash"></i><p>No operators found.</p></div>';
+        if (label) label.textContent = '';
+        return;
+      }
+
+      if (label) label.textContent = list.length + ' operator' + (list.length !== 1 ? 's' : '') + ' found';
+
+      grid.innerHTML = list.map((op, i) => {
+        const routeText = op.routes.length
+          ? op.routes.join(' · ')
+          : 'Multiple routes';
+        return `
+          <div class="op-card" onclick="window.location='results.html?op=${encodeURIComponent(op.name)}'"
+               style="animation-delay: ${Math.min(i * 40, 400)}ms">
+            <div style="display:flex;align-items:center;gap:16px;">
+              <div class="op-avatar">${getInitials(op.name)}</div>
+              <div class="op-info">
+                <div class="op-name">${op.name}</div>
+              </div>
+            </div>
+            <div class="op-footer">
+              <div class="op-badge"><i class="fa-solid fa-bus"></i> ${op.busCount} Bus${op.busCount !== 1 ? 'es' : ''}</div>
+              <div class="op-arrow">View Live <i class="fa-solid fa-angle-right"></i></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function filterOps() {
+      const q = document.getElementById('opSearch').value.trim().toLowerCase();
+      if (!q) { renderOps(allOperators); return; }
+      renderOps(allOperators.filter(op => op.name.toLowerCase().includes(q)));
+    }
+  </script>
+
+  <!-- Firebase inline loader (works with file://) -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZXryu-NQ-Jv4hRRPCnmc8shKgLQPQP94",
+      authDomain: "realtime-tracking-3809e.firebaseapp.com",
+      databaseURL: "https://realtime-tracking-3809e-default-rtdb.firebaseio.com",
+      projectId: "realtime-tracking-3809e",
+      storageBucket: "realtime-tracking-3809e.firebasestorage.app",
+      messagingSenderId: "1085653591220",
+      appId: "1:1085653591220:web:5789826b047764c2ada3e1"
+    };
+    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+    try {
+      const snap = await get(ref(db, '/'));
+      const all  = snap.val() || {};
+      window._fbBuses     = Object.values(all.buses     || {}).filter(b => b && b.op);
+      window._fbRoutes    = Object.values(all.routes    || {}).filter(r => r && r.name);
+      window._fbOperators = Object.values(all.operators || {}).filter(o => o && o.name);
+      window._fbTypes     = Object.values(all.types     || {}).filter(t => t && t.name);
+    } catch(e) {
+      console.error('[Firebase loader]', e);
+      window._fbBuses = []; window._fbRoutes = []; window._fbOperators = []; window._fbTypes = [];
+      
+      // Inline showFirebaseErrorBanner
+      const msg = e.message || String(e);
+      const isPermissionDenied = msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('unauthorized');
+      const banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#ef4444;color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.2);z-index:99999;max-width:500px;width:90%;font-family:sans-serif;font-size:14px;line-height:1.5;text-align:left;';
+      let html = `<div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="font-size:20px;">⚠️</div>
+        <div>
+          <div style="font-weight:bold;margin-bottom:4px;">Firebase Connection Warning</div>
+          <div style="opacity:0.9;margin-bottom:8px;">Failed to load data from Firebase. Error: <code>${msg}</code></div>`;
+      if (isPermissionDenied) {
+        html += `<div style="background:rgba(0,0,0,0.15);padding:8px 12px;border-radius:6px;font-size:12px;margin-top:8px;">
+          <strong>Action Required:</strong> Your Firebase Realtime Database Rules are blocking reads. Please go to your 
+          <a href="https://console.firebase.google.com/" target="_blank" style="color:#fff;text-decoration:underline;font-weight:bold;">Firebase Console</a> 
+          &rarr; Realtime Database &rarr; Rules, and set:
+          <pre style="margin:4px 0 0 0;font-family:monospace;background:rgba(0,0,0,0.2);padding:4px;border-radius:4px;">{
+  "rules": {
+    "buses": { ".read": true, ".write": "auth != null" },
+    "routes": { ".read": true, ".write": "auth != null" },
+    "operators": { ".read": true, ".write": "auth != null" },
+    "types": { ".read": true, ".write": "auth != null" }
+  }
+}</pre>
+        </div>`;
+      }
+      html += `<button onclick="this.parentElement.parentElement.parentElement.remove()" style="margin-top:12px;background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:12px;">Dismiss</button>
+        </div>
+      </div>`;
+      banner.innerHTML = html;
+      document.body.appendChild(banner);
+    }
+    window.dispatchEvent(new CustomEvent('firebaseDataReady'));
+  </script>
+
+</body>
+</html>

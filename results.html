@@ -1,0 +1,4688 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Win Bus Tracker — Live Bus Search</title>
+  <meta name="description" content="Track live bus locations across Tamil Nadu. Search by operator, select your route, and sort by departure time." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="index.css" />
+  <!-- Leaflet CSS and JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <style>
+    /* Results Page Specific Layouts */
+    .hero {
+      position: relative;
+      z-index: 1;
+      padding: var(--space-xl) var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(37, 99, 235, 0.03) 0%, rgba(248, 250, 252, 0) 100%);
+    }
+
+    /* Filter Grid */
+    .search-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      width: 100%;
+      max-width: 1200px;
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-xl);
+    }
+
+    .search-title-saas {
+      font-size: var(--font-body);
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: var(--space-md);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .saas-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: var(--space-md);
+      align-items: flex-end;
+    }
+
+    @media (max-width: 1024px) {
+      .saas-grid { grid-template-columns: repeat(2, 1fr); }
+      .saas-grid .form-group:last-child { grid-column: span 2; }
+    }
+    @media (max-width: 640px) {
+      .saas-grid { grid-template-columns: 1fr; }
+      .saas-grid .form-group:last-child { grid-column: span 1; }
+    }
+
+    .form-group label {
+      font-size: var(--font-meta);
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sort-toggle { display: flex; gap: var(--space-sm); }
+    .sort-btn {
+      flex: 1;
+      height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: var(--font-body);
+      font-weight: 600;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .sort-btn.active {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-search {
+      height: 52px;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      font-family: inherit;
+      font-size: var(--font-body);
+      font-weight: 700;
+      border-radius: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      transition: var(--transition);
+      width: 100%;
+    }
+    .btn-search:hover { background: var(--accent-hover); }
+
+    /* Results Header Badge */
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: var(--font-meta);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: var(--space-lg);
+      margin-top: var(--space-md);
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xl);
+      width: 100%;
+      max-width: 1200px;
+      margin-bottom: var(--space-2xl);
+    }
+    
+    /* Intermediate Stops Horizontal Timeline */
+    .stops-section { text-align: left; }
+    .stops-section-title { font-size: var(--font-meta); font-weight: 700; color: var(--text-muted); margin-bottom: var(--space-md); }
+    .stops-timeline-container { position: relative; width: 100%; padding: var(--space-sm) 0; }
+    .stops-timeline-line { position: absolute; top: 22px; left: 10px; right: 10px; height: 2px; background: var(--border); z-index: 1; }
+    .stops-timeline-nodes { display: flex; justify-content: space-between; position: relative; z-index: 2; gap: var(--space-md); overflow-x: auto; padding-bottom: 8px; }
+    .stop-node { display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; min-width: 130px; }
+    .stop-node-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 3px solid var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-sm);
+      font-size: var(--font-meta);
+      color: var(--text-muted);
+    }
+    .stop-node-name { font-size: var(--font-meta); font-weight: 600; color: var(--primary); margin-bottom: var(--space-xs); }
+    .stop-node-time-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-main);
+      border: 1px solid var(--border);
+    }
+
+    .stop-node.state-completed .stop-node-dot { border-color: var(--success); color: var(--success); }
+    .stop-node.state-destination .stop-node-dot { border-color: var(--accent); color: var(--accent); }
+    .stop-node.state-upcoming .stop-node-dot { border-color: var(--warning); color: var(--warning); }
+
+    /* History & Analytics */
+    .premium-history-section { border-top: 1px solid var(--border); padding-top: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md); }
+    .premium-history-header { display: flex; align-items: center; justify-content: space-between; }
+    .premium-history-title { font-weight: 700; font-size: var(--font-meta); color: var(--primary); display: flex; align-items: center; gap: var(--space-xs); }
+    .premium-date-selector { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-meta); }
+    .premium-date-selector select{
+      width:100%;
+      height:52px;
+      border:1px solid #d9e2ec;
+      border-radius:14px;
+      outline:none;
+      box-shadow:none;
+      background:#fff;
+      padding:0 16px;
+      font-size:15px;
+      appearance:none;
+    }
+
+    .premium-date-selector select:focus{
+      border-color:#f59e0b;
+      box-shadow:0 0 0 3px rgba(245,158,11,.15);
+    }
+    
+    .premium-history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-meta);
+      text-align: left;
+    }
+    .premium-history-table th {
+      padding: var(--space-sm) var(--space-md);
+      background: var(--bg-main);
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    .premium-history-table td {
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Tracking State Badge */
+    .tracking-state-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 4px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .state-waiting { background: #f1f5f9; color: #64748b; }
+    .state-pre-live { background: #fef3c7; color: #92400e; }
+    .state-active { 
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); 
+      color: #166534;
+      animation: pulse-live 2s ease-in-out infinite;
+    }
+    .state-completed { background: #e0e7ff; color: #3730a3; }
+    
+    @keyframes pulse-live {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
+      50% { opacity: 0.85; box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1); }
+    }
+    
+    /* Live Progress Bar */
+    .live-progress-container {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: var(--space-sm) 0;
+      position: relative;
+    }
+    
+    .live-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #facc15 0%, #eab308 50%, #ca8a04 100%);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .live-progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+      animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* Actions CTA & Countdown Tickers */
+    .card-actions { display: flex; align-items: center; gap: var(--space-lg); justify-content: flex-start; }
+    .track-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: var(--font-body);
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(29, 78, 216, 0.3);
+      transition: all 0.25s ease;
+    }
+
+    .track-btn:hover:not(.track-btn-disabled) {
+      background: linear-gradient(135deg, #1e40af, #1e3a8a);
+      box-shadow: 0 6px 20px rgba(29, 78, 216, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .track-btn:active:not(.track-btn-disabled) {
+      transform: translateY(0);
+    }
+
+    .track-btn-disabled {
+      background: #e2e8f0 !important;
+      color: var(--text-muted) !important;
+      cursor: not-allowed;
+      box-shadow: none !important;
+    }
+
+    .track-btn-disabled:hover {
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .tracking-countdown {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tracking-countdown i {
+      font-size: 0.8rem;
+      color: var(--primary-dark);
+    }
+
+    .tracking-countdown .countdown-time {
+      font-variant-numeric: tabular-nums;
+      color: var(--navy);
+      font-weight: 700;
+    }
+
+    .live-dot {
+      width: 10px;
+      height: 10px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulseLive 1.5s infinite;
+    }
+
+    @keyframes pulseLive {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.8; }
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ── Responsive Stack ── */
+    @media (max-width: 1024px) {
+    }
+
+    @media (max-width: 768px) {
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--navy);
+      color: rgba(255, 255, 255, 0.6);
+      text-align: center;
+      padding: 24px 20px;
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      margin-top: auto;
+    }
+
+    footer span {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* ── Modal Overlay ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 21, 47, 0.6);
+      backdrop-filter: blur(12px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 1000px;
+      height: 85vh;
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: popupZoom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 1px solid var(--border);
+    }
+
+    @keyframes popupZoom {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+    }
+
+    .modal-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .close-btn {
+      background: #f1f5f9;
+      color: #475569;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-family: inherit;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .close-btn:hover {
+      background: #ffe4e6;
+      color: #e11d48;
+    }
+
+    .iframe-container {
+      flex-grow: 1;
+      position: relative;
+      background: #f8fafc;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Toast */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--navy);
+      color: white;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 0.85rem;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 10000;
+    }
+
+    .toast-msg.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-msg.error {
+      background: #ef4444;
+    }
+
+    /* ============================================================
+       JOURNEY HISTORY ACCORDION & TIMELINE
+       ============================================================ */
+    .history-accordion-section {
+      margin-top: 0;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+    
+    .history-accordion-toggle {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--navy);
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    
+    .history-accordion-toggle:hover {
+      background: #f1f5f9;
+      border-color: var(--primary-dark);
+    }
+    
+    .history-accordion-toggle i {
+      font-size: 14px;
+      transition: transform 0.3s ease;
+    }
+    
+    .history-accordion-toggle.expanded i.toggle-caret {
+      transform: rotate(180deg);
+    }
+    
+    .history-accordion-content {
+      background: #ffffff;
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    }
+    
+    .history-accordion-inner {
+      padding: 14px 6px 6px;
+    }
+
+    .no-history-placeholder {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    
+    .no-history-placeholder i {
+      font-size: 24px;
+      margin-bottom: 8px;
+      opacity: 0.5;
+      display: block;
+    }
+    
+    .history-date-block {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+      background: #fafafb;
+      overflow: hidden;
+    }
+    
+    .history-date-header {
+      background: #f1f5f9;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--navy);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .history-timeline {
+      position: relative;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .history-timeline-line {
+      position: absolute;
+      top: 20px;
+      bottom: 20px;
+      left: 21px;
+      width: 2px;
+      background: var(--border);
+      z-index: 1;
+    }
+    
+    .history-timeline-node {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      z-index: 2;
+    }
+    
+    .history-node-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid var(--text-muted);
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+    
+    .history-node-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 0.8rem;
+    }
+    
+    .history-stop-name {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .history-stop-time {
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+    }
+    
+    .history-stop-delay {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    /* Status styling */
+    .history-timeline-node.state-late .history-node-dot {
+      border-color: #ef4444;
+      background: #fee2e2;
+    }
+    .history-timeline-node.state-late .history-stop-delay {
+      color: #ef4444;
+    }
+    
+    .history-timeline-node.state-early .history-node-dot {
+      border-color: #10b981;
+      background: #d1fae5;
+    }
+    .history-timeline-node.state-early .history-stop-delay {
+      color: #10b981;
+    }
+    
+    .history-timeline-node.state-ontime .history-node-dot {
+      border-color: #3b82f6;
+      background: #dbeafe;
+    }
+    .history-timeline-node.state-ontime .history-stop-delay {
+      color: #3b82f6;
+    }
+    
+    /* Live GPS State Indicators */
+    .timeline-node.state-completed {
+      background: #22c55e !important;
+      border-color: #22c55e !important;
+      color: white !important;
+    }
+    .timeline-node.state-approaching {
+      background: #f59e0b !important;
+      border-color: #f59e0b !important;
+      color: white !important;
+      animation: pulse 1.5s infinite;
+    }
+    .timeline-node.state-reached {
+      background: #ef4444 !important;
+      border-color: #ef4444 !important;
+      color: white !important;
+      transform: scale(1.2);
+    }
+    .timeline-node.state-upcoming {
+      background: white !important;
+      border-color: #cbd5e1 !important;
+      color: #64748b !important;
+    }
+    .timeline-node.state-destination {
+      background: #3b82f6 !important;
+      border-color: #3b82f6 !important;
+      color: white !important;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.1); }
+    }
+    
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #dcfce7;
+      color: #16a34a;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    
+    .live-badge .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    
+    /* Premium History Accordion Styles */
+    .premium-history-section {
+      margin-top: 16px;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+    
+    .premium-history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    
+    .premium-history-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .premium-history-title i {
+      color: var(--primary-blue);
+    }
+    
+    .premium-history-divider {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+      margin-left: 12px;
+    }
+    
+    .premium-date-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 197, 253, 0.1) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 12px;
+    }
+    
+    .premium-date-selector i {
+      color: var(--primary-blue);
+      font-size: 1.1rem;
+    }
+    
+    .premium-date-selector label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    
+    .premium-date-selector select{
+      width:100%;
+      height:52px;
+      border:1px solid #d9e2ec;
+      border-radius:14px;
+      outline:none;
+      box-shadow:none;
+      background:#fff;
+      padding:0 16px;
+      font-size:15px;
+      appearance:none;
+    }
+
+    .premium-date-selector select:focus{
+      border-color:#f59e0b;
+      box-shadow:0 0 0 3px rgba(245,158,11,.15);
+    }
+    
+    .premium-history-panel {
+      background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    
+    .premium-history-panel::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .premium-history-panel::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .premium-history-panel::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+    
+    .premium-stop-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      transition: all 0.2s ease;
+    }
+    
+    .premium-stop-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    .premium-stop-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed var(--border);
+    }
+    
+    .premium-stop-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--primary-blue) 0%, #60a5fa 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.9rem;
+    }
+    
+    .premium-stop-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .premium-stop-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    
+    .premium-stop-item {
+      text-align: center;
+    }
+    
+    .premium-stop-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .premium-stop-value {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .premium-stop-value.scheduled {
+      color: #64748b;
+    }
+    
+    .premium-stop-value.actual {
+      color: #059669;
+    }
+    
+    .premium-stop-value.not-reached {
+      color: #94a3b8;
+      font-style: italic;
+    }
+    
+    .premium-stop-value.late {
+      color: #dc2626;
+    }
+    
+    .premium-stop-value.early {
+      color: #059669;
+    }
+    
+    .premium-stop-value.ontime {
+      color: #2563eb;
+    }
+    
+    .premium-stop-value.passed {
+      color: #059669;
+    }
+    
+    .premium-stop-value.pending {
+      color: #f59e0b;
+    }
+    
+    .premium-no-history {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+    }
+    
+    .premium-no-history i {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+      color: var(--border);
+    }
+    
+    .premium-no-history p {
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    
+    .premium-history-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 16px;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.8rem;
+    }
+    
+    .premium-history-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .premium-history-meta-item i {
+      color: var(--primary-blue);
+    }
+    
+    @media (max-width: 480px) {
+      .premium-stop-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      
+      .premium-stop-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+      }
+      
+      .premium-stop-label {
+        margin-bottom: 0;
+      }
+    }
+
+    /* New Bus Card Styles */
+    .img-bus-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 24px;
+      border: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .img-bus-card:hover {
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+      border-color: #e2e8f0;
+    }
+    
+    .ibc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+    
+    .ibc-icon-wrap {
+      width: 64px;
+      height: 64px;
+      background: #f0f5ff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .ibc-icon-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid #eef2ff;
+    }
+    
+    .ibc-icon-wrap i {
+      font-size: 28px;
+      color: #1e3a8a;
+    }
+    
+    .ibc-info {
+      flex: 1;
+      padding-left: 24px;
+    }
+    
+    .ibc-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .ibc-route {
+      font-size: 15px;
+      font-weight: 600;
+      color: #3b82f6;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      flex-wrap: wrap;
+    }
+    
+    .ibc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eff6ff;
+      color: #2563eb;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 20px;
+    }
+    
+    .ibc-dep-box {
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 14px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .ibc-dep-box > i {
+      font-size: 24px;
+      color: #3b82f6;
+    }
+    
+    .ibc-dep-text .time {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 2px;
+    }
+    
+    .ibc-dep-text .label {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 600;
+    }
+    
+    .ibc-stops-sec {
+      margin-bottom: 10px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+    }
+    
+    .ibc-stops-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #1e3a8a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    
+    .ibc-stops-title i {
+      font-size: 18px;
+      color: #3b82f6;
+    }
+    
+    .ibc-timeline {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      position: relative;
+      min-width: max-content;
+      width: 100%;
+      padding: 0 10px;
+      gap: 24px;
+    }
+    
+    .ibc-timeline::before {
+      content: '';
+      position: absolute;
+      top: 16px;
+      left: 60px;
+      right: 60px;
+      height: 3px;
+      background: #e2e8f0;
+      z-index: 1;
+    }
+    
+    .ibc-stop {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      z-index: 2;
+      width: 130px;
+      flex-shrink: 0;
+    }
+    
+    .ibc-pin {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      border: 2px solid transparent;
+      box-shadow: 0 0 0 6px #ffffff;
+      font-size: 14px;
+      position: relative;
+    }
+    
+    .ibc-pin-blue { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
+    .ibc-pin-green { border-color: #10b981; color: #10b981; background: #ecfdf5; }
+    .ibc-pin-orange { border-color: #f59e0b; color: #f59e0b; background: #fffbeb; }
+    .ibc-pin-purple { border-color: #8b5cf6; color: #8b5cf6; background: #f5f3ff; }
+    
+    .ibc-stop-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.4;
+      margin-bottom: 10px;
+      height: 34px;
+    }
+    
+    .ibc-stop-time {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 8px 10px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      min-width: 120px;
+      line-height: 1.3;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    
+    .time-blue { color: #3b82f6; background: #eff6ff; border: 1px solid #bfdbfe; }
+    .time-green { color: #10b981; background: #ecfdf5; border: 1px solid #a7f3d0; }
+    .time-orange { color: #ea580c; background: #fff7ed; border: 1px solid #fed7aa; }
+    .time-purple { color: #7c3aed; background: #f5f3ff; border: 1px solid #ddd6fe; }
+    
+    .ibc-footer {
+      background: #f8f5ff;
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      border: 1px solid #f1eefd;
+    }
+    
+    .ibc-foot-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .ibc-foot-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    
+    .icon-blue { background: #eff6ff; color: #3b82f6; }
+    .icon-grey { background: #f1f5f9; color: #64748b; }
+    .icon-purple { background: #f5f3ff; color: #8b5cf6; }
+    
+    .ibc-foot-details .label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+    
+    .ibc-foot-details .time {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+    
+    .ibc-foot-details .city {
+      font-size: 14px;
+      color: #475569;
+      font-weight: 600;
+    }
+    
+    .ibc-foot-line {
+      flex: 1;
+      height: 0;
+      border-top: 3px dotted #cbd5e1;
+      margin: 0 20px;
+    }
+    
+    .ibc-track-btn {
+      background: #023e8a;
+      background: linear-gradient(90deg, #023e8a, #0077b6);
+      color: #ffffff;
+      padding: 18px;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+    
+    .ibc-track-btn:hover {
+      box-shadow: 0 10px 25px rgba(2, 62, 138, 0.35);
+      transform: translateY(-2px);
+    }
+    
+    /* New detailed stop boxes CSS */
+    .ibc-stop-box {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 0;
+      width: 100%;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+    }
+    .ibc-stop-box.box-blue { border-color: #bfdbfe; }
+    .ibc-stop-box.box-green { border-color: #bbf7d0; }
+    .ibc-stop-box.box-orange { border-color: #fed7aa; }
+    .ibc-stop-box.box-purple { border-color: #e9d5ff; }
+
+    .ibc-box-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4px 0;
+      line-height: 1.3;
+    }
+    .ibc-box-divider {
+      height: 1px;
+      width: 70%;
+      margin: 2px auto;
+    }
+    .divider-blue { background: #e0e7ff; }
+    .divider-green { background: #dcfce7; }
+    .divider-orange { background: #ffedd5; }
+    .divider-purple { background: #f3e8ff; }
+    
+    .ibc-box-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: #64748b;
+      margin-bottom: 2px;
+      letter-spacing: 0.5px;
+    }
+    .ibc-box-val {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    
+    .val-blue { color: #2563eb; }
+    .val-green { color: #059669; }
+    .val-orange { color: #ea580c; }
+    .val-purple { color: #7c3aed; }
+    .val-red { color: #dc2626; }
+    
+    @media (max-width: 768px) {
+      .ibc-header { flex-direction: column; gap: 16px; }
+      .ibc-dep-box { width: 100%; justify-content: center; }
+      .ibc-footer { flex-direction: column; gap: 16px; }
+      .ibc-foot-line { width: 100%; border-top: none; border-left: 3px dotted #cbd5e1; height: 30px; margin: 8px 0; }
+      .ibc-foot-item { width: 100%; justify-content: center; }
+    }
+
+    .collapsible {
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      color: #334155;
+      margin-top: 6px;
+      margin-bottom: 0;
+      font-size: 0.9rem;
+      border: 1px solid var(--border);
+    }
+    .live-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .completion-summary {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      margin: 0;
+    }
+    .completion-summary span {
+      font-size: 11px;
+      color: #64748b;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .completion-summary strong {
+      font-size: 14px;
+      color: #0f172a;
+    }
+    .completion-summary .late { color: #ef4444; }
+    .completion-summary .early { color: #10b981; }
+
+    .modern-bus-card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      border: 1px solid #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .modern-bus-card:hover {
+      box-shadow: 0 12px 30px rgba(255, 193, 7, 0.08), 0 4px 12px rgba(0,0,0,0.02);
+      border-color: rgba(255, 193, 7, 0.4);
+    }
+    .card-main-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      width: 100%;
+    }
+    .card-mid-col {
+      flex: 1.8;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      justify-content: center;
+    }
+    .modern-bus-card .ibc-header {
+      margin-bottom: 0;
+      flex: 1.2;
+      min-width: 250px;
+      display: flex;
+      align-items: center;
+    }
+    .modern-bus-card .card-actions {
+      flex: 1;
+      min-width: 180px;
+      margin-top: 0;
+    }
+    .modern-bus-card .card-actions button {
+      margin-top: 0 !important;
+    }
+    .card-actions-placeholder {
+      flex: 1;
+      min-width: 180px;
+    }
+    .live-mini-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 12px;
+    }
+    .live-mini-card span, .trip-times label {
+      font-size: 11px;
+      color: #64748b;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .live-mini-card strong, .trip-times strong {
+      font-size: 14px;
+      color: #0f172a;
+    }
+    .trip-times {
+      display: flex;
+      justify-content: space-between;
+      margin: 0;
+      padding: 4px 0;
+    }
+    @media (max-width: 900px) {
+      .card-main-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+      }
+      .modern-bus-card .ibc-header,
+      .card-mid-col,
+      .modern-bus-card .card-actions,
+      .card-actions-placeholder {
+        width: 100%;
+        min-width: 0;
+        flex: none;
+      }
+    }
+    /* Calendar Modal CSS */
+    .cal-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cal-modal-overlay.active {
+      opacity: 1;
+    }
+    .cal-modal-card {
+      background: #f8fafc;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 24px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      overflow: hidden;
+      transform: scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cal-modal-overlay.active .cal-modal-card {
+      transform: scale(1);
+    }
+    .cal-modal-header {
+      background: #e0f2fe;
+      padding: 24px;
+      border-bottom: 1px solid #bae6fd;
+    }
+    .cal-modal-header h3 {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #0369a1;
+      font-family: 'Outfit', sans-serif;
+    }
+    .cal-modal-selected-box {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      padding: 10px 16px;
+      border-radius: 14px;
+      border: 1px solid #bae6fd;
+    }
+    .cal-modal-selected-box i {
+      color: #0284c7;
+      font-size: 1.1rem;
+    }
+    .cal-modal-selected-box span {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .cal-modal-body {
+      background: #ffffff;
+      padding: 24px;
+    }
+    .cal-controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .cal-controls select {
+      flex: 1;
+      height: 42px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #334155;
+      background: #f8fafc;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+    }
+    .cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .cal-weekday {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      row-gap: 8px;
+    }
+    .cal-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 50%;
+      user-select: none;
+    }
+    .cal-cell.disabled {
+      color: #cbd5e1;
+      cursor: not-allowed;
+      font-weight: 500;
+    }
+    .cal-cell.available {
+      color: #1e293b;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background 0.2s, color 0.2s;
+    }
+    .cal-cell.available:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    .cal-cell.selected {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.4);
+    }
+    .cal-modal-footer {
+      padding: 16px 24px 24px;
+      display: flex;
+      gap: 12px;
+      background: #ffffff;
+      border-top: 1px solid #f1f5f9;
+    }
+    .cal-btn {
+      flex: 1;
+      height: 48px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .cal-btn-close {
+      background: #fef2f2;
+      color: #ef4444;
+    }
+    .cal-btn-close:hover {
+      background: #fee2e2;
+    }
+    .cal-btn-confirm {
+      background: #f0fdf4;
+      color: #22c55e;
+    }
+    .cal-btn-confirm:hover {
+      background: #dcfce7;
+    }
+    .premium-date-selector .custom-select-trigger {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+      flex-grow: 1;
+      padding: 0 8px;
+    }
+    
+    @media (max-width: 768px) {
+      #mapProgress {
+        width: calc(100% - 32px) !important;
+        left: 16px !important;
+        bottom: 16px !important;
+        max-height: 200px !important;
+        padding: 12px !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="app-nav">
+    <a class="nav-brand" href="index.html" id="navLogo">
+      <i class="fa-solid fa-bus"></i>
+      <div>Win<span>Bus</span> Tracker</div>
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link" id="homeLink">Home</a>
+      <a href="routes.html" class="nav-link" target="_blank">Route</a>
+      <a href="operators.html" class="nav-link">Operator</a>
+      <a href="live-buses.html" class="nav-link">Live Buses</a>
+      <a href="agent-login.html" class="nav-link">Agent Login</a>
+    </div>
+    <div class="nav-time" id="realTimeClock">
+      --:--:--
+    </div>
+  </nav>
+
+  <!-- Hero / Dashboard View -->
+  <section class="hero">
+
+    <!-- SaaS style Filter Panel Widget -->
+    <div class="search-card" id="searchSection">
+      <div class="search-title-saas">
+        <i class="fa-solid fa-sliders"></i> Search & Filter Buses
+      </div>
+      <div class="saas-grid">
+        <!-- Operator Filter -->
+        <div class="form-group">
+          <label for="operatorInput">Operator</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-building field-icon"></i>
+            <input id="operatorInput" type="text" placeholder="Any Operator" autocomplete="off" />
+          </div>
+        </div>
+
+        <!-- Boarding City Filter -->
+        <div class="form-group">
+          <label for="boardingSelect">Boarding City</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-location-dot field-icon"></i>
+            <select id="boardingSelect">
+              <option value="">[ Select Boarding Point ]</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Dropping City Filter -->
+        <div class="form-group">
+          <label for="droppingSelect">Dropping City</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-location-crosshairs field-icon"></i>
+            <select id="droppingSelect">
+              <option value="">[ Select Dropping Point ]</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Bus Type Filter -->
+        <div class="form-group">
+          <label for="typeSelect">Bus Type</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-bus-simple field-icon"></i>
+            <select id="typeSelect">
+              <option value="">— All Types —</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Sort By Widget -->
+        <div class="form-group">
+          <label>Sort By</label>
+          <div class="sort-toggle">
+            <button class="sort-btn active" id="sortEarly" onclick="setSort(this)">
+              <i class="fa-solid fa-arrow-up-from-line"></i> Early
+            </button>
+            <button class="sort-btn" id="sortLate" onclick="setSort(this)">
+              <i class="fa-solid fa-arrow-down-to-line"></i> Late
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Button Widget -->
+        <div class="form-group">
+          <button class="btn-search" onclick="handleSearch()">
+            <i class="fa-solid fa-magnifying-glass"></i> Search
+          </button>
+        </div>
+      </div>
+    </div><!-- /search-card -->
+
+    <!-- RESULTS SECTION -->
+    <div class="results-container" id="resultsContainer" style="display: none; margin: 0 auto; text-align: center;">
+      <div id="gridContainer" style="text-align: left;">
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4 style="color: #FFFFFF; font-size: 16px; font-weight: 700; margin-bottom: 16px;">WinBus Tracker</h4>
+        <p>Real-time private bus tracking platform engineered for commuters across Tamil Nadu. Live locations, schedules, and operators in one place.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="index.html">About Us</a></li>
+          <li><a href="index.html">Careers</a></li>
+          <li><a href="index.html">Press Kit</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Routes</h4>
+        <ul>
+          <li><a href="routes.html">Chennai Routes</a></li>
+          <li><a href="routes.html">Madurai Routes</a></li>
+          <li><a href="routes.html">Coimbatore Routes</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Operators</h4>
+        <ul>
+          <li><a href="operators.html">All Operators</a></li>
+          <li><a href="operators.html">Partner Portal</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="index.html">Help Center</a></li>
+          <li><a href="index.html">Contact Us</a></li>
+          <li><a href="index.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>&copy; 2026 WinBus Tracker. Designed for Tamil Nadu Commuters. All rights reserved.</div>
+      <div>
+        <a href="#" style="color:#94A3B8; text-decoration:none; margin-right:16px;">Terms</a>
+        <a href="#" style="color:#94A3B8; text-decoration:none;">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Map Modal -->
+  <div id="mapModal" class="modal-overlay">
+    <div class="modal-content" style="width: 100vw; height: 100vh; max-width: none; border-radius: 0; border: none; display: flex; flex-direction: column; height: 100vh;">
+      <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0; background: #ffffff; display: flex; justify-content: space-between; align-items: center; z-index: 10;">
+        <span id="modalTitle" class="modal-title" style="font-weight: 800; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-satellite-dish" style="color:#22c55e;"></i> Live Tracking</span>
+        <button class="close-btn" onclick="closeModal()" style="padding: 8px 16px; background: #f1f5f9; border: none; border-radius: 6px; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.2s;">Close</button>
+      </div>
+      <div class="map-modal-body" style="position: relative; flex-grow: 1; width: 100%; height: calc(100vh - 65px); overflow: hidden;">
+        <div id="liveMap" style="width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1;"></div>
+        <div id="mapProgress" style="
+          position: absolute;
+          bottom: 24px;
+          left: 24px;
+          z-index: 999;
+          width: 340px;
+          max-height: 400px;
+          overflow-y: auto;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          padding: 16px;
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(15, 23, 42, 0.15);
+          border: 1px solid rgba(226, 232, 240, 0.8);
+          font-family: 'Inter', sans-serif;
+        ">
+          <div style="font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-route" style="color: #22c55e;"></i> Live Stop Progress
+          </div>
+          <div id="progressStopsList" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="color: #64748b; font-size: 12px; text-align: center;">Loading stop progress...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /map modal -->
+
+  <!-- Toast -->
+  <div id="toast" class="toast-msg"></div>
+
+  <script>
+    const API_BASE = "https://live-server-production.up.railway.app";
+    // One-time cleanup of old seed data
+    if (!localStorage.getItem('win_db_cleared_v2')) {
+      localStorage.removeItem('win_buses');
+      localStorage.removeItem('win_operators');
+      localStorage.removeItem('win_routes');
+      localStorage.removeItem('win_bus_types');
+      localStorage.removeItem('ybm_local_buses');
+      localStorage.setItem('win_db_cleared_v2', 'true');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('op')) document.getElementById('operatorInput').value = params.get('op');
+      if (params.has('boarding')) window.initialBoardingQuery = params.get('boarding');
+      if (params.has('dropping')) window.initialDroppingQuery = params.get('dropping');
+      if (params.has('route')) {
+        const routeParam = params.get('route');
+        const routeMap = { 'TCN-CHN': 'Tuticorin-Chennai', 'CHN-TCN': 'Chennai-Tuticorin' };
+        const mappedRoute = routeMap[routeParam] || normalizeRouteName(routeParam);
+        const parts = mappedRoute.split('-');
+        if (parts.length === 2) {
+          window.initialBoardingQuery = parts[0].trim();
+          window.initialDroppingQuery = parts[1].trim();
+        }
+      }
+      if (params.has('type')) window.initialTypeQuery = params.get('type');
+      if (params.has('sort')) {
+        const sortBtn = document.getElementById(params.get('sort'));
+        if (sortBtn) {
+          document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+          sortBtn.classList.add('active');
+        }
+      }
+    });
+
+    // ── Firebase data (loaded via firebase-data.js module below) ──
+    let cachedBuses     = [];
+    let cachedRoutes    = [];
+    let cachedOperators = [];
+    let cachedBusTypes  = [];
+    let cachedBusHistory = {};
+    const localHistoryWrites = {};
+    const previousTrackingStates = {};
+    const activeTripState = JSON.parse(localStorage.getItem('activeTripState') || '{}');
+
+    function applyFirebaseData() {
+      console.log('[applyFirebaseData] Applying Firebase data to cached variables...');
+      console.log('[applyFirebaseData] window._fbBuses:', window._fbBuses?.length || 0);
+      console.log('[applyFirebaseData] window._fbRoutes:', window._fbRoutes?.length || 0);
+      console.log('[applyFirebaseData] window._fbOperators:', window._fbOperators?.length || 0);
+      console.log('[applyFirebaseData] window._fbTypes:', window._fbTypes?.length || 0);
+      console.log('[applyFirebaseData] window._fbActualTimes:', Object.keys(window._fbActualTimes || {}).length, 'services');
+      console.log('[applyFirebaseData] window._fbBusHistory:', Object.keys(window._fbBusHistory || {}).length, 'buses');
+      
+      cachedBuses     = window._fbBuses     || [];
+      cachedRoutes    = window._fbRoutes    || [];
+      cachedOperators = window._fbOperators || [];
+      cachedBusTypes  = window._fbTypes     || [];
+      cachedBusHistory = window._fbBusHistory || {};
+      
+      console.log('[applyFirebaseData] cachedBuses set to:', cachedBuses.length);
+    }
+
+    function getDBBuses()     { return cachedBuses;    }
+    function getDBOperators() { return cachedOperators; }
+    function getDBRoutes()    { return cachedRoutes;   }
+    function getDBBusTypes()  { return cachedBusTypes; }
+
+    function saveDBBuses(buses) {
+      localStorage.setItem('ybm_local_buses', JSON.stringify(buses));
+    }
+    function saveDBRoutes(routes) {
+      localStorage.setItem('ybm_local_routes', JSON.stringify(routes));
+    }
+
+    let databaseBuses = [];
+    let ybmCustomBuses = [];
+    let localYbmBuses = [];
+    let customBuses = [];
+
+    // ============================================================
+    // TRACKING STATE SYSTEM - Production Grade
+    // ============================================================
+    const STATE_WAITING = 'waiting';
+    const STATE_PRELIVE = 'pre-live';
+    const STATE_ACTIVE = 'active';
+    const STATE_COMPLETED = 'completed';
+
+    function parseTimeToMinutes(timeStr) {
+      if (!timeStr) return 0;
+      timeStr = String(timeStr).trim().toUpperCase();
+      try {
+        if (timeStr.includes('AM') || timeStr.includes('PM')) {
+          const timePart = timeStr.replace(/AM|PM/g, '').trim();
+          const isPM = timeStr.includes('PM');
+          let [hours, mins] = timePart.split(':').map(Number);
+          if (isPM && hours !== 12) hours += 12;
+          if (!isPM && hours === 12) hours = 0;
+          return hours * 60 + (mins || 0);
+        } else {
+          const [hours, mins] = timeStr.split(':').map(Number);
+          return (hours || 0) * 60 + (mins || 0);
+        }
+      } catch (e) {
+        console.error('[Tracking] Error parsing time:', timeStr, e);
+        return 0;
+      }
+    }
+
+    function getDepartureDate(departureTime) {
+      const now = new Date();
+      const depMinutes = parseTimeToMinutes(departureTime);
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      
+      let year = now.getFullYear();
+      let month = now.getMonth();
+      let day = now.getDate();
+      
+      // Overnight bus logic
+      if (currentMinutes > 1200 && depMinutes < 360) {
+        const nextDay = new Date(now);
+        nextDay.setDate(nextDay.getDate() + 1);
+        year = nextDay.getFullYear();
+        month = nextDay.getMonth();
+        day = nextDay.getDate();
+      } else if (currentMinutes < 360 && depMinutes > 1200) {
+        const prevDay = new Date(now);
+        prevDay.setDate(prevDay.getDate() - 1);
+        year = prevDay.getFullYear();
+        month = prevDay.getMonth();
+        day = prevDay.getDate();
+      }
+      
+      return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+
+    function getTrackingState(bus) {
+      const depTime = bus.time || bus.departureTime || '';
+      const arrTime = bus.arrivalTime || bus.arr || '';
+      
+      if (!depTime) return STATE_WAITING;
+      
+      const now = new Date();
+      const depMinutes = parseTimeToMinutes(depTime);
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const depDate = getDepartureDate(depTime);
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      
+      // Calculate day difference
+      const depDateObj = new Date(depDate);
+      const todayObj = new Date(today);
+      const daysDiff = Math.floor((todayObj - depDateObj) / (1000 * 60 * 60 * 24));
+      const effectiveDepMinutes = depMinutes + (daysDiff * 24 * 60);
+      const oneHourBefore = effectiveDepMinutes - 60;
+      
+      // State determination
+      if (currentMinutes < oneHourBefore) {
+        return STATE_WAITING;
+      } else if (currentMinutes >= oneHourBefore && currentMinutes < effectiveDepMinutes + 30) {
+        return STATE_PRELIVE;
+      }
+      
+      // Check completion based on arrival
+      if (arrTime) {
+        const arrMinutes = parseTimeToMinutes(arrTime);
+        const effectiveArrMinutes = arrMinutes + (daysDiff * 24 * 60);
+        const completionTime = effectiveArrMinutes + 180; // +3 hours
+        
+        if (currentMinutes >= completionTime) {
+          return STATE_COMPLETED;
+        } else if (currentMinutes >= effectiveDepMinutes) {
+          return STATE_ACTIVE;
+        }
+      }
+      
+      return currentMinutes >= effectiveDepMinutes ? STATE_ACTIVE : STATE_PRELIVE;
+    }
+
+    function getStateDisplayInfo(state) {
+      const info = {
+        [STATE_WAITING]: { label: 'Scheduled', color: '#94a3b8', icon: 'fa-clock' },
+        [STATE_PRELIVE]: { label: 'Live Soon', color: '#f59e0b', icon: 'fa-broadcast-tower' },
+        [STATE_ACTIVE]: { label: 'Live', color: '#10b981', icon: 'fa-satellite-dish' },
+        [STATE_COMPLETED]: { label: 'Completed', color: '#6366f1', icon: 'fa-check-circle' }
+      };
+      return info[state] || info[STATE_WAITING];
+    }
+
+    // ============================================================
+    // ACTUAL TIMING HELPERS
+    // ============================================================
+    function extractServiceNo(link) {
+      if (!link) return '';
+      try {
+        const decoded = decodeURIComponent(link);
+        const url = decoded.replace(/\/$/, '');
+        const parts = url.split('/');
+        const serviceNo = parts[parts.length - 1];
+        if (serviceNo && !serviceNo.includes('.') && serviceNo.length > 3) {
+          return serviceNo.trim();
+        }
+      } catch (e) {
+        console.error('Error extracting serviceNo:', e);
+      }
+      const patterns = [
+        /service[=/]([^&/\s]+)/i,
+        /bus[=/]([^&/\s]+)/i,
+        /track[=/]([^&/\s]+)/i
+      ];
+      for (const pattern of patterns) {
+        const match = link.match(pattern);
+        if (match) return match[1];
+      }
+      // Fallback to hash
+      let hash = 0;
+      for (let i = 0; i < link.length; i++) {
+        hash = ((hash << 5) - hash) + link.charCodeAt(i);
+        hash = hash & hash;
+      }
+      return Math.abs(hash).toString(16).substring(0, 12);
+    }
+
+    function getActualTimingData(serviceNo, departureDate) {
+      if (!window._fbActualTimes) return {};
+      return window._fbActualTimes[serviceNo]?.[departureDate] || {};
+    }
+
+    function formatDelayStatus(delayMinutes) {
+      if (delayMinutes === undefined || delayMinutes === null) return { text: 'Waiting', color: '#94a3b8' };
+      if (Math.abs(delayMinutes) <= 2) return { text: 'On Time', color: '#10b981' };
+      if (delayMinutes > 0) return { text: `+${delayMinutes} min late`, color: '#ef4444' };
+      return { text: `${Math.abs(delayMinutes)} min early`, color: '#3b82f6' };
+    }
+
+    function showCalendarModal(busKey, serviceNo) {
+      // 1. Get the select element
+      const selectEl = document.getElementById(`history-date-${busKey}`);
+      if (!selectEl) return;
+
+      // Prevent event bubbling if clicked on selector
+      if (window.event) window.event.stopPropagation();
+
+      const normalizeDate = (d) => {
+        if (!d) return '';
+        const p = d.split('-');
+        if (p.length !== 3) return d;
+        return `${p[0]}-${String(p[1]).padStart(2, '0')}-${String(p[2]).padStart(2, '0')}`;
+      };
+
+      // 2. Extract available dates from options
+      const availableDates = Array.from(selectEl.options).map(opt => normalizeDate(opt.value));
+      let selectedDate = normalizeDate(selectEl.value) || normalizeDate(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }));
+
+      // 3. Keep track of calendar current view month and year
+      const dateParts = selectedDate.split('-');
+      let currentYear = parseInt(dateParts[0]);
+      let currentMonth = parseInt(dateParts[1]) - 1; // 0-indexed month
+
+      // Create modal container
+      const overlay = document.createElement('div');
+      overlay.className = 'cal-modal-overlay';
+      
+      // Close modal on clicking overlay background
+      overlay.onclick = (e) => {
+        if (e.target === overlay) closeModal();
+      };
+
+      // Modal content template
+      overlay.innerHTML = `
+        <div class="cal-modal-card" onclick="event.stopPropagation()">
+          <div class="cal-modal-header">
+            <h3>Select Date</h3>
+            <div class="cal-modal-selected-box">
+              <i class="fa-regular fa-calendar-check"></i>
+              <span id="cal-selected-display"></span>
+            </div>
+          </div>
+          <div class="cal-modal-body">
+            <div class="cal-controls">
+              <select id="cal-month-select"></select>
+              <select id="cal-year-select"></select>
+            </div>
+            <div class="cal-weekdays">
+              <div class="cal-weekday">Sun</div>
+              <div class="cal-weekday">Mon</div>
+              <div class="cal-weekday">Tue</div>
+              <div class="cal-weekday">Wed</div>
+              <div class="cal-weekday">Thu</div>
+              <div class="cal-weekday">Fri</div>
+              <div class="cal-weekday">Sat</div>
+            </div>
+            <div class="cal-grid" id="cal-days-grid"></div>
+          </div>
+          <div class="cal-modal-footer">
+            <button class="cal-btn cal-btn-close" id="cal-btn-close">Close</button>
+            <button class="cal-btn cal-btn-confirm" id="cal-btn-confirm">Confirm</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      // Trigger reflow for fade-in animation
+      setTimeout(() => overlay.classList.add('active'), 10);
+
+      // Get DOM element references
+      const monthSelect = overlay.querySelector('#cal-month-select');
+      const yearSelect = overlay.querySelector('#cal-year-select');
+      const daysGrid = overlay.querySelector('#cal-days-grid');
+      const selectedDisplay = overlay.querySelector('#cal-selected-display');
+      const btnClose = overlay.querySelector('#cal-btn-close');
+      const btnConfirm = overlay.querySelector('#cal-btn-confirm');
+
+      // Populate Month select
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      monthNames.forEach((name, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = name;
+        if (idx === currentMonth) opt.selected = true;
+        monthSelect.appendChild(opt);
+      });
+
+      // Populate Year select (current year - 1 to current year + 1)
+      const thisYear = new Date().getFullYear();
+      for (let y = thisYear - 1; y <= thisYear + 1; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        if (y === currentYear) opt.selected = true;
+        yearSelect.appendChild(opt);
+      }
+
+      // Event listeners for month/year changes
+      monthSelect.onchange = (e) => {
+        currentMonth = parseInt(e.target.value);
+        renderGrid();
+      };
+      yearSelect.onchange = (e) => {
+        currentYear = parseInt(e.target.value);
+        renderGrid();
+      };
+
+      // Button actions
+      btnClose.onclick = closeModal;
+      btnConfirm.onclick = () => {
+        selectEl.value = selectedDate;
+        // Trigger select change logic
+        renderPremiumHistory(busKey, serviceNo, selectedDate);
+        closeModal();
+      };
+
+      function closeModal() {
+        overlay.classList.remove('active');
+        setTimeout(() => overlay.remove(), 250);
+      }
+
+      function updateSelectedDisplay() {
+        const dateObj = new Date(selectedDate);
+        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+        selectedDisplay.textContent = dateObj.toLocaleDateString('en-IN', options);
+      }
+
+      function renderGrid() {
+        daysGrid.innerHTML = '';
+        
+        // Days in current month
+        const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+        const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        // 1. Render blank/padding days from previous month
+        for (let i = 0; i < firstDayIndex; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'cal-cell disabled';
+          cell.textContent = '';
+          daysGrid.appendChild(cell);
+        }
+
+        // 2. Render actual month days
+        for (let day = 1; day <= totalDays; day++) {
+          const cell = document.createElement('div');
+          
+          // Format current date in YYYY-MM-DD
+          const mStr = String(currentMonth + 1).padStart(2, '0');
+          const dStr = String(day).padStart(2, '0');
+          const dateStr = `${currentYear}-${mStr}-${dStr}`;
+
+          // Check availability (must be in select options)
+          const isAvailable = availableDates.includes(dateStr);
+          const isSelected = dateStr === selectedDate;
+
+          if (isAvailable) {
+            cell.className = `cal-cell available${isSelected ? ' selected' : ''}`;
+            cell.textContent = day;
+            cell.onclick = () => {
+              selectedDate = dateStr;
+              updateSelectedDisplay();
+              renderGrid(); // Redraw selection style
+            };
+          } else {
+            cell.className = 'cal-cell disabled';
+            cell.textContent = day;
+          }
+
+          daysGrid.appendChild(cell);
+        }
+      }
+
+      // Initial layout
+      updateSelectedDisplay();
+      renderGrid();
+    }
+    window.showCalendarModal = showCalendarModal;
+
+    // ============================================================
+    // HISTORY SYSTEM HELPERS
+    // ============================================================
+    function getBusHistory(serviceNo, date) {
+      if (!window._fbBusHistory) return null;
+      return window._fbBusHistory[serviceNo]?.[date] || null;
+    }
+
+    function getAvailableHistoryDates(serviceNo) {
+      if (!window._fbBusHistory || !serviceNo) return [];
+      const dates = Object.keys(window._fbBusHistory[serviceNo] || {});
+      return dates.sort().reverse(); // Latest first
+    }
+
+    // Sanitize a string into a valid key
+    function sanitizeKey(str) {
+      return (str || '').trim().replace(/[.#$\[\]/]/g, '_').replace(/\s+/g, '_');
+    }
+
+    function normalizeRouteName(route) {
+      return (route || '').trim().replace(/Tuty/gi, 'Tuticorin');
+    }
+
+    function normalizeBus(bus) {
+      return {
+        ...bus,
+        route: normalizeRouteName(bus && bus.route)
+      };
+    }
+
+    // ============================================================
+    // MAP MODAL
+    // ============================================================
+    // ============================================================
+    // LEAFLET MAP MODAL & LIVE TRACKING ENGINE
+    // ============================================================
+    let liveMapInstance = null;
+    let liveMapBusMarker = null;
+    let liveMapStopsMarkers = [];
+    let liveMapRoutePolyline = null;
+    let liveTrackingInterval = null;
+    let liveMapRoutePoints = [];
+
+    function createMarkerIcon(color) {
+      return L.divIcon({
+        className: 'custom-map-marker',
+        html: `<div style="
+          width: 14px;
+          height: 14px;
+          background-color: ${color};
+          border: 2px solid #ffffff;
+          border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        "></div>`,
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
+      });
+    }
+
+    function createBusIcon() {
+      return L.divIcon({
+        className: 'custom-bus-marker',
+        html: `<div style="
+          width: 32px;
+          height: 32px;
+          background-color: #22c55e;
+          color: white;
+          border: 2px solid #ffffff;
+          border-radius: 50%;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+        ">🚌</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      });
+    }
+
+    async function openMap(url, op) {
+      const busId = extractServiceNo(url);
+      document.getElementById('modalTitle').innerHTML =
+        `<i class="fa-solid fa-satellite-dish" style="color:var(--primary-dark)"></i> ${op} Live`;
+      document.getElementById('mapModal').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+
+      // 1. Initialize Leaflet map if not done already
+      setTimeout(() => {
+        if (!liveMapInstance) {
+          liveMapInstance = L.map('liveMap').setView([13.0827, 80.2707], 8);
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          }).addTo(liveMapInstance);
+        } else {
+          clearLiveMapLayers();
+        }
+
+        // Trigger map layout update
+        liveMapInstance.invalidateSize();
+
+        // 2. Fetch and render route points
+        loadAndRenderRoute(busId);
+
+        // 3. Start real-time tracking polling
+        pollLiveBusLocation(busId);
+        if (liveTrackingInterval) clearInterval(liveTrackingInterval);
+        liveTrackingInterval = setInterval(() => pollLiveBusLocation(busId), 10000);
+      }, 100);
+    }
+
+    function clearLiveMapLayers() {
+      if (liveMapBusMarker) {
+        liveMapInstance.removeLayer(liveMapBusMarker);
+        liveMapBusMarker = null;
+      }
+      liveMapStopsMarkers.forEach(m => liveMapInstance.removeLayer(m));
+      liveMapStopsMarkers = [];
+      if (liveMapRoutePolyline) {
+        liveMapInstance.removeLayer(liveMapRoutePolyline);
+        liveMapRoutePolyline = null;
+      }
+    }
+
+    async function loadAndRenderRoute(busId) {
+      try {
+        const response = await fetch(`${API_BASE}/api/route-points/${busId}`);
+        if (!response.ok) throw new Error("Failed to load route points");
+        const points = await response.json();
+        liveMapRoutePoints = points;
+
+        if (points.length === 0) {
+          console.warn("No route points found for", busId);
+          return;
+        }
+
+        // Draw Stop Markers
+        renderStopMarkers(null, null);
+
+        // Fit map bounds to the stops markers group
+        if (liveMapStopsMarkers.length > 0) {
+          const group = new L.featureGroup(liveMapStopsMarkers);
+          liveMapInstance.fitBounds(group.getBounds(), { padding: [40, 40] });
+        }
+
+      } catch (err) {
+        console.error("Error loading route:", err);
+      }
+    }
+
+    function renderStopMarkers(currentStopName, nextStopName) {
+      // Clear old stop markers
+      liveMapStopsMarkers.forEach(m => liveMapInstance.removeLayer(m));
+      liveMapStopsMarkers = [];
+
+      if (!liveMapRoutePoints || liveMapRoutePoints.length === 0) return;
+
+      const normCurrent = currentStopName ? currentStopName.toLowerCase().replace(/[\s_]+/g, '') : null;
+      const normNext = nextStopName ? nextStopName.toLowerCase().replace(/[\s_]+/g, '') : null;
+
+      let currentIndex = -1;
+      let nextIndex = -1;
+
+      liveMapRoutePoints.forEach((pt, idx) => {
+        const normPtName = pt.name.toLowerCase().replace(/[\s_]+/g, '');
+        if (normCurrent && normPtName === normCurrent) currentIndex = idx;
+        if (normNext && normPtName === normNext) nextIndex = idx;
+      });
+
+      liveMapRoutePoints.forEach((pt, idx) => {
+        const normPtName = pt.name.toLowerCase().replace(/[\s_]+/g, '');
+        const isDestination = (idx === liveMapRoutePoints.length - 1);
+        
+        let color = '#94a3b8'; // Default grey for upcoming stops
+        let colorName = 'Upcoming';
+
+        // Marker color rules
+        if (normCurrent && normPtName === normCurrent) {
+          color = '#2563eb'; // Blue: Current stop
+          colorName = 'Current Stop';
+        } else if (normNext && normPtName === normNext) {
+          color = '#f97316'; // Orange: Next stop
+          colorName = 'Next Stop';
+        } else if (isDestination) {
+          color = '#a855f7'; // Purple: Destination stop
+          colorName = 'Destination';
+        } else if (currentIndex !== -1 && idx < currentIndex) {
+          color = '#22c55e'; // Green: Passed stop
+          colorName = 'Passed';
+        } else if (nextIndex !== -1 && idx < nextIndex) {
+          color = '#22c55e'; // Green: Passed stop
+          colorName = 'Passed';
+        }
+
+        const icon = createMarkerIcon(color);
+        const marker = L.marker([pt.lat, pt.lng], { icon: icon }).addTo(liveMapInstance);
+        marker.bindPopup(`<strong>${pt.name}</strong><br><small style="color:${color}; font-weight: bold;">${colorName}</small>`);
+        marker.bindTooltip(pt.name, { permanent: false, direction: 'top' });
+        liveMapStopsMarkers.push(marker);
+      });
+    }
+
+    async function pollLiveBusLocation(busId) {
+      try {
+        const response = await fetch(`${API_BASE}/api/live-track/${busId}`);
+        if (!response.ok) throw new Error("Failed to fetch live tracking data");
+        const data = await response.json();
+
+        // 1. Update stop markers colors dynamically
+        renderStopMarkers(data.currentStop, data.nextStop);
+
+        // 2. Update progress UI list
+        updateProgressListUI(data.providerStops, data.currentStop, data.nextStop);
+
+        // 3. Update live bus marker
+        let busLat = data.lat;
+        let busLng = data.lng;
+
+        // Fallback to currentStop or nextStop coordinates if live GPS is null
+        if ((busLat === null || busLng === null) && liveMapRoutePoints && liveMapRoutePoints.length > 0) {
+          const fallbackStopName = data.currentStop || data.nextStop;
+          if (fallbackStopName) {
+            const normFallback = fallbackStopName.toLowerCase().replace(/[\s_]+/g, '');
+            const matchedPt = liveMapRoutePoints.find(pt => pt.name.toLowerCase().replace(/[\s_]+/g, '') === normFallback);
+            if (matchedPt) {
+              busLat = matchedPt.lat;
+              busLng = matchedPt.lng;
+              console.log("[GPS FALLBACK] GPS is null, using coordinates of stop:", matchedPt.name);
+            }
+          }
+        }
+
+        if (busLat !== null && busLng !== null) {
+          const latlng = [busLat, busLng];
+
+          if (!liveMapBusMarker) {
+            liveMapBusMarker = L.marker(latlng, { icon: createBusIcon() }).addTo(liveMapInstance);
+            liveMapBusMarker.bindPopup(`<strong>Live Bus Location</strong><br><small>Updated just now</small>`);
+            
+            // Zoom to live location of the bus on open with smooth flyTo animation
+            liveMapInstance.flyTo(latlng, 14, {
+              animate: true,
+              duration: 1.5
+            });
+          } else {
+            liveMapBusMarker.setLatLng(latlng);
+            liveMapInstance.panTo(latlng);
+          }
+        } else {
+          console.log("No live GPS coordinates or stop fallback coordinates available for", busId);
+        }
+
+      } catch (err) {
+        console.error("Error polling bus location:", err);
+      }
+    }
+
+    function updateProgressListUI(providerStops, currentStop, nextStop) {
+      const container = document.getElementById('progressStopsList');
+      if (!container) return;
+
+      if (!providerStops || providerStops.length === 0) {
+        container.innerHTML = `<div style="color: #64748b; font-size: 13px; text-align: center;">Waiting for WebSocket progress updates...</div>`;
+        return;
+      }
+
+      // Group stops
+      const passed = [];
+      let current = null;
+      let next = null;
+      const upcoming = [];
+
+      providerStops.forEach(stop => {
+        const stopName = stop.name;
+        const status = stop.providerStatus || stop.status || '';
+        const normNameVal = stopName.toLowerCase().replace(/[\s_]+/g, '');
+
+        const isCurrent = currentStop && (normNameVal === currentStop.toLowerCase().replace(/[\s_]+/g, ''));
+        const isNext = nextStop && (normNameVal === nextStop.toLowerCase().replace(/[\s_]+/g, ''));
+
+        const item = {
+          name: stopName,
+          time: stop.scheduled || stop.time || ''
+        };
+
+        if (isCurrent) {
+          current = item;
+        } else if (isNext || status === 'NEXT') {
+          next = item;
+        } else if (status === 'CROSSED' || status === 'PASSED' || status === 'MISSED') {
+          passed.push(item);
+        } else {
+          upcoming.push(item);
+        }
+      });
+
+      // Build HTML
+      let html = `<div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">`;
+
+      // 1. Current Stop
+      if (current) {
+        html += `
+          <div style="background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.15); padding: 10px 14px; border-radius: 6px; border-left: 4px solid #2563eb;">
+            <div style="font-weight: 800; color: #2563eb; font-size: 10px; text-transform: uppercase; margin-bottom: 2px;">📍 Current Stop</div>
+            <div style="display: flex; justify-content: space-between; font-weight: 700; color: #0f172a;">
+              <span>${current.name}</span>
+              <span style="color: #64748b;">${current.time}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // 2. Next Stop
+      if (next) {
+        html += `
+          <div style="background: rgba(249, 115, 22, 0.05); border: 1px solid rgba(249, 115, 22, 0.15); padding: 10px 14px; border-radius: 6px; border-left: 4px solid #f97316;">
+            <div style="font-weight: 800; color: #f97316; font-size: 10px; text-transform: uppercase; margin-bottom: 2px;">🚏 Next Stop</div>
+            <div style="display: flex; justify-content: space-between; font-weight: 700; color: #0f172a;">
+              <span>${next.name}</span>
+              <span style="color: #64748b;">${next.time}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // 3. Passed Stops
+      if (passed.length > 0) {
+        html += `
+          <div>
+            <div style="font-weight: 700; color: #475569; font-size: 10px; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+              <i class="fa-solid fa-circle-check" style="color: #22c55e;"></i> Passed Stops (${passed.length})
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px; padding-left: 14px; border-left: 2px dashed #cbd5e1; margin-left: 6px;">
+              ${passed.map(s => `
+                <div style="display: flex; justify-content: space-between; color: #64748b; font-size: 12px;">
+                  <span>${s.name}</span>
+                  <span>${s.time}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // 4. Upcoming Stops
+      if (upcoming.length > 0) {
+        html += `
+          <div style="margin-top: 4px;">
+            <div style="font-weight: 700; color: #475569; font-size: 10px; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+              <i class="fa-regular fa-circle" style="color: #94a3b8;"></i> Upcoming Stops (${upcoming.length})
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px; padding-left: 14px; border-left: 2px solid #e2e8f0; margin-left: 6px;">
+              ${upcoming.map(s => `
+                <div style="display: flex; justify-content: space-between; color: #475569; font-size: 12px;">
+                  <span>${s.name}</span>
+                  <span style="color: #94a3b8;">${s.time}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    function closeModal() {
+      document.getElementById('mapModal').style.display = 'none';
+      document.body.style.overflow = 'auto';
+      if (liveTrackingInterval) {
+        clearInterval(liveTrackingInterval);
+        liveTrackingInterval = null;
+      }
+      clearLiveMapLayers();
+    }
+
+    window.onclick = function (e) {
+      if (e.target === document.getElementById('mapModal')) closeModal();
+    };
+
+    function isTrackingEnabled(bus) {
+      if (!bus) return true;
+      const value = bus.trackingEnabled;
+      return (
+        value === undefined ||
+        value === true ||
+        value === "true" ||
+        value === 1 ||
+        value === "1"
+      );
+    }
+
+    function isActualTimingEnabled(bus) {
+      if (!isTrackingEnabled(bus)) return false;
+      const value = bus?.actualTimingEnabled;
+      return (
+        value === true ||
+        value === "true" ||
+        value === 1 ||
+        value === "1"
+      );
+    }
+
+    function isHistoryEnabled(bus) {
+      if (!isActualTimingEnabled(bus)) return false;
+      const value = bus?.historyTrackingEnabled;
+      return (
+        value === true ||
+        value === "true" ||
+        value === 1 ||
+        value === "1"
+      );
+    }
+
+    function isDelayAnalyticsEnabled(bus) {
+      if (!isHistoryEnabled(bus)) return false;
+      const value = bus?.delayAnalyticsEnabled;
+      return (
+        value === true ||
+        value === "true" ||
+        value === 1 ||
+        value === "1"
+      );
+    }
+
+    function getBusCardMode(bus) {
+      return isHistoryEnabled(bus) ? "actual" : "normal";
+    }
+
+    function extractServiceNo(trackingUrl) {
+      if (!trackingUrl) return null;
+      try {
+        const decoded = decodeURIComponent(trackingUrl);
+        const url = decoded.replace(/\/$/, '');
+        const parts = url.split('/');
+        const serviceNo = parts[parts.length - 1];
+        return serviceNo ? serviceNo.trim() : null;
+      } catch (e) {
+        console.error('Error extracting serviceNo:', e);
+        return null;
+      }
+    }
+
+    function getTripDepartureDate(bus) {
+      const serviceNo = extractServiceNo(bus.link);
+      const busKey = serviceNo || `${sanitizeKey(bus.op)}_${sanitizeKey(bus.time)}`;
+      if (activeTripState[busKey] && activeTripState[busKey].departureDate) {
+        return activeTripState[busKey].departureDate;
+      }
+
+      const now = new Date();
+      const depMins = parseTimeToMinutes(bus.time);
+      const arrMins = parseTimeToMinutes(bus.arrivalTime);
+
+      if (depMins === -1) {
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      const spansMidnight = (arrMins !== -1 && arrMins < depMins);
+
+      let depDate = new Date(now);
+      if (spansMidnight) {
+        depDate.setDate(now.getDate() - 1);
+      }
+
+      const year = depDate.getFullYear();
+      const month = String(depDate.getMonth() + 1).padStart(2, '0');
+      const day = String(depDate.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    async function maybeCreateHistorySnapshot(bus) {
+      if (!isHistoryEnabled(bus)) return;
+      const serviceNo = extractServiceNo(bus.link);
+      if (!serviceNo) return;
+
+      const departureDate = getTripDepartureDate(bus);
+      
+      if (localHistoryWrites[`${serviceNo}_${departureDate}`]) return;
+      if (cachedBusHistory[serviceNo] && cachedBusHistory[serviceNo][departureDate]) return;
+
+      localHistoryWrites[`${serviceNo}_${departureDate}`] = true;
+
+      const stops = bus.stopTimes || bus.intermediateStops || [];
+      const story = stops.map((st, i) => {
+        const stopName = st.name || '';
+        const scheduledTime = st.time || '--:--';
+        
+        let actualVal = st.actual || '';
+        let estimatedVal = st.estimated || '';
+        let delayText = st.delay || '';
+        let nodeClass = st.status ? st.status.toLowerCase() : '';
+
+        // Calculate delay/early status based on actual vs scheduled time
+        if (!nodeClass && (actualVal || estimatedVal) && scheduledTime !== '--:--') {
+          const schedMins = parseTimeToMinutes(scheduledTime);
+          const actualMins = parseTimeToMinutes(actualVal || estimatedVal);
+          if (schedMins >= 0 && actualMins >= 0) {
+            const diff = actualMins - schedMins;
+            if (diff > 5) {
+              nodeClass = 'late';
+              delayText = `+${diff} min`;
+            } else if (diff < -5) {
+              nodeClass = 'early';
+              delayText = `${diff} min`;
+            } else {
+              nodeClass = 'ontime';
+              delayText = 'On Time';
+            }
+          }
+        }
+
+        let delayMins = 0;
+        if (delayText) {
+          const match = delayText.match(/[-+]?(\d+)/);
+          if (match) {
+            delayMins = parseInt(match[1], 10);
+            if (delayText.includes('-')) delayMins = -delayMins;
+          }
+        }
+
+        return {
+          stopName,
+          scheduledTime,
+          actualTime: actualVal || estimatedVal || scheduledTime,
+          delayMinutes: delayMins,
+          status: nodeClass
+        };
+      });
+
+      // Compute delay analytics once
+      let totalDelay = 0;
+      let worstDelay = 0;
+      let onTimeCount = 0;
+      story.forEach(st => {
+        const delay = st.delayMinutes || 0;
+        totalDelay += delay;
+        if (delay > worstDelay) worstDelay = delay;
+        if (delay <= 0) onTimeCount++;
+      });
+      const avgDelay = story.length > 0 ? Math.round(totalDelay / story.length) : 0;
+      const onTimePercentage = story.length > 0 ? Math.round((onTimeCount / story.length) * 100) : 100;
+
+      const payload = {
+        departureDate,
+        operator: bus.op || '—',
+        route: bus.route || '—',
+        departureTime: bus.time || '—',
+        arrivalTime: bus.arrivalTime || '—',
+        tripStatus: 'completed',
+        generatedAt: Math.floor(Date.now() / 1000),
+        story,
+        analytics: {
+          avgDelay,
+          worstDelay,
+          onTimePercentage
+        }
+      };
+
+      try {
+        const { set } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js");
+        const dbRef = ref(db, `/busHistory/${serviceNo}/${departureDate}`);
+        await set(dbRef, payload);
+        
+        if (!cachedBusHistory[serviceNo]) {
+          cachedBusHistory[serviceNo] = {};
+        }
+        cachedBusHistory[serviceNo][departureDate] = payload;
+        console.log(`Successfully saved journey history snapshot for ${serviceNo}_${departureDate}`);
+        
+        // Trigger a table rerender if we successfully write a snapshot so it updates dynamically
+        if (typeof handleSearch === 'function') {
+          handleSearch();
+        }
+      } catch (err) {
+        console.error('Error writing journey history snapshot:', err);
+        localHistoryWrites[`${serviceNo}_${departureDate}`] = false;
+      }
+    }
+
+    // ============================================================
+    // TRACKING AVAILABILITY SYSTEM (Phase 1)
+    // ============================================================
+
+    /**
+     * parseTimeToMinutes — Parses "10:30 AM", "8:45 PM", "06:00 AM" etc.
+     * Returns total minutes from midnight (0–1439), or -1 if unparseable.
+     * Handles 12-hour format with AM/PM correctly:
+     *   12:xx AM → 0:xx  (midnight hour)
+     *   12:xx PM → 12:xx (noon hour)
+     *   1–11 PM  → +12h
+     */
+    function parseTimeToMinutes(str) {
+      if (!str) return -1;
+      const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!m) return -1;
+      let h = parseInt(m[1], 10), min = parseInt(m[2], 10);
+      const pm = m[3].toUpperCase() === 'PM';
+      if (pm && h !== 12) h += 12;
+      if (!pm && h === 12) h = 0;
+      return h * 60 + min;
+    }
+
+    /**
+     * getTrackingState — Pure function that computes live tracking availability.
+     *
+     * Rules:
+     *   trackingStart = departure - 60 min
+     *   trackingEnd   = arrival   + 180 min (3 hours)
+     *
+     * Overnight handling:
+     *   If arrival minutes < departure minutes, the arrival is the next day.
+     *   If trackingEnd overflows past midnight (>= 1440), it wraps into next day.
+     *
+     * Returns: { enabled, state, countdownText }
+     *   state: "before-start" | "active" | "expired"
+     */
+    function getTrackingState(bus) {
+      const now = new Date();
+      const current = now.getHours() * 60 + now.getMinutes();
+      const departure = parseTimeToMinutes(bus.time);
+      const arrival = parseTimeToMinutes(bus.arrivalTime);
+
+      if (departure === -1) {
+          return "PRE_DEPARTURE";
+      }
+
+      let arr = arrival === -1 ? departure + 600 : arrival;
+      if (arr < departure) arr += 1440; // Next day
+
+      // Ensure current wraps around correctly if we are after midnight and departure was before midnight
+      let currentNorm = current;
+      if (current < 240 && departure > 1200) {
+          currentNorm += 1440; 
+      }
+      // If we are before midnight and departure is after midnight (pre-departure window)
+      if (current > 1200 && departure < 240) {
+          currentNorm -= 1440;
+      }
+
+      const trackingStart = departure - 60;
+      const trackingEnd = arr + 180;
+
+      if (currentNorm >= trackingStart && currentNorm <= trackingEnd) {
+          return "LIVE";
+      }
+
+      if (currentNorm < trackingStart) {
+          return "PRE_DEPARTURE";
+      }
+
+      return "COMPLETED";
+    }
+
+    // ============================================================
+    // SEARCH + RENDER
+    // ============================================================
+
+    // Helper for formatting date dynamically
+    function getFormattedDate(offsetDays = 0) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric', weekday: 'short' });
+    }
+
+    function parseTimeMins(timeStr) {
+      if (!timeStr) return 0;
+
+      try {
+        const time = timeStr.trim();
+        const isPM = time.includes("PM");
+        const isAM = time.includes("AM");
+        let [hours, minutes] = time.replace(/AM|PM/g, "").trim().split(":").map(Number);
+
+        if (isPM && hours !== 12) {
+          hours += 12;
+        }
+
+        if (isAM && hours === 12) {
+          hours = 0;
+        }
+
+        return hours * 60 + minutes;
+      } catch (err) {
+        console.error("[TIME PARSE ERROR]", timeStr, err);
+        return 0;
+      }
+    }
+
+    // ============================================================
+    // MODULAR RENDERING FUNCTIONS
+    // ============================================================
+
+    function getNextStop(bus) {
+        const stops = bus.stopTimes || bus.intermediateStops || [];
+        if (!stops.length) {
+            return {
+                distanceRemaining: "--",
+                eta: "--",
+                name: "Updating...",
+                previousStop: "On Route"
+            };
+        }
+
+        // Find the first stop that does not have an actual time recorded
+        let nextStopIndex = -1;
+        for (let i = 0; i < stops.length; i++) {
+            if (!stops[i].actual) {
+                nextStopIndex = i;
+                break;
+            }
+        }
+
+        if (nextStopIndex === -1) {
+            // All stops crossed
+            return {
+                distanceRemaining: "0 km",
+                eta: "Arrived",
+                name: "Destination Reached",
+                previousStop: stops[stops.length - 1].name || "Destination"
+            };
+        }
+
+        const nextStop = stops[nextStopIndex];
+        const previousStopName = nextStopIndex > 0 ? (stops[nextStopIndex - 1].name || "On Route") : "Departure Point";
+
+        return {
+            distanceRemaining: "--",
+            eta: nextStop.time || "--",
+            name: nextStop.name || "Updating...",
+            previousStop: previousStopName
+        };
+    }
+
+    function getBusStops(bus) {
+        if (!bus) return [];
+        if (Array.isArray(bus.stops)) {
+          return bus.stops.map(s => ({ city: s.city || s.name, time: s.time || s.scheduledTime }));
+        }
+        const rawStops = bus.stopTimes || bus.intermediateStops || [];
+        return rawStops.map(s => ({ city: s.name || s.city, time: s.time || s.scheduledTime }));
+    }
+
+    function getDisplayRouteInfo(bus) {
+        const bSel = document.getElementById('boardingSelect');
+        const dSel = document.getElementById('droppingSelect');
+        const selectedBoarding = bSel ? bSel.value : '';
+        const selectedDropping = dSel ? dSel.value : '';
+
+        const stops = getBusStops(bus);
+        if (!stops.length) {
+            let departureCity = bus.departurePoint || '';
+            let destinationCity = bus.destinationPoint || '';
+            if (!departureCity || !destinationCity) {
+                const parts = (bus.route || '').split('-');
+                departureCity = parts[0]?.trim() || 'Chennai';
+                destinationCity = parts[1]?.trim() || 'Tirunelveli';
+            }
+            return {
+                from: departureCity,
+                to: destinationCity,
+                boardTime: bus.time || '',
+                arrivalTime: bus.arrivalTime || ''
+            };
+        }
+
+        let bStop = null;
+        if (selectedBoarding) {
+            bStop = stops.find(s => s.city.toLowerCase() === selectedBoarding.toLowerCase());
+        }
+        if (!bStop) bStop = stops[0];
+
+        let dStop = null;
+        if (selectedDropping) {
+            dStop = stops.find(s => s.city.toLowerCase() === selectedDropping.toLowerCase());
+        }
+        if (!dStop) dStop = stops[stops.length - 1];
+
+        return {
+            from: bStop.city,
+            to: dStop.city,
+            boardTime: bStop.time,
+            arrivalTime: dStop.time
+        };
+    }
+
+    function renderHeader(bus) {
+        const routeInfo = getDisplayRouteInfo(bus);
+        const departureCity = routeInfo.from;
+        const destinationCity = routeInfo.to;
+        
+        const origDepartureCity = bus.departurePoint || (bus.route || '').split('-')[0]?.trim() || '';
+        const origDestinationCity = bus.destinationPoint || (bus.route || '').split('-')[1]?.trim() || '';
+
+        const trackingState = getTrackingState(bus);
+        let trackingStatusBadgeHtml = '';
+        if (trackingState === 'LIVE') {
+            trackingStatusBadgeHtml = `<span class="tracking-state-badge state-active"><i class="fa-solid fa-satellite-dish"></i> Live Tracking</span>`;
+        } else if (trackingState === 'COMPLETED') {
+            trackingStatusBadgeHtml = `<span class="tracking-state-badge state-completed"><i class="fa-solid fa-check-circle"></i> Trip Completed</span>`;
+        } else {
+            trackingStatusBadgeHtml = `<span class="tracking-state-badge state-waiting"><i class="fa-solid fa-clock"></i> Waiting</span>`;
+        }
+        
+        return `
+            <div class="ibc-header">
+                <div class="ibc-icon-wrap">
+                <i class="fa-solid fa-bus"></i>
+                </div>
+                <div class="ibc-info">
+                <div class="ibc-title">${bus.op || 'SBM TRANSPORT'} ${trackingStatusBadgeHtml}</div>
+                <div class="route-main" style="font-weight: 700; color: #0f172a; font-size: 15px; margin-top: 4px;">
+                    ${departureCity} &rarr; ${destinationCity}
+                </div>
+                <small style="color: #64748b; font-size: 11px; display: block; margin-top: 2px;">
+                    Full Route: ${origDepartureCity} &rarr; ${origDestinationCity}
+                </small>
+                <div class="ibc-badge" style="margin-top: 6px;">
+                    <i class="fa-solid fa-bed"></i> ${bus.type || 'AC SLEEPER'}
+                </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function toggleStops(el) {
+        const content = el.nextElementSibling;
+        content.style.display = content.style.display === "none" ? "block" : "none";
+    }
+
+    function toggleHistory(el) {
+        const content = el.nextElementSibling;
+        content.style.display = content.style.display === "none" ? "block" : "none";
+    }
+
+    function renderArrivalSummary(bus) {
+        const stops = bus.stopTimes || bus.intermediateStops || [];
+        const lastStop = stops.length > 0 ? stops[stops.length - 1] : {};
+        const actualArrival = lastStop.actualTime || bus.actualArrivalTime || "N/A";
+        const delay = parseInt(lastStop.delayMinutes || bus.delayMinutes || 0);
+
+        if (actualArrival === "N/A") return "";
+
+        let statusText = "On Time";
+        let statusClass = "";
+        if (delay > 0) {
+            statusText = `${delay} min Late`;
+            statusClass = "late";
+        } else if (delay < 0) {
+            statusText = `${Math.abs(delay)} min Early`;
+            statusClass = "early";
+        }
+
+        return `
+            <div class="completion-summary">
+                <div>
+                    <span>Actual Arrival</span>
+                    <strong>${actualArrival}</strong>
+                </div>
+                <div>
+                    <span>Status</span>
+                    <strong class="${statusClass}">${statusText}</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderLiveProgress(bus) {
+        const currentLocation = bus._liveLastPassedStop || getNextStop(bus)?.previousStop || 'On Route';
+        const nextStopName = bus._liveNextStop || getNextStop(bus)?.name || 'Updating...';
+
+        return `
+            <div class="live-mini-card" style="grid-template-columns: 1fr 1fr;">
+                <div>
+                    <span>📍 Last Passed</span>
+                    <strong>${currentLocation}</strong>
+                </div>
+                <div>
+                    <span>🚏 Next Stop</span>
+                    <strong>${nextStopName}</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderIntermediateStops(bus) {
+        const stops = bus.stopTimes || bus.intermediateStops || [];
+        if (!stops.length) return '';
+
+        const serviceNo = extractServiceNo(bus.link);
+        const isOpen = window.openStopsSet && window.openStopsSet.has(serviceNo);
+        const displayStyle = isOpen ? 'block' : 'none';
+
+        const trackingState = getTrackingState(bus);
+        const showActual = trackingState === 'LIVE' || trackingState === 'COMPLETED';
+
+        const stopsHtml = stops.map((stop, index) => {
+            const stopName = stop.name || stop.stopName || 'Stop ' + (index + 1);
+            const scheduledTime = stop.scheduledTime || stop.time || '';
+            const actualTime = stop.actual || (trackingState === 'COMPLETED' ? 'Not Reached' : 'Waiting');
+            
+            let delayText = stop.delay || '';
+            const isPending = actualTime === 'Waiting' || actualTime === 'Not Reached';
+            
+            // Live status indicators from YourBus provider
+            const normStopName = stopName.toLowerCase().replace(/[\s_]+/g, '');
+            const normLiveNext = bus._liveNextStop ? bus._liveNextStop.toLowerCase().replace(/[\s_]+/g, '') : null;
+            const normLiveLast = bus._liveLastPassedStop ? bus._liveLastPassedStop.toLowerCase().replace(/[\s_]+/g, '') : null;
+            
+            const isLiveNext = normLiveNext && (normStopName === normLiveNext);
+            const isLiveLast = normLiveLast && (normStopName === normLiveLast);
+            
+            let providerBadgeHtml = '';
+            if (isLiveNext) {
+                providerBadgeHtml = `<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.25);">NEXT STOP</span>`;
+            } else if (isLiveLast) {
+                providerBadgeHtml = `<span style="background: rgba(99, 102, 241, 0.15); color: #6366f1; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; border: 1px solid rgba(99, 102, 241, 0.25);">LAST PASSED</span>`;
+            }
+            
+            // Choose color for pin
+            let pinColor = 'blue';
+            if (index === 0) pinColor = 'blue';
+            else if (index === stops.length - 1) pinColor = 'purple';
+            else pinColor = (index % 2 === 0) ? 'orange' : 'green';
+
+            // Dynamic badge color
+            let badgeBg = 'rgba(239, 68, 68, 0.15)';
+            let badgeColor = '#ef4444';
+            let badgeBorder = 'rgba(239, 68, 68, 0.25)';
+            if (delayText === 'On Time' || delayText === 'Passed') {
+                badgeBg = 'rgba(34, 197, 94, 0.15)';
+                badgeColor = '#22c55e';
+                badgeBorder = 'rgba(34, 197, 94, 0.25)';
+            } else if (delayText.includes('-')) {
+                badgeBg = 'rgba(59, 130, 246, 0.15)';
+                badgeColor = '#3b82f6';
+                badgeBorder = 'rgba(59, 130, 246, 0.25)';
+            }
+
+            return `
+                <div class="ibc-stop">
+                    <div class="ibc-pin ibc-pin-${pinColor}"><i class="fa-solid fa-location-dot"></i></div>
+                    <div class="ibc-stop-name">
+                        ${stopName}
+                        ${providerBadgeHtml ? `<div style="margin-top: 4px;">${providerBadgeHtml}</div>` : ''}
+                    </div>
+                    <div class="ibc-stop-time time-${pinColor}">
+                        <span style="display: flex; align-items: center; gap: 4px; justify-content: center; font-size: 10px; opacity: 0.9;">
+                            <i class="fa-regular fa-clock"></i> Sch: ${scheduledTime}
+                        </span>
+                        <span style="display: flex; align-items: center; gap: 4px; justify-content: center; font-weight: 800;">
+                            <i class="fa-solid fa-clock"></i> Act: ${actualTime}
+                        </span>
+                        ${delayText && !isPending ? `
+                            <span class="delay-badge" style="background: ${badgeBg}; color: ${badgeColor}; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; margin-top: 2px; border: 1px solid ${badgeBorder};">
+                                ${delayText}
+                            </span>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="ibc-stops-sec">
+                <div class="section-header collapsible" onclick="toggleStops(this)">
+                    <span>🚏 Intermediate Stops</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="stops-content" style="display:${displayStyle}">
+                    <div class="ibc-timeline" style="margin-top: 16px;">
+                        ${stopsHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderJourneySummary(bus) {
+        const routeInfo = getDisplayRouteInfo(bus);
+        const departureTime = routeInfo.boardTime || '—';
+        const arrivalTime = routeInfo.arrivalTime || '—';
+        const depM = parseTimeMins(departureTime);
+        const arrM = parseTimeMins(arrivalTime);
+        let duration = '—';
+        if (depM !== -1 && arrM !== -1 && depM !== 9999 && arrM !== 9999) {
+            let diff = arrM - depM;
+            if (diff < 0) diff += 1440;
+            const hrs = Math.floor(diff / 60);
+            const mins = diff % 60;
+            duration = `${hrs}h ${mins}m`;
+        }
+
+        return `
+            <div class="trip-times">
+                <div>
+                    <label>Departure</label>
+                    <strong>${departureTime}</strong>
+                </div>
+                <div>
+                    <label>Duration</label>
+                    <strong>${duration}</strong>
+                </div>
+                <div>
+                    <label>Arrival</label>
+                    <strong>${arrivalTime}</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderTrackButton(bus) {
+        const safeOp = (bus.op || '').replace(/'/g, "\\'");
+        const safeLink = (bus.link || '').replace(/'/g, "\\'");
+        return `
+            <div class="card-actions" data-mode="${getBusCardMode(bus)}" data-dep="${bus.time || ''}" data-arr="${bus.arrivalTime || ''}" data-link="${safeLink}" data-op="${safeOp}" data-tracking-enabled="${isTrackingEnabled(bus)}" data-service-no="${extractServiceNo(bus.link) || ''}">
+                <button class="ibc-track-btn" onclick="openMap('${safeLink}','${safeOp}')" style="width: 100%; border: none; margin-top: 16px;">
+                <div class="live-dot" style="margin-right: 8px;"></div> Track Live
+                </button>
+                <div class="tracking-countdown" style="width: 100%;"></div>
+            </div>
+        `;
+    }
+
+    function renderHistoryPanel(bus) {
+        if (getBusCardMode(bus) !== 'actual') return '';
+        const serviceNo = extractServiceNo(bus.link);
+        if (!serviceNo) return '';
+        const busKey = serviceNo || `${sanitizeKey(bus.op)}_${sanitizeKey(bus.time)}`;
+        
+        const isHistoryOpen = window.openHistorySet && window.openHistorySet.has(serviceNo);
+        const displayStyle = isHistoryOpen ? 'block' : 'none';
+        
+        // Populate dates from both cachedBusHistory and window.actualTimesData
+        const historyData = cachedBusHistory?.[serviceNo] || {};
+        const actualData = window.actualTimesData?.[serviceNo] || {};
+        const allDateKeys = new Set();
+        Object.keys(historyData).forEach(k => allDateKeys.add(k));
+        Object.keys(actualData).forEach(k => allDateKeys.add(k.substring(0, 10)));
+        let dates = Array.from(allDateKeys).sort().reverse();
+        
+        const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+        if (!dates.includes(todayDate)) {
+            dates.unshift(todayDate);
+        }
+        const savedDate = window.selectedHistoryDates && window.selectedHistoryDates[serviceNo];
+        const defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : todayDate;
+        const hasHistory = dates.length > 0;
+        const dateOptionsHtml = dates.map(date => {
+            const formatted = new Date(date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+            return `<option value="${date}" ${date === defaultDate ? "selected" : ""}>${formatted}</option>`;
+        }).join("");
+
+        setTimeout(() => {
+            if(typeof renderPremiumHistory === 'function'){
+                renderPremiumHistory(busKey, serviceNo, defaultDate);
+            }
+        }, 0);
+
+        return `
+            <div class="premium-history-section">
+                <div class="section-header collapsible" onclick="toggleHistory(this)">
+                    <span>📅 Journey History</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="history-content" style="display:${displayStyle}; margin-top: 16px;">
+                    <div class="premium-history-header" style="display:none;">
+                    <div class="premium-history-title">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        Journey History
+                    </div>
+                    <div class="premium-history-divider"></div>
+                    </div>
+                    
+                    <div class="premium-date-selector" onclick="showCalendarModal('${busKey}', '${serviceNo}')" style="cursor: pointer;">
+                    <i class="fa-regular fa-calendar"></i>
+                    <label>Journey Date:</label>
+                    <div class="custom-select-trigger" id="history-date-display-${busKey}">
+                        Loading...
+                    </div>
+                    <select
+                        id="history-date-${busKey}"
+                        style="display: none;"
+                        onchange="renderPremiumHistory('${busKey}', '${serviceNo}', this.value)"
+                    >
+                        ${dateOptionsHtml}
+                    </select>
+                    </div>
+                    
+                    <div id="history-panel-${busKey}" class="premium-history-panel">
+                    <div class="premium-history-content" id="history-content-${busKey}">
+                        ${hasHistory 
+                        ? `<!-- History content will be rendered by JavaScript -->`
+                        : `<div class="premium-no-history">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <p>No completed journey history available</p>
+                            </div>`
+                        }
+                    </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderSimpleCard(bus) {
+        const serviceNoForCard = extractServiceNo(bus.link);
+        return `
+            <div class="modern-bus-card" data-service-no="${serviceNoForCard || ''}">
+                <div class="card-main-row">
+                    ${renderHeader(bus)}
+                    <div class="card-mid-col">
+                        ${renderJourneySummary(bus)}
+                    </div>
+                    ${renderTrackButton(bus)}
+                </div>
+                ${renderIntermediateStops(bus)}
+                ${renderHistoryPanel(bus)}
+            </div>
+        `;
+    }
+
+    function renderLiveCard(bus) {
+        const serviceNo = extractServiceNo(bus.link);
+        return `
+        <div class="modern-bus-card"
+             data-service-no="${serviceNo || ''}">
+            <div class="card-main-row">
+                ${renderHeader(bus)}
+                <div class="card-mid-col">
+                    ${renderLiveProgress(bus)}
+                    ${renderJourneySummary(bus)}
+                </div>
+                ${renderTrackButton(bus)}
+            </div>
+            ${renderIntermediateStops(bus)}
+            ${renderHistoryPanel(bus)}
+        </div>
+        `;
+    }
+
+    function renderCompletedCard(bus) {
+        const serviceNoForCard = extractServiceNo(bus.link);
+        return `
+            <div class="modern-bus-card" data-service-no="${serviceNoForCard || ''}">
+                <div class="card-main-row">
+                    ${renderHeader(bus)}
+                    <div class="card-mid-col">
+                        ${renderArrivalSummary(bus)}
+                        ${renderJourneySummary(bus)}
+                    </div>
+                    <div class="card-actions-placeholder"></div>
+                </div>
+                ${renderIntermediateStops(bus)}
+                ${renderHistoryPanel(bus)}
+            </div>
+        `;
+    }
+
+    function getSortTimeMins(bus, selectedBoarding) {
+      if (selectedBoarding) {
+        const stops = getBusStops(bus);
+        const stop = stops.find(s => s.city.toLowerCase() === selectedBoarding.toLowerCase());
+        if (stop && stop.time) {
+          return parseTimeMins(stop.time);
+        }
+      }
+      return parseTimeMins(bus.time);
+    }
+
+    function handleSearch() {
+      console.log('[handleSearch] Starting search...');
+      
+      try {
+        // Save open dropdown states
+        const openStops = new Set();
+        const openHistory = new Set();
+        document.querySelectorAll('.modern-bus-card').forEach(card => {
+          const serviceNo = card.getAttribute('data-service-no');
+          
+          const stopsContent = card.querySelector('.stops-content');
+          if (serviceNo && stopsContent && stopsContent.style.display === 'block') {
+            openStops.add(serviceNo);
+          }
+          
+          const historyContent = card.querySelector('.history-content');
+          if (serviceNo && historyContent && historyContent.style.display === 'block') {
+            openHistory.add(serviceNo);
+          }
+        });
+        window.openStopsSet = openStops;
+        window.openHistorySet = openHistory;
+
+        const safeCustomBuses = Array.isArray(customBuses) ? customBuses : [];
+        console.log('[handleSearch] customBuses count:', safeCustomBuses.length);
+        
+        const operator = document.getElementById('operatorInput').value.trim().toLowerCase();
+        const boarding = document.getElementById('boardingSelect').value;
+        const dropping = document.getElementById('droppingSelect').value;
+        const type = document.getElementById('typeSelect').value;
+        const sortBtn = document.querySelector('.sort-btn.active');
+        const sort = sortBtn ? sortBtn.id : 'sortEarly';
+
+        console.log('[handleSearch] Filter criteria:', { operator, boarding, dropping, type, sort });
+
+        let buses = [...safeCustomBuses]; // Create a copy to avoid mutating original
+        buses = buses.filter(b => {
+          const matchOp = !operator || (b.op || b.operator || '').toLowerCase().includes(operator);
+          const matchType = !type || (b.type || b.busType || '').toLowerCase() === type.toLowerCase();
+          
+          const stops = getBusStops(b);
+          const bIndex = boarding ? stops.findIndex(s => s.city.toLowerCase() === boarding.toLowerCase()) : -1;
+          const dIndex = dropping ? stops.findIndex(s => s.city.toLowerCase() === dropping.toLowerCase()) : -1;
+
+          if (boarding && bIndex === -1) return false;
+          if (dropping && dIndex === -1) return false;
+          if (boarding && dropping && bIndex >= dIndex) return false;
+
+          return matchOp && matchType;
+        });
+        
+        console.log('[handleSearch] Filtered buses count:', buses.length);
+
+      if (sort === 'sortEarly') buses.sort((a, b) => getSortTimeMins(a, boarding) - getSortTimeMins(b, boarding));
+      else buses.sort((a, b) => getSortTimeMins(b, boarding) - getSortTimeMins(a, boarding));
+
+      const grouped = {};
+      buses.forEach(b => {
+        if (!grouped[b.route]) grouped[b.route] = [];
+        grouped[b.route].push(b);
+      });
+
+      const container = document.getElementById('gridContainer');
+      const resultsBlock = document.getElementById('resultsContainer');
+      let html = '';
+
+      if (buses.length === 0) {
+        // Use safeCustomBuses to avoid undefined errors
+        const totalBuses = safeCustomBuses.length;
+        console.log('[handleSearch] Empty results. Total buses available:', totalBuses);
+        
+        html = totalBuses === 0
+          ? `<div style="text-align:center;padding:60px 20px;color:var(--text-muted)">
+               <i class="fa-solid fa-database" style="font-size:40px;opacity:0.3;display:block;margin-bottom:16px"></i>
+               <p style="font-size:15px;font-weight:600">No buses yet</p>
+               <p style="font-size:13px;margin-top:6px;opacity:0.7">Connect your new database or wait for data to load.</p>
+               <p style="font-size:11px;margin-top:12px;color:#94a3b8;">Debug: customBuses is empty or undefined</p>
+             </div>`
+          : `<div style="text-align:center;padding:40px;color:var(--text-muted)">
+               <i class="fa-solid fa-magnifying-glass" style="font-size:32px;opacity:0.3;display:block;margin-bottom:12px"></i>
+               <p>No buses found for your search.</p>
+               <p style="font-size:12px;margin-top:8px;opacity:0.6">${totalBuses} total buses available. Try adjusting filters.</p>
+             </div>`;
+      } else {
+        Object.keys(grouped).forEach(r => {
+          const rLabel = r === 'Tuticorin-Chennai' ? 'Tuticorin &rarr; Chennai'
+            : r === 'Chennai-Tuticorin' ? 'Chennai &rarr; Tuticorin' : r;
+          html += `<div class="section-badge">${rLabel}</div><div class="grid">`;
+          grouped[r].forEach(bus => {
+            const state = getTrackingState(bus);
+            let cardHtml = "";
+            if (state === "PRE_DEPARTURE") {
+                cardHtml = renderSimpleCard(bus);
+            } else if (state === "LIVE") {
+                cardHtml = renderLiveCard(bus);
+            } else {
+                cardHtml = renderCompletedCard(bus);
+            }
+            html += cardHtml;
+          });
+          html += `</div>`;
+        });
+      }
+
+      container.innerHTML = html;
+      resultsBlock.style.display = 'block';
+      console.log('[handleSearch] Rendering complete - results displayed');
+
+      // Restore open dropdown states
+      document.querySelectorAll('.modern-bus-card').forEach(card => {
+        const serviceNo = card.getAttribute('data-service-no');
+        if (serviceNo && openStops.has(serviceNo)) {
+          const stopsContent = card.querySelector('.stops-content');
+          if (stopsContent) {
+            stopsContent.style.display = 'block';
+          }
+        }
+        if (serviceNo && openHistory.has(serviceNo)) {
+          const historyContent = card.querySelector('.history-content');
+          if (historyContent) {
+            historyContent.style.display = 'block';
+          }
+        }
+      });
+
+
+
+      // Apply initial tracking state to all rendered cards
+      updateAllTrackingStates();
+      
+      } catch (err) {
+        console.error('[handleSearch] CRITICAL ERROR during rendering:', err);
+        console.error('[handleSearch] Error stack:', err.stack);
+        
+        // Show error message in UI
+        const container = document.getElementById('resultsContainer');
+        if (container) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #dc2626;">
+              <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; margin-bottom: 16px;"></i>
+              <p style="font-weight: 600;">An error occurred while searching buses.</p>
+              <p style="font-size: 0.85rem; color: #64748b; margin-top: 8px;">Please check the console for details and try again.</p>
+            </div>
+          `;
+        }
+        
+        // Still show results block so user sees the error
+        const resultsBlock = document.getElementById('resultsBlock');
+        if (resultsBlock) {
+          resultsBlock.style.display = 'block';
+        }
+      }
+    }
+
+    function setSort(btn) {
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      handleSearch();
+    }
+
+    function toggleHistoryAccordion(btn) {
+      btn.classList.toggle('expanded');
+      const content = btn.nextElementSibling;
+      if (content.style.maxHeight === '0px' || !content.style.maxHeight) {
+        content.style.maxHeight = content.scrollHeight + 'px';
+      } else {
+        content.style.maxHeight = '0px';
+      }
+    }
+    window.toggleHistoryAccordion = toggleHistoryAccordion;
+
+    // ============================================================
+    // PREMIUM JOURNEY HISTORY RENDERER
+    // ============================================================
+
+    function renderPremiumHistory(busKey, serviceNo, selectedDate) {
+      if (!window.selectedHistoryDates) {
+        window.selectedHistoryDates = {};
+      }
+      if (serviceNo) {
+        window.selectedHistoryDates[serviceNo] = selectedDate;
+      }
+      const historyData = cachedBusHistory[serviceNo] || {};
+      let snap = historyData[selectedDate];
+      const contentDiv = document.getElementById(`history-content-${busKey}`);
+      
+      if (!contentDiv) return;
+
+      // Fallback: if no Firebase history, try building from backend actual-times
+      if (!snap && window.actualTimesData && serviceNo && window.actualTimesData[serviceNo]) {
+        // Find key that starts with selectedDate (e.g. "2026-06-09_1630" or "2026-06-09")
+        const matchingKey = Object.keys(window.actualTimesData[serviceNo]).find(k => k.startsWith(selectedDate));
+        if (matchingKey) {
+          const actualStops = window.actualTimesData[serviceNo][matchingKey];
+          const stopEntries = Object.entries(actualStops);
+          if (stopEntries.length > 0) {
+            const matchedBus = customBuses.find(b => extractServiceNo(b.link) === serviceNo);
+            const staticStops = matchedBus ? (matchedBus.intermediateStops || matchedBus.stopTimes || []) : [];
+
+            let story = [];
+            if (staticStops.length > 0) {
+              story = staticStops.map((st, i) => {
+                const stopName = st.name || st.stopName || '';
+                const scheduledTime = st.scheduledTime || st.time || '--:--';
+                
+                // Normalize names to match
+                const getNormalizedName = (name) => (name || '').replace(/[\s_]+/g, '').toLowerCase();
+                const normalizedStatic = getNormalizedName(stopName);
+                
+                // Find matching entry in actualStops
+                let actualData = null;
+                for (const [actualKey, data] of Object.entries(actualStops)) {
+                  if (getNormalizedName(actualKey) === normalizedStatic) {
+                    actualData = data;
+                    break;
+                  }
+                }
+                
+                const isPassed = actualData ? (actualData.status === "Passed" || actualData.status === "Passed") : false;
+                const actualTime = actualData ? (isPassed ? (scheduledTime !== '--:--' ? scheduledTime : '') : (actualData.actual || '')) : '';
+                const delayMinutes = actualData ? (isPassed ? 0 : (actualData.delayMinutes || 0)) : 0;
+                const status = actualData ? (isPassed ? "Passed" : (actualData.status || 'pending')) : 'pending';
+
+                return {
+                  stopName: stopName,
+                  scheduledTime: scheduledTime,
+                  actualTime: actualTime,
+                  delayMinutes: delayMinutes,
+                  status: status
+                };
+              });
+            } else {
+              story = stopEntries.map(([stopKey, data]) => {
+                const stopName = stopKey.replace(/_/g, ' ');
+                const isPassed = data.status === "Passed";
+                const scheduledTime = data.scheduled || '--:--';
+                const actualTime = isPassed ? (scheduledTime !== '--:--' ? scheduledTime : '') : (data.actual || '');
+                const delayMinutes = isPassed ? 0 : (data.delayMinutes || 0);
+                const status = isPassed ? "Passed" : (data.status || 'pending');
+
+                return {
+                  stopName: stopName,
+                  scheduledTime: scheduledTime,
+                  actualTime: actualTime,
+                  delayMinutes: delayMinutes,
+                  status: status
+                };
+              });
+            }
+            
+            // Compute delay analytics
+            let totalDelay = 0;
+            let worstDelay = 0;
+            let onTimeCount = 0;
+            story.forEach(st => {
+              const delay = st.delayMinutes || 0;
+              totalDelay += delay;
+              if (delay > worstDelay) worstDelay = delay;
+              if (delay <= 0) onTimeCount++;
+            });
+            const avgDelay = story.length > 0 ? Math.round(totalDelay / story.length) : 0;
+            const onTimePercentage = story.length > 0 ? Math.round((onTimeCount / story.length) * 100) : 100;
+
+            snap = {
+              route: matchedBus ? matchedBus.route : 'Unknown Route',
+              departureTime: matchedBus ? matchedBus.time : '--:--',
+              arrivalTime: matchedBus ? matchedBus.arrivalTime : '--:--',
+              story: story,
+              analytics: {
+                avgDelay,
+                worstDelay,
+                onTimePercentage
+              }
+            };
+          }
+        }
+      }
+
+      if (!snap) {
+        contentDiv.innerHTML = `<div class="premium-no-history"><i class="fa-solid fa-clock-rotate-left"></i><p>No journey data available for this date</p></div>`;
+        return;
+      }
+      
+      // Update the select element to show the selected date
+      const selectEl = document.getElementById(`history-date-${busKey}`);
+      if (selectEl) selectEl.value = selectedDate;
+
+      const displayEl = document.getElementById(`history-date-display-${busKey}`);
+      if (displayEl) {
+        const dateObj = new Date(selectedDate);
+        const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+        displayEl.textContent = dateObj.toLocaleDateString('en-IN', options);
+      }
+      
+      // Build analytics HTML if available
+      let analyticsHtml = '';
+      if (snap.analytics) {
+        analyticsHtml = `
+          <div class="premium-history-meta-item" style="color: var(--primary-blue); font-weight: 600;">
+            <i class="fa-solid fa-chart-simple"></i>
+            <span>Avg Delay: ${snap.analytics.avgDelay >= 0 ? '+' : ''}${snap.analytics.avgDelay} min</span>
+          </div>
+          <div class="premium-history-meta-item" style="color: #dc2626; font-weight: 600;">
+            <i class="fa-solid fa-gauge-high"></i>
+            <span>Max Delay: +${snap.analytics.worstDelay} min</span>
+          </div>
+          <div class="premium-history-meta-item" style="color: #16a34a; font-weight: 600;">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>On-Time: ${snap.analytics.onTimePercentage}%</span>
+          </div>
+        `;
+      }
+
+      // Build meta information
+      const metaHtml = `
+        <div class="premium-history-meta">
+          <div class="premium-history-meta-item">
+            <i class="fa-solid fa-route"></i>
+            <span>${snap.route || 'Unknown Route'}</span>
+          </div>
+          <div class="premium-history-meta-item">
+            <i class="fa-solid fa-clock"></i>
+            <span>Dept: ${snap.departureTime || '--:--'}</span>
+          </div>
+          <div class="premium-history-meta-item">
+            <i class="fa-solid fa-flag-checkered"></i>
+            <span>Arr: ${snap.arrivalTime || '--:--'}</span>
+          </div>
+          ${analyticsHtml}
+        </div>
+      `;
+      
+      // Build stop cards
+      const storyStops = snap.story || [];
+      const stopsHtml = storyStops.map((st, idx) => {
+        const stopName = st.stopName || 'Unknown Stop';
+        const scheduledTime = st.scheduledTime || '--:--';
+        const actualTime = st.actualTime || '';
+        const delayMinutes = st.delayMinutes || 0;
+        const status = st.status || 'pending';
+        
+        // Determine display values
+        const isPassed = status === 'Passed';
+        const actualDisplay = isPassed ? (scheduledTime !== '--:--' ? scheduledTime : 'Passed') : (actualTime || 'Not Reached');
+        const actualClass = (actualTime || isPassed) ? 'actual' : 'not-reached';
+        
+        // Determine status display
+        let statusDisplay = 'Pending';
+        let statusClass = 'pending';
+        
+        if (actualTime || isPassed) {
+          if (isPassed) {
+            statusDisplay = 'Passed';
+            statusClass = 'passed';
+          } else if (delayMinutes > 0) {
+            statusDisplay = `+${delayMinutes} min Late`;
+            statusClass = 'late';
+          } else if (delayMinutes < 0) {
+            statusDisplay = `${Math.abs(delayMinutes)} min Early`;
+            statusClass = 'early';
+          } else {
+            statusDisplay = 'On Time';
+            statusClass = 'ontime';
+          }
+        }
+        
+        return `
+          <div class="premium-stop-card">
+            <div class="premium-stop-header">
+              <div class="premium-stop-icon">
+                <i class="fa-solid fa-location-dot"></i>
+              </div>
+              <div class="premium-stop-name">${stopName}</div>
+            </div>
+            <div class="premium-stop-grid">
+              <div class="premium-stop-item">
+                <div class="premium-stop-label">Scheduled</div>
+                <div class="premium-stop-value scheduled">${scheduledTime}</div>
+              </div>
+              <div class="premium-stop-item">
+                <div class="premium-stop-label">Actual</div>
+                <div class="premium-stop-value ${actualClass}">${actualDisplay}</div>
+              </div>
+              <div class="premium-stop-item">
+                <div class="premium-stop-label">Status</div>
+                <div class="premium-stop-value ${statusClass}">${statusDisplay}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      contentDiv.innerHTML = metaHtml + stopsHtml;
+    }
+    window.renderPremiumHistory = renderPremiumHistory;
+
+    // ============================================================
+    // CLOCK + NAV
+    // ============================================================
+    function updateClock() {
+      const now = new Date();
+      let h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      const pad = n => n < 10 ? '0' + n : n;
+      const el = document.getElementById('realTimeClock');
+      if (el) el.textContent = `${h}:${pad(m)}:${pad(s)} ${ampm}`;
+    }
+    // Single 1-second interval: updates both the clock and all tracking states.
+    // No per-card intervals — prevents memory leaks on re-render.
+    setInterval(() => {
+      updateClock();
+      updateAllTrackingStates();
+    }, 1000);
+    updateClock();
+
+    /**
+     * updateAllTrackingStates — Scans all rendered .card-actions elements,
+     * reads their data-dep / data-arr attributes, computes getTrackingState(),
+     * and updates button state + countdown text in-place.
+     *
+     * Called once per second from the shared interval, and once after
+     * each handleSearch() render.
+     */
+    function updateAllTrackingStates() {
+      const cardActions = document.querySelectorAll('.card-actions[data-dep]');
+      cardActions.forEach(actions => {
+        const dep  = actions.getAttribute('data-dep');
+        const arr  = actions.getAttribute('data-arr');
+        const link = actions.getAttribute('data-link');
+        const op   = actions.getAttribute('data-op');
+        const mode = actions.getAttribute('data-mode') || 'normal';
+        const btn  = actions.querySelector('.ibc-track-btn');
+        const cdEl = actions.querySelector('.tracking-countdown');
+        if (!btn) return;
+
+        const trackingEnabled = actions.getAttribute('data-tracking-enabled') !== 'false';
+        if (!trackingEnabled) {
+          btn.classList.add('track-btn-disabled');
+          btn.onclick = (e) => e.preventDefault();
+          btn.innerHTML = '<i class="fa-solid fa-ban" style="font-size:14px"></i> Tracking disabled by operator';
+          btn.style.background = '#f1f5f9';
+          btn.style.color = '#94a3b8';
+          btn.style.boxShadow = 'none';
+          btn.style.cursor = 'not-allowed';
+          if (cdEl) { cdEl.style.display = 'none'; cdEl.textContent = ''; }
+          return;
+        }
+
+        const state = getTrackingState({ time: dep, arrivalTime: arr });
+
+        // State transition trigger logic for history snapshots
+        const serviceNo = extractServiceNo(link);
+        const busKey = serviceNo || `${sanitizeKey(op)}_${sanitizeKey(dep)}`;
+        const prevState = previousTrackingStates[busKey];
+        previousTrackingStates[busKey] = state;
+
+        // Persist departure date when trip starts (becomes active) or if found active on load
+        if (state === 'LIVE') {
+          if (!activeTripState[busKey]) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const depDateStr = `${year}-${month}-${day}`;
+            
+            activeTripState[busKey] = { departureDate: depDateStr };
+            localStorage.setItem('activeTripState', JSON.stringify(activeTripState));
+            console.log(`Persisted active trip departure date for ${busKey} as ${depDateStr}`);
+          }
+        }
+
+        if (state === 'COMPLETED' && prevState !== 'COMPLETED') {
+          const busObj = cachedBuses.find(b => b.time === dep && b.op === op);
+          if (busObj && isHistoryEnabled(busObj)) {
+            maybeCreateHistorySnapshot(busObj);
+          }
+        }
+
+        if (state === 'LIVE') {
+          btn.classList.remove('track-btn-disabled');
+          btn.onclick = () => openMap(link, op);
+          btn.innerHTML = '<span style="display:flex; align-items:center; justify-content:center; gap:8px;"><div class="live-dot"></div> Track Live</span>';
+          btn.style.background = 'linear-gradient(135deg, #1d4ed8, #1e40af)';
+          btn.style.color = '#ffffff';
+          btn.style.boxShadow = '0 0 15px rgba(29, 78, 216, 0.4)';
+          btn.style.cursor = 'pointer';
+          if (cdEl) { cdEl.style.display = 'none'; cdEl.textContent = ''; }
+        } else if (state === 'PRE_DEPARTURE') {
+          btn.classList.add('track-btn-disabled');
+          btn.onclick = (e) => e.preventDefault();
+          btn.innerHTML = `<i class="fa-solid fa-clock"></i> Waiting for Departure`;
+          btn.style.background = '#e2e8f0';
+          btn.style.color = '#64748b';
+          btn.style.boxShadow = 'none';
+          btn.style.cursor = 'not-allowed';
+          if (cdEl) { cdEl.style.display = 'none'; cdEl.textContent = ''; }
+        } else {
+          // COMPLETED
+          btn.classList.add('track-btn-disabled');
+          btn.onclick = (e) => e.preventDefault();
+          btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Trip Completed`;
+          btn.style.background = '#e2e8f0';
+          btn.style.color = '#64748b';
+          btn.style.boxShadow = 'none';
+          btn.style.cursor = 'not-allowed';
+          if (cdEl) { cdEl.style.display = 'none'; cdEl.textContent = ''; }
+        }
+      });
+    }
+
+    function scrollToSearch(e) {
+      if (window.location.pathname.endsWith('index.html') ||
+        window.location.pathname === '/' ||
+        window.location.pathname.endsWith('tracker/')) {
+        e.preventDefault();
+        const el = document.getElementById('searchSection');
+        const y = el ? el.getBoundingClientRect().top + window.scrollY - 100 : 0;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }
+    const homeLink = document.getElementById('homeLink');
+    const navLogo = document.getElementById('navLogo');
+    if (homeLink) homeLink.addEventListener('click', scrollToSearch);
+    if (navLogo) navLogo.addEventListener('click', scrollToSearch);
+
+    document.getElementById('operatorInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleSearch();
+    });
+
+    // ============================================================
+    // ADD BUS MODAL LOGIC
+    // ============================================================
+    function openAddModal() {
+      document.getElementById('addBusModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => document.getElementById('ab_op').focus(), 300);
+    }
+    function closeAddModal() {
+      document.getElementById('addBusModal').classList.remove('open');
+      document.body.style.overflow = 'auto';
+      // Clear form
+      ['ab_op', 'ab_time', 'ab_link', 'ab_custom_route'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('ab_route').value = 'Tuticorin-Chennai';
+      document.getElementById('ab_custom_group').style.display = 'none';
+    }
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('addBusModal')) closeAddModal();
+    }
+    function handleAddRouteChange() {
+      const val = document.getElementById('ab_route').value;
+      document.getElementById('ab_custom_group').style.display =
+        val === '__custom__' ? 'block' : 'none';
+    }
+
+    let toastTimer;
+    function showToast(msg, isError) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast-msg show' + (isError ? ' error' : '');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = 'toast-msg', 3000);
+    }
+
+    function saveBus() {
+      const op = document.getElementById('ab_op').value.trim();
+      const time = document.getElementById('ab_time').value.trim();
+      const link = document.getElementById('ab_link').value.trim();
+      const routeSel = document.getElementById('ab_route').value;
+      const route = routeSel === '__custom__'
+        ? document.getElementById('ab_custom_route').value.trim()
+        : routeSel;
+
+      if (!op) { showToast('⚠️ Please enter operator name', true); return; }
+      if (!time) { showToast('⚠️ Please enter departure time', true); return; }
+      if (!route) { showToast('⚠️ Please enter a route', true); return; }
+      if (!link) { showToast('⚠️ Please enter tracking link', true); return; }
+
+      const normalizedRoute = normalizeRouteName(route);
+      const routeKey = sanitizeKey(normalizedRoute);
+      const opKey = sanitizeKey(op);
+      const busData = { op, time, route: normalizedRoute, link };
+
+      let buses = getDBBuses();
+      buses = buses.filter(b => !(sanitizeKey(b.route) === routeKey && sanitizeKey(b.op) === opKey));
+      buses.push(busData);
+      saveDBBuses(buses);
+
+      if (routeSel === '__custom__' && route) {
+        let rts = getDBRoutes();
+        if (!rts.some(r => sanitizeKey(r.name) === routeKey)) {
+          rts.push({ name: route });
+          saveDBRoutes(rts);
+        }
+      }
+
+      showToast('✅ Bus saved to local database!');
+      closeAddModal();
+      if (window.syncCustomBuses) window.syncCustomBuses();
+    }
+
+    // ============================================================
+    // INIT — load buses from localStorage
+    // ============================================================
+
+    // Show loading state immediately
+    document.getElementById('resultsContainer').style.display = 'block';
+    document.getElementById('gridContainer').innerHTML =
+      '<div style="text-align:center;padding:60px 20px;color:var(--text-muted)">' +
+      '<div style="width:36px;height:36px;border:4px solid #e5e7eb;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px"></div>' +
+      '<p style="font-size:14px">Loading buses...</p></div>';
+
+    // Read locally-saved custom buses from localStorage
+    function readLocalYbmCustomBuses() {
+      try {
+        const raw = localStorage.getItem('ybm_local_buses');
+        return raw ? JSON.parse(raw).filter(b => b && b.op).map(normalizeBus) : [];
+      } catch (e) { return []; }
+    }
+
+    // Merge all bus sources, deduplicating by op+time+route
+    function mergeBusLists(...lists) {
+      const seen = new Set();
+      const result = [];
+      lists.forEach(list => {
+        (list || []).forEach(bus => {
+          const key = (bus.op || '') + '|' + (bus.time || '') + '|' + (bus.route || '');
+          if (!seen.has(key)) { seen.add(key); result.push(bus); }
+        });
+      });
+      return result;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      function init() {
+        applyFirebaseData();
+        localYbmBuses = readLocalYbmCustomBuses();
+
+        function populateDropdowns() {
+          const boardingSel = document.getElementById('boardingSelect');
+          const droppingSel = document.getElementById('droppingSelect');
+          const typeSel  = document.getElementById('typeSelect');
+
+          if (boardingSel && droppingSel) {
+            const curBoarding = boardingSel.value;
+            const curDropping = droppingSel.value;
+
+            boardingSel.innerHTML = '<option value="">[ Select Boarding Point ]</option>';
+            droppingSel.innerHTML = '<option value="">[ Select Dropping Point ]</option>';
+
+            const allCities = new Set();
+            customBuses.forEach(b => {
+              const stops = getBusStops(b);
+              stops.forEach(s => {
+                if (s.city) allCities.add(s.city.trim());
+              });
+            });
+
+            Array.from(allCities).sort().forEach(city => {
+              const opt1 = document.createElement('option');
+              opt1.value = city; opt1.textContent = city;
+              boardingSel.appendChild(opt1);
+
+              const opt2 = document.createElement('option');
+              opt2.value = city; opt2.textContent = city;
+              droppingSel.appendChild(opt2);
+            });
+
+            if (window.initialBoardingQuery) {
+              boardingSel.value = window.initialBoardingQuery;
+              window.initialBoardingQuery = null;
+            } else if (curBoarding && [...boardingSel.options].some(o => o.value === curBoarding)) {
+              boardingSel.value = curBoarding;
+            }
+
+            if (window.initialDroppingQuery) {
+              droppingSel.value = window.initialDroppingQuery;
+              window.initialDroppingQuery = null;
+            } else if (curDropping && [...droppingSel.options].some(o => o.value === curDropping)) {
+              droppingSel.value = curDropping;
+            }
+          }
+
+          if (typeSel) {
+            const curType = typeSel.value;
+            typeSel.innerHTML = '<option value="">— Choose Bus Type —</option>';
+            const allTypes = new Set();
+            customBuses.forEach(b => {
+              const bType = b.type || b.busType;
+              if (bType) allTypes.add(bType);
+            });
+            cachedBusTypes.forEach(t => allTypes.add(t.name));
+            if (window.initialTypeQuery) allTypes.add(window.initialTypeQuery);
+            Array.from(allTypes).sort().forEach(t => {
+              const opt = document.createElement('option');
+              opt.value = t; opt.textContent = t;
+              typeSel.appendChild(opt);
+            });
+            if (window.initialTypeQuery) { typeSel.value = window.initialTypeQuery; window.initialTypeQuery = null; }
+            else if ([...typeSel.options].some(o => o.value === curType)) typeSel.value = curType;
+          }
+        }
+
+        window.syncCustomBuses = function() {
+          console.log('[syncCustomBuses] Starting bus synchronization...');
+          
+          try {
+            // Ensure applyFirebaseData has been called
+            if (typeof applyFirebaseData === 'function') {
+              applyFirebaseData();
+              console.log('[syncCustomBuses] applyFirebaseData() called');
+            }
+            
+            // Load local buses with fallback
+            localYbmBuses = readLocalYbmCustomBuses();
+            console.log('[syncCustomBuses] Local buses loaded:', localYbmBuses?.length || 0);
+            
+            // Check Firebase cached buses
+            const firebaseBusCount = cachedBuses?.length || 0;
+            console.log('[syncCustomBuses] Firebase cached buses:', firebaseBusCount);
+            console.log('[syncCustomBuses] cachedBuses array:', cachedBuses);
+            
+            // Safe merge with fallbacks
+            const safeCachedBuses = Array.isArray(cachedBuses) ? cachedBuses : [];
+            const safeLocalBuses = Array.isArray(localYbmBuses) ? localYbmBuses : [];
+            
+            customBuses = mergeBusLists(safeCachedBuses, safeLocalBuses);
+            console.log('[syncCustomBuses] Final merged buses:', customBuses?.length || 0);
+            console.log('[syncCustomBuses] customBuses array:', customBuses);
+            
+            // Update dropdowns
+            populateDropdowns();
+            
+            // Trigger search if handleSearch exists
+            if (typeof handleSearch === 'function') {
+              console.log('[syncCustomBuses] Calling handleSearch()...');
+              handleSearch();
+            } else {
+              console.error('[syncCustomBuses] handleSearch function not found!');
+            }
+          } catch (err) {
+            console.error('[syncCustomBuses] ERROR during sync:', err);
+          }
+        };
+        
+        // Delay first sync to allow Firebase to load (1 second delay)
+        console.log('[init] Scheduling delayed syncCustomBuses (1000ms)...');
+        setTimeout(() => {
+          console.log('[init] Running delayed syncCustomBuses...');
+          window.syncCustomBuses();
+        }, 1000);
+      }
+
+      // ============================================================
+      // LIVE RESULTS CARD REFRESH SYSTEM
+      // ============================================================
+
+      async function refreshLiveBusCards() {
+        try {
+          console.log('[RENDER] Fetching live bus data...');
+          const response = await fetch(`${API_BASE}/api/buses/live`);
+
+          if (!response.ok) {
+            console.log('[RENDER] Live API response not OK:', response.status);
+            return;
+          }
+
+          const liveData = await response.json();
+          // API returns flat dict: { "SBM_001": { lat, lng, lastUpdated }, ... }
+          const busIds = Object.keys(liveData || {});
+          console.log('[RENDER] Live data received:', busIds.length, 'buses:', busIds);
+
+          if (!liveData || busIds.length === 0) {
+            console.log('[RENDER] No valid live data');
+            return;
+          }
+
+          // merge live backend data into custom buses
+          let matchCount = 0;
+          customBuses = customBuses.map(bus => {
+            const serviceNo = extractServiceNo(bus.link);
+            // Try exact match by service number first
+            let matchedData = null;
+            let matchedId = null;
+            if (serviceNo && liveData[serviceNo]) {
+              matchedData = liveData[serviceNo];
+              matchedId = serviceNo;
+            } else {
+              // Fallback: try matching by operator name substring in bus_id
+              for (const busId of busIds) {
+                const opFirst = (bus.op || '').split(' ')[0].toUpperCase();
+                if (opFirst && busId.toUpperCase().includes(opFirst)) {
+                  matchedData = liveData[busId];
+                  matchedId = busId;
+                  break;
+                }
+              }
+            }
+
+            if (!matchedData) return bus;
+            
+            matchCount++;
+            console.log('[CARD UPDATE] Matched bus:', bus.op, '=> busId:', matchedId, 'lat:', matchedData.lat, 'lng:', matchedData.lng);
+
+            return {
+              ...bus,
+              latitude: matchedData.lat,
+              longitude: matchedData.lng,
+              _liveLastUpdated: matchedData.lastUpdated || new Date().toLocaleTimeString(),
+              liveGpsTimestamp: matchedData.lastUpdated || new Date().toLocaleTimeString(),
+              progressPercent: matchedData.progressPercent || bus.progressPercent || 0,
+              stopTimes: bus.stopTimes || [],
+              _liveNextStop: matchedData.nextStop || null,
+              _liveLastPassedStop: matchedData.lastPassedStop || null,
+            };
+          });
+          
+          console.log('[RENDER] Matched', matchCount, 'buses with live data');
+
+          // rerender cards
+          handleSearch();
+          console.log('[RENDER] Cards refreshed');
+
+        } catch (err) {
+          console.error('[RENDER] Live card refresh failed:', err);
+        }
+      }
+
+      // refresh every 10 seconds
+      setInterval(refreshLiveBusCards, 10000);
+
+      // initial load after buses loaded
+      setTimeout(refreshLiveBusCards, 1000);
+
+      // ============================================================
+      // ACTUAL STOP TIMINGS LOADER
+      // ============================================================
+
+      function loadJourneyDates(bus) {
+        console.log("[JourneyHistory] bus:", bus);
+
+        const select = document.getElementById("journeyDateSelect");
+
+        if (!select) {
+          console.error("journeyDateSelect not found");
+          return;
+        }
+
+        select.innerHTML = '<option value="">Select Journey Date</option>';
+
+        if (!window.actualTimesData) {
+          console.warn("[JourneyHistory] actualTimesData missing");
+          return;
+        }
+
+        console.log("[JourneyHistory] actualTimesData:", window.actualTimesData);
+
+        // try multiple IDs
+        const possibleKeys = [
+          bus.serviceNo,
+          bus.busId,
+          bus.id,
+          bus.vehicleNo,
+          "SBM_001"
+        ].filter(Boolean);
+
+        console.log("[JourneyHistory] trying keys:", possibleKeys);
+
+        let history = null;
+        let matchedKey = null;
+
+        for (const key of possibleKeys) {
+          if (window.actualTimesData[key]) {
+            history = window.actualTimesData[key];
+            matchedKey = key;
+            break;
+          }
+        }
+
+        if (!history) {
+          console.warn("[JourneyHistory] no matching history");
+          return;
+        }
+
+        console.log("[JourneyHistory] matched key:", matchedKey);
+
+        const dates = Object.keys(history);
+
+        console.log("[JourneyHistory] dates:", dates);
+
+        dates.forEach(date => {
+          const option = document.createElement("option");
+          option.value = date;
+          option.textContent = new Date(date).toLocaleDateString("en-IN", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+          });
+          select.appendChild(option);
+        });
+
+        if (dates.length) {
+          select.value = dates[0];
+          renderJourneyHistory(matchedKey, dates[0]);
+        }
+      }
+
+      async function loadActualTimes() {
+        try {
+          const response = await fetch(`${API_BASE}/api/actual-times`);
+
+          if (!response.ok) {
+            console.warn('[ActualTimes] API response not OK:', response.status);
+            return;
+          }
+
+          const actualData = await response.json();
+          // API returns: { "SBM_001": { "2026-06-01": { "KILAMBAKAM": { scheduled, actual, delayMinutes, status } } } }
+
+          if (!actualData || Object.keys(actualData).length === 0) {
+            console.log('[ActualTimes] No data returned from API');
+            return;
+          }
+
+          console.log('[ActualTimes] Loaded data for', Object.keys(actualData).length, 'buses');
+
+          // Store globally for card rendering to use
+          window.actualTimesData = actualData;
+
+          const todayKey = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+          // Merge backend data into customBuses stop times / intermediate stops
+          customBuses.forEach(bus => {
+            const serviceNo = extractServiceNo(bus.link);
+
+            if (serviceNo && actualData[serviceNo]) {
+              // Dynamic lookup: Find the journey key that starts with today's date string
+              const journeyKeyForToday = Object.keys(actualData[serviceNo]).find(k => k.startsWith(todayKey));
+              const stopsForToday = actualData[serviceNo][todayKey] || (journeyKeyForToday ? actualData[serviceNo][journeyKeyForToday] : null);
+
+              if (stopsForToday) {
+                // Convert actualData keys to lowercase for case-insensitive lookup
+                const stopsForTodayLower = {};
+                Object.keys(stopsForToday).forEach(k => {
+                  stopsForTodayLower[k.toLowerCase()] = stopsForToday[k];
+                });
+
+              const targetStopsLists = [];
+              if (bus.stopTimes) targetStopsLists.push(bus.stopTimes);
+              if (bus.intermediateStops) targetStopsLists.push(bus.intermediateStops);
+
+              targetStopsLists.forEach(stopsList => {
+                stopsList.forEach(stop => {
+                  const getNormalizedStopName = (name) => (name || '').replace(/[\s_]+/g, '').toLowerCase();
+                  const stopNameNormalized = getNormalizedStopName(stop.name || stop.stopName);
+                  
+                  // Find the matching key from stopsForTodayLower
+                  const matchedKey = Object.keys(stopsForTodayLower).find(k => getNormalizedStopName(k) === stopNameNormalized);
+                  const stopData = matchedKey ? stopsForTodayLower[matchedKey] : null;
+
+                  if (stopData) {
+                    if (stopData.status === "Passed") {
+                      stop.actual = stop.scheduledTime || stop.time || '';
+                      stop.delay = "Passed";
+                    } else {
+                      stop.actual = stopData.actual || '';
+                      stop.delay = stopData.delayMinutes !== undefined
+                        ? (stopData.delayMinutes > 0 ? `+${stopData.delayMinutes} min` : (stopData.delayMinutes < 0 ? `${stopData.delayMinutes} min` : 'On Time'))
+                        : (stopData.status || '');
+                    }
+                    stop.estimated = stopData.estimated || '';
+                  }
+                });
+              });
+            }
+          }
+        });
+
+          // Re-render cards with new data
+          handleSearch();
+
+        } catch (err) {
+          console.error('[ActualTimes] Failed to load:', err);
+        }
+      }
+
+      // Load actual times initially and refresh every 10 seconds (synced with live data)
+      setTimeout(loadActualTimes, 2000);
+      setInterval(loadActualTimes, 10000);
+
+      if (window._fbBuses !== undefined) { init(); }
+      else { window.addEventListener('firebaseDataReady', init, { once: true }); }
+    });
+  </script>
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    
+    console.log('[Firebase Module] Starting Firebase initialization...');
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZXryu-NQ-Jv4hRRPCnmc8shKgLQPQP94",
+      authDomain: "realtime-tracking-3809e.firebaseapp.com",
+      databaseURL: "https://realtime-tracking-3809e-default-rtdb.firebaseio.com",
+      projectId: "realtime-tracking-3809e",
+      storageBucket: "realtime-tracking-3809e.firebasestorage.app",
+      messagingSenderId: "1085653591220",
+      appId: "1:1085653591220:web:5789826b047764c2ada3e1"
+    };
+    
+    try {
+      const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+      const db  = getDatabase(app);
+      
+      console.log('[Firebase Module] Loading data from Firebase...');
+      const snap = await get(ref(db, '/'));
+      const all  = snap.val() || {};
+      
+      console.log('[Firebase Module] Raw data from Firebase:', all);
+      console.log('[Firebase Module] Buses raw:', all.buses);
+      console.log('[Firebase Module] Routes raw:', all.routes);
+      
+      window._fbBuses     = Object.values(all.buses     || {}).filter(b => b && b.op);
+      window._fbRoutes    = Object.values(all.routes    || {}).filter(r => r && r.name);
+      window._fbOperators = Object.values(all.operators || {}).filter(o => o && o.name);
+      window._fbTypes     = Object.values(all.types     || {}).filter(t => t && t.name);
+      window._fbActualTimes = all.actualTimes || {};
+      window._fbBusHistory = all.busHistory || {};
+      
+      console.log('[Firebase Module] Processed buses:', window._fbBuses.length);
+      console.log('[Firebase Module] Processed routes:', window._fbRoutes.length);
+      console.log('[Firebase Module] Processed operators:', window._fbOperators.length);
+      console.log('[Firebase Module] Processed types:', window._fbTypes.length);
+      console.log('[Firebase Module] Actual times data:', Object.keys(window._fbActualTimes).length, 'services');
+      console.log('[Firebase Module] History data:', Object.keys(window._fbBusHistory).length, 'buses');
+      
+    } catch(e) {
+      console.error('[Firebase Module] ERROR loading data:', e);
+      window._fbBuses = []; window._fbRoutes = []; window._fbOperators = []; window._fbTypes = [];
+      window._fbActualTimes = {}; window._fbBusHistory = {};
+      
+      // Inline showFirebaseErrorBanner
+      const msg = e.message || String(e);
+      const isPermissionDenied = msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('unauthorized');
+      const banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#ef4444;color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.2);z-index:99999;max-width:500px;width:90%;font-family:sans-serif;font-size:14px;line-height:1.5;text-align:left;';
+      let html = `<div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="font-size:20px;">⚠️</div>
+        <div>
+          <div style="font-weight:bold;margin-bottom:4px;">Firebase Connection Warning</div>
+          <div style="opacity:0.9;margin-bottom:8px;">Failed to load data from Firebase. Error: <code>${msg}</code></div>`;
+      if (isPermissionDenied) {
+        html += `<div style="background:rgba(0,0,0,0.15);padding:8px 12px;border-radius:6px;font-size:12px;margin-top:8px;">
+          <strong>Action Required:</strong> Your Firebase Realtime Database Rules are blocking reads. Please go to your 
+          <a href="https://console.firebase.google.com/" target="_blank" style="color:#fff;text-decoration:underline;font-weight:bold;">Firebase Console</a> 
+          &rarr; Realtime Database &rarr; Rules, and set:
+          <pre style="margin:4px 0 0 0;font-family:monospace;background:rgba(0,0,0,0.2);padding:4px;border-radius:4px;">{
+  "rules": {
+    "buses": { ".read": true, ".write": "auth != null" },
+    "routes": { ".read": true, ".write": "auth != null" },
+    "operators": { ".read": true, ".write": "auth != null" },
+    "types": { ".read": true, ".write": "auth != null" }
+  }
+}</pre>
+        </div>`;
+      }
+      html += `<button onclick="this.parentElement.parentElement.parentElement.remove()" style="margin-top:12px;background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:12px;">Dismiss</button>
+        </div>
+      </div>`;
+      banner.innerHTML = html;
+      document.body.appendChild(banner);
+    }
+    
+    // ACTUAL TIMING SECTION GENERATOR
+    // Generates professional stop timeline for bus cards
+    function generateActualTimingSection(bus, serviceNo, departureDate) {
+      // [STOP DATA] Log rendering attempt
+      console.log('[STOP DATA] generateActualTimingSection:', serviceNo, 'date:', departureDate);
+      
+      const stops = bus.intermediateStops || bus.stops || [];
+      if (!stops.length) {
+        console.log('[STOP DATA] No stops found for bus');
+        return '';
+      }
+      
+      const actualData = getActualTimingData(serviceNo, departureDate);
+      console.log('[STOP DATA] Loaded actualData:', Object.keys(actualData).length, 'stops');
+      
+      let stopsHtml = stops.map((stop, index) => {
+        const stopName = stop.name || stop.stopName || 'Stop ' + (index + 1);
+        const scheduledTime = stop.scheduledTime || stop.time || '';
+        const stopKey = sanitizeKey(`${stopName}_${scheduledTime}`);
+        const timingData = actualData[stopKey] || {};
+        
+        const trackingState = getTrackingState(bus);
+        const actualTime = timingData.actualTime || (trackingState === 'COMPLETED' ? 'Not Reached' : 'Waiting');
+        const delayMinutes = timingData.delayMinutes;
+        const status = formatDelayStatus(delayMinutes);
+        
+        const isPending = actualTime === 'Waiting' || actualTime === 'Not Reached';
+        const statusClass = isPending ? 'status-pending' : 
+                          (delayMinutes > 2 ? 'status-late' : 
+                           (delayMinutes < -2 ? 'status-early' : 'status-on-time'));
+        
+        return `
+          <div class="stop-timeline-card" data-stop="${stopKey}">
+            <div class="stop-timeline-node"></div>
+            <div class="stop-timeline-content">
+              <div class="stop-name">${stopName}</div>
+              <div class="stop-timing-row">
+                <div class="stop-timing-item">
+                  <span class="stop-timing-label">Scheduled:</span>
+                  <span class="stop-timing-value">${scheduledTime || 'N/A'}</span>
+                </div>
+                <div class="stop-timing-item">
+                  <span class="stop-timing-label">Actual:</span>
+                  <span class="stop-timing-value">${actualTime}</span>
+                </div>
+                <div class="stop-timing-item">
+                  <span class="stop-status-badge ${statusClass}">${status.text}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      const state = getTrackingState(bus);
+      const stateInfo = getStateDisplayInfo(state);
+      
+      return `
+        <div class="actual-timing-section" style="margin-top: var(--space-lg);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md);">
+            <h4 style="font-size: 14px; font-weight: 700; color: var(--primary); margin: 0;">
+              <i class="fa-solid fa-map-location-dot" style="margin-right: 8px; color: var(--accent);"></i>
+              Stop Timings
+            </h4>
+            <span class="tracking-state-badge state-${state}" style="font-size: 11px;">
+              <i class="fa-solid ${stateInfo.icon}" style="margin-right: 4px;"></i>
+              ${stateInfo.label}
+            </span>
+          </div>
+          <div class="stops-timeline" style="max-height: 300px; overflow-y: auto;">
+            ${stopsHtml}
+          </div>
+          ${state === STATE_ACTIVE ? `
+            <div style="margin-top: var(--space-md); padding: var(--space-sm); background: #f0fdf4; border-radius: var(--radius-sm); border: 1px solid #bbf7d0;">
+              <div style="display: flex; align-items: center; gap: var(--space-sm); font-size: 12px; color: #166534;">
+                <i class="fa-solid fa-satellite-dish fa-spin-pulse" style="color: #22c55e;"></i>
+                <span>Live GPS tracking active. Actual times updating automatically.</span>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // HISTORY CALENDAR UI GENERATOR
+    function generateHistoryAccordion(bus, serviceNo, busKey) {
+      let dates = getAvailableHistoryDates(serviceNo) || [];
+      console.log('History dates:', serviceNo, dates);
+
+      const depTime = bus.time || bus.departureTime || '';
+
+      const fallbackDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+      if (!dates.includes(fallbackDate)) {
+        dates.unshift(fallbackDate);
+      }
+
+      const dateOptions = dates.map(date => {
+
+        const formatted = new Date(date)
+          .toLocaleDateString('en-IN', {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+          });
+
+        return `
+          <option value="${date}">
+            ${formatted}
+          </option>
+        `;
+      }).join('');
+
+      return `
+        <div class="premium-history-section">
+
+          <div class="premium-history-header">
+            <div class="premium-history-title">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              Journey History
+            </div>
+          </div>
+
+          <div class="premium-date-selector" onclick="showCalendarModal('${busKey}', '${serviceNo}')" style="cursor: pointer;">
+
+            <i class="fa-regular fa-calendar"></i>
+
+            <label>Journey Date:</label>
+
+            <div class="custom-select-trigger" id="history-date-display-${busKey}">
+                Loading...
+            </div>
+
+            <select
+              id="history-date-${busKey}"
+              style="display: none;"
+              onchange="renderPremiumHistory(
+                '${busKey}',
+                '${serviceNo}',
+                this.value
+              )"
+            >
+              ${dateOptions}
+            </select>
+
+          </div>
+
+          <div id="history-panel-${busKey}">
+            <div class="premium-no-history">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <p>No completed journey history available</p>
+            </div>
+          </div>
+
+        </div>
+      `;
+    }
+
+    console.log('[Firebase Module] Dispatching firebaseDataReady event...');
+    window.dispatchEvent(new CustomEvent('firebaseDataReady'));
+    console.log('[Firebase Module] firebaseDataReady event dispatched');
+  </script>
+
+</body>
+
+</html>
