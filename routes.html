@@ -70,18 +70,12 @@
       }
     }
     
-    /* Desktop - 3 or 4 cards per row */
+    /* Desktop - 3 cards per row */
     @media (min-width: 1025px) {
       .routes-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: 24px;
         padding: 0 32px 48px;
-      }
-    }
-    
-    @media (min-width: 1280px) {
-      .routes-grid {
-        grid-template-columns: repeat(4, 1fr);
       }
     }
     
@@ -754,11 +748,29 @@
 
         const countText = `${routeBuses.length} Buses Available`;
 
-        // Image URL: fallback to placeholder if not present
-        const imageUrl = route.image ? route.image : '';
-        const imgHtml = imageUrl 
-          ? `<img src="${imageUrl}" alt="${route.name}" class="route-image" onerror="this.src='https://via.placeholder.com/400x200?text=Route+Image'">`
-          : `<div class="route-image" style="background: linear-gradient(135deg, #f1f5f9, #e2e8f0); display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:40px;"><i class="fa-solid fa-map-location-dot"></i></div>`;
+        // Find route image URL across possible field name variations
+        let imageUrl = route.imageUrl || route.image || route.bannerImage || route.routeImage || '';
+
+        // Console debugging
+        console.log("Route:", route);
+        console.log("Image URL:", route.imageUrl);
+
+        // Convert Google Drive sharing links to direct download links
+        if (imageUrl && imageUrl.includes('drive.google.com')) {
+          const driveMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+          if (driveMatch && driveMatch[1]) {
+            imageUrl = `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+          }
+        }
+
+        const routeName = route.name;
+
+        // Use local fallback when imageUrl is empty
+        if (!imageUrl) {
+          imageUrl = 'chennai-nazareth.jpg';
+        }
+
+        const imgHtml = `<img src="${imageUrl}" alt="${routeName}" class="route-image" onerror="this.src='chennai-nazareth.jpg'">`;
 
         const routeLink = `results.html?route=${encodeURIComponent(route.name)}`;
 

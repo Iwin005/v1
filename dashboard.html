@@ -10,306 +10,463 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="stylesheet" href="index.css" />
   <style>
-    /* Admin Dashboard Layout & Specific Elements */
+    /* Mobile-First Responsive Admin Dashboard Redesign */
     :root {
-      --sidebar-width: 260px;
-      --navbar-height: 64px;
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+      --navbar-height: 70px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body, html {
       height: 100%;
       background: var(--bg-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      color: var(--text-primary);
     }
 
+    /* Layout Wrapper */
     .app-layout {
       display: flex;
+      flex-direction: column;
       min-height: 100vh;
+      width: 100%;
     }
 
-    /* Sidebar Navigation */
-    .sidebar {
-      width: var(--sidebar-width);
-      background: var(--surface-white);
-      border-right: 1px solid var(--border-soft);
+    /* Top Sticky Navigation Bar */
+    .top-navbar {
+      height: var(--navbar-height);
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #ffffff;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      width: 100%;
+    }
+
+    .navbar-container {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 var(--space-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: clamp(1.2rem, 3vw, 1.5rem);
+      text-decoration: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .navbar-brand:hover {
+      opacity: 0.95;
+    }
+
+    /* Desktop Navigation Links */
+    .desktop-nav {
+      display: none;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.78);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 10px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .nav-link.active {
+      background: rgba(251, 191, 36, 0.12) !important;
+      border-color: rgba(251, 191, 36, 0.3) !important;
+      color: var(--brand-yellow) !important;
+      box-shadow: 0 4px 12px rgba(251, 191, 36, 0.08);
+    }
+
+    .nav-link.logout-btn {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #fca5a5;
+      font-weight: 600;
+    }
+
+    .nav-link.logout-btn:hover {
+      background: var(--danger);
+      color: #ffffff;
+      border-color: var(--danger);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+
+    /* Hamburger Menu Button (Mobile Only) */
+    .hamburger-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #ffffff;
+      font-size: 1.35rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .hamburger-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Collapsible Drawer (Mobile Only) */
+    .mobile-drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 21, 47, 0.5);
+      backdrop-filter: blur(5px);
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .mobile-drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 290px;
+      background: #ffffff;
+      z-index: 2001;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
       display: flex;
       flex-direction: column;
-      position: fixed;
-      top: 0; left: 0; bottom: 0;
-      z-index: 100;
-      overflow-y: auto;
-      box-shadow: var(--shadow-soft);
     }
 
-    .sidebar::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, var(--brand-yellow), var(--brand-gold));
-      z-index: 102;
+    .mobile-drawer.open {
+      transform: translateX(0);
     }
 
-    .sidebar-header {
-      padding: var(--space-lg) var(--space-xl);
-      border-bottom: 1px solid var(--border);
+    .drawer-header {
+      padding: var(--space-md);
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       background: var(--surface-soft);
     }
 
-    .sidebar-logo {
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-      font-weight: 700;
-      font-size: var(--font-m);
-      color: var(--primary);
-    }
-
-    .sidebar-logo i {
-      color: var(--brand-gold);
-      font-size: 20px;
-    }
-
-    .sidebar-nav {
-      flex: 1;
-      padding: var(--space-md) var(--space-sm);
-    }
-
-    .nav-section {
-      margin-bottom: var(--space-xl);
-    }
-
-    .nav-section-title {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-      padding: 0 var(--space-md);
-      margin-bottom: var(--space-xs);
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: var(--space-md);
-      padding: 10px var(--space-md);
-      border-radius: 12px;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-weight: 500;
-      transition: var(--transition);
-      margin-bottom: 2px;
-    }
-
-    .nav-item:hover {
-      background: var(--surface-soft);
-      color: var(--primary);
-    }
-
-    .nav-item.active {
-      background: var(--brand-yellow-light);
-      color: var(--brand-gold);
-      font-weight: 600;
-    }
-
-    .nav-item i {
-      width: 16px;
-      text-align: center;
-    }
-
-    .sidebar-footer {
-      padding: var(--space-lg);
-      border-top: 1px solid var(--border);
-      background: var(--surface-soft);
-    }
-
-    .user-card {
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-      padding: var(--space-sm);
-      background: var(--surface-white);
-      border-radius: 12px;
-      border: 1px solid var(--border-soft);
-    }
-
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      background: var(--brand-yellow);
-      color: var(--text-dark);
-      font-weight: bold;
+    .drawer-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.3rem;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s;
     }
 
-    .user-info { display: flex; flex-direction: column; text-align: left; }
-    .user-name { font-weight: 600; font-size: 13px; color: var(--primary); }
-    .user-role { font-size: 11px; color: var(--text-muted); }
+    .drawer-close-btn:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .drawer-nav {
+      flex: 1;
+      padding: var(--space-md) var(--space-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+    }
+
+    .drawer-link {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      background: transparent;
+      border: none;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .drawer-link:hover, .drawer-link.active {
+      background: var(--brand-yellow-light);
+      color: var(--brand-gold);
+    }
+
+    .drawer-link i {
+      width: 20px;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+
+    .drawer-divider {
+      height: 1px;
+      background: var(--border-soft);
+      margin: var(--space-sm) 0;
+    }
+
+    .logout-btn-mobile {
+      color: var(--danger);
+    }
+
+    .logout-btn-mobile:hover {
+      background: var(--danger-light) !important;
+      color: var(--danger) !important;
+    }
 
     /* Main Content Area */
     .main-content {
       flex: 1;
-      margin-left: var(--sidebar-width);
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+      width: 100%;
     }
-
-    .top-navbar {
-      height: var(--navbar-height);
-      background: var(--primary);
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 var(--space-2xl);
-      position: sticky;
-      top: 0;
-      z-index: 90;
-    }
-
-    .navbar-left { display: flex; align-items: center; gap: var(--space-lg); }
-    .navbar-brand { display: flex; align-items: center; gap: var(--space-sm); color: #ffffff; font-weight: 700; font-size: 16px; }
-    .navbar-right { display: flex; align-items: center; gap: var(--space-md); }
-    
-    .nav-btn {
-      color: rgba(255,255,255,0.8);
-      text-decoration: none;
-      font-size: var(--font-body);
-      font-weight: 500;
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
-      transition: var(--transition);
-      background: rgba(255,255,255,0.08);
-      border: none;
-      cursor: pointer;
-    }
-    .nav-btn:hover { background: rgba(255,255,255,0.15); color: #ffffff; }
-    .nav-btn.logout { background: var(--danger); color: #ffffff; }
 
     .content-area {
       flex: 1;
-      padding: var(--space-2xl) var(--space-3xl);
-      text-align: left;
+      padding: var(--space-md);
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
     }
 
-    .page-header { margin-bottom: var(--space-2xl); }
-    .page-title { font-size: var(--font-l); font-weight: 700; color: var(--primary); margin-bottom: var(--space-xs); }
-    .page-subtitle { font-size: var(--font-body); color: var(--text-muted); }
+    .page-header {
+      margin-bottom: var(--space-md);
+    }
 
     /* Stats Grid */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: var(--space-xl);
-      margin-bottom: var(--space-2xl);
-    }
-    @media (max-width: 1024px) {
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 640px) {
-      .stats-grid { grid-template-columns: 1fr; }
+      grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile viewport */
+      gap: var(--space-sm);
+      margin-bottom: var(--space-lg);
     }
 
     .stat-card {
       background: var(--surface-white);
       border: 1px solid var(--border-soft);
-      border-radius: 20px;
-      padding: var(--space-xl);
+      border-radius: 16px;
+      padding: var(--space-md);
       box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-    .stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
-    
+
+    .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-xs);
+    }
+
     .stat-icon {
-      width: 36px; height: 36px;
-      border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
     }
+
     .stat-icon.blue { background: var(--brand-yellow-light); color: var(--brand-gold); }
     .stat-icon.green { background: var(--success-light); color: var(--success); }
     .stat-icon.yellow { background: var(--warning-light); color: var(--warning); }
     .stat-icon.purple { background: #FAF5FF; color: #7C3AED; }
 
-    .stat-value { font-size: 24px; font-weight: 700; color: var(--primary); }
-    .stat-label { font-size: var(--font-meta); color: var(--text-muted); }
+    .stat-trend {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
 
     /* Quick Action Cards */
     .actions-grid {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: var(--space-lg);
-      margin-bottom: var(--space-2xl);
-    }
-    @media (max-width: 768px) {
-      .actions-grid { grid-template-columns: repeat(2, 1fr); }
+      grid-template-columns: repeat(2, 1fr); /* 2 columns action grid on mobile */
+      gap: var(--space-sm);
+      margin-bottom: var(--space-lg);
     }
 
     .action-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: var(--space-lg);
+      border-radius: 12px;
+      padding: var(--space-md) var(--space-sm);
       text-align: center;
       cursor: pointer;
-      transition: var(--transition);
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 95px;
     }
+
     .action-card:hover {
       border-color: var(--accent);
       transform: translateY(-2px);
     }
+
     .action-icon {
-      width: 40px; height: 40px;
-      border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto var(--space-sm);
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-sm);
       background: var(--accent-light);
       color: var(--accent);
-      font-size: 18px;
+      font-size: 16px;
     }
-    .action-title { font-weight: 600; font-size: var(--font-body); color: var(--primary); }
-    .action-desc { font-size: var(--font-meta); color: var(--text-muted); }
 
-    /* Table Toolbar */
+    .action-title {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--primary);
+    }
+
+    .action-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: none; /* Hide description on mobile for compactness */
+    }
+
+    /* Toolbar (Search & Filter) */
     .toolbar {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-lg);
-      gap: var(--space-md);
+      flex-direction: column; /* Stacked on mobile */
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+      width: 100%;
     }
-    .search-box { position: relative; display: flex; align-items: center; width: 100%; max-width: 320px; }
-    .search-box i { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; }
+
+    .search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 14px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
     .search-box input {
-      width: 100%; height: 38px;
-      padding: 0 16px 0 34px;
+      width: 100%;
+      height: 44px; /* easy tap target */
+      padding: 0 16px 0 40px;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: var(--font-body);
+      border-radius: 10px;
+      font-size: 0.95rem;
       outline: none;
-      transition: var(--transition);
+      transition: all 0.2s;
     }
-    .search-box input:focus { border-color: var(--accent); }
 
-    .filter-group { display: flex; gap: var(--space-sm); }
+    .search-box input:focus {
+      border-color: var(--accent);
+    }
+
+    .filter-group {
+      display: flex;
+      width: 100%;
+    }
+
     .filter-select {
-      height: 38px;
+      width: 100%;
+      height: 44px;
       padding: 0 var(--space-md);
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      border-radius: 10px;
       background: var(--bg-card);
-      font-size: var(--font-body);
+      font-size: 0.95rem;
       outline: none;
       cursor: pointer;
     }
 
-    /* Actions and Badges */
+    /* Badges */
     .status-badge {
       display: inline-flex;
       align-items: center;
@@ -320,285 +477,433 @@
       font-weight: 600;
       text-transform: uppercase;
     }
+
     .status-badge.active { background: var(--success-light); color: var(--success); }
     .status-badge.offline { background: var(--danger-light); color: var(--danger); }
     .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-    /* Expanded Stops Row Details */
+    /* Stops timeline & toggles */
     .stops-toggle {
       border: 1px solid var(--border);
       background: var(--bg-main);
-      padding: 4px 8px;
-      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      border-radius: 8px;
       font-size: 11px;
+      font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 4px;
-    }
-    .stops-row { display: none; background: var(--bg-main); }
-    .stops-row.expanded { display: table-row; }
-    .stops-container { padding: var(--space-lg); border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); }
-    
-    .stops-timeline { display: flex; overflow-x: auto; gap: var(--space-md); padding: var(--space-sm) 0; }
-    .timeline-item { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 120px; }
-    .timeline-node {
-      margin-top: 12px;
-      text-align: center;
-      padding: 0 8px;
-    }
-    .timeline-name {
-      font-size: 12px;
-      font-weight: 600;
-      color: #334155;
-      margin-bottom: 4px;
-      line-height: 1.3;
-    }
-    .timeline-time {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 11px;
-      font-weight: 500;
-      color: #64748b;
-      background: white;
-      padding: 2px 8px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      width: fit-content;
+      height: 32px;
     }
 
-    .stop-item {
+    .stops-timeline {
+      display: flex;
+      overflow-x: auto;
+      gap: var(--space-md);
+      padding: var(--space-sm) 0;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .timeline-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-width: 100px;
-      position: relative;
+      text-align: center;
+      min-width: 110px;
     }
 
-    .stop-item:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 16px;
-      right: -50%;
-      width: 100%;
-      height: 2px;
-      background: var(--border);
-      z-index: 0;
-    }
-
-    .stop-number {
-      width: 32px;
-      height: 32px;
+    .timeline-node {
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      background: var(--bg-card);
+      background: var(--surface-white);
       border: 2px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 0.8rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-secondary);
-      position: relative;
-      z-index: 1;
+      margin-bottom: var(--space-xs);
     }
 
-    .stop-item:first-child .stop-number,
-    .stop-item:last-child .stop-number {
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      border-color: var(--primary);
-      color: white;
-    }
-
-    .stop-name {
-      margin-top: 8px;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      text-align: center;
-      max-width: 80px;
+    .timeline-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 2px;
       line-height: 1.3;
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .direct-route {
+    .timeline-time {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 500;
+      color: #64748b;
+      background: white;
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Fleet Cards (Mobile Stacked Layout by Default) */
+    .fleet-cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      width: 100%;
+    }
+
+    .admin-bus-card {
+      background: var(--surface-white);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column; /* stacked on mobile viewport */
+      gap: var(--space-sm);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .admin-bus-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px; /* top line for status on mobile viewports */
+      transition: all 0.2s ease;
+    }
+
+    .admin-bus-card.active-status::before {
+      background: var(--brand-green);
+    }
+
+    .admin-bus-card.offline-status::before {
+      background: var(--danger);
+    }
+
+    .admin-bus-card .bus-info {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 12px 16px;
-      background: #f1f5f9;
-      border-radius: var(--radius-sm);
-      font-size: 0.85rem;
-      color: var(--text-secondary);
+      gap: var(--space-sm);
     }
 
-    .direct-route i {
-      color: var(--primary);
-    }
-
-    /* ============================================
-       MODAL STYLES (Preserved)
-       ============================================ */
-    .modal-overlay { 
-      display: none; 
-      position: fixed; 
-      inset: 0; 
-      background: rgba(0,0,0,0.5); 
-      backdrop-filter: blur(4px); 
-      align-items: center; 
-      justify-content: center; 
-      z-index: 1000; 
-    }
-    .modal-overlay.open { display: flex; }
-    .modal-content { 
-      background: white; 
-      width: 100%; 
-      max-width: 450px; 
-      border-radius: var(--radius-lg); 
-      overflow: hidden; 
-      animation: zoomIn 0.2s ease-out; 
-      box-shadow: var(--shadow-lg);
-    }
-    @keyframes zoomIn { 
-      from { transform: scale(0.95); opacity: 0; } 
-      to { transform: scale(1); opacity: 1; } 
-    }
-    .modal-header { 
-      padding: 20px 24px; 
-      border-bottom: 1px solid var(--border); 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-    }
-    .modal-header h3 { 
-      font-size: 1.1rem; 
-      font-weight: 700; 
-      margin: 0; 
-    }
-    .btn-close { 
-      background: none; 
-      border: none; 
-      font-size: 1.2rem; 
-      color: var(--text-muted); 
-      cursor: pointer; 
-      width: 36px;
-      height: 36px;
+    .admin-bus-card .bus-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #fff8e1;
+      color: var(--brand-gold);
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 8px;
-      transition: all 0.2s ease;
+      font-size: 18px;
+      flex-shrink: 0;
     }
-    .btn-close:hover {
+
+    .admin-bus-card .bus-details h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+
+    .admin-bus-card .bus-details p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .admin-bus-card .route-info {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .admin-bus-card .route-path {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .admin-bus-card .route-name {
+      font-size: 11px;
+      color: var(--text-muted);
       background: #f1f5f9;
-      color: var(--text-primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      width: fit-content;
     }
-    .modal-body { 
-      padding: 24px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 16px; 
+
+    .admin-bus-card .time-info {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      background: var(--surface-soft);
+      padding: var(--space-sm);
+      border-radius: 8px;
+      gap: var(--space-md);
     }
-    .form-group label { 
-      display: block; 
-      font-size: 0.85rem; 
-      font-weight: 600; 
-      color: var(--text-secondary); 
-      margin-bottom: 6px; 
+
+    .admin-bus-card .time-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-dark);
     }
-    .form-group input, 
-    .form-group select { 
-      width: 100%; 
-      padding: 12px; 
-      border: 1px solid var(--border); 
-      border-radius: var(--radius-sm); 
-      font-family: inherit; 
-      font-size: 0.95rem; 
-      outline: none; 
-      transition: 0.2s; 
-      background: white; 
+
+    .admin-bus-card .time-row i {
+      color: var(--text-muted);
+      font-size: 12px;
     }
-    .form-group input:focus, 
-    .form-group select:focus { 
-      border-color: var(--primary); 
-      box-shadow: 0 0 0 3px rgba(251, 192, 45, 0.1);
-    }
-    .modal-footer { 
-      padding: 16px 24px; 
-      border-top: 1px solid var(--border); 
-      display: flex; 
-      justify-content: flex-end; 
-      gap: 12px; 
-      background: #f8fafc; 
-    }
-    .btn-cancel { 
-      padding: 10px 20px; 
-      border: 1px solid var(--border); 
-      background: white; 
-      border-radius: var(--radius-sm); 
-      font-weight: 600; 
-      cursor: pointer; 
-      color: var(--text-secondary); 
-      transition: all 0.2s ease;
-    }
-    .btn-cancel:hover {
+
+    .admin-bus-card .bus-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
       background: #f8fafc;
-      border-color: var(--text-muted);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      width: fit-content;
     }
-    .btn-save { 
-      padding: 10px 24px; 
-      border: none; 
-      background: var(--accent); 
-      color: var(--text-primary); 
-      border-radius: var(--radius-sm); 
-      font-weight: 700; 
-      cursor: pointer; 
-      transition: all 0.2s ease;
+
+    .admin-bus-card .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      width: fit-content;
     }
-    .btn-save:hover {
-      background: var(--accent-hover);
+
+    .admin-bus-card .row-actions {
+      display: flex;
+      gap: var(--space-sm);
+      width: 100%;
+      margin-top: var(--space-xs);
+    }
+
+    .admin-bus-card .row-actions button {
+      flex: 1; /* Stretch buttons equally on mobile viewports */
+      height: 44px; /* Min height 44px touch target */
+      font-size: 0.9rem;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
     .btn-icon {
       background: white;
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      width: 36px;
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       color: var(--text-muted);
       cursor: pointer;
       transition: all 0.2s ease;
     }
-    .btn-icon:hover {
-      background: var(--brand-yellow-light);
-      border-color: var(--brand-yellow);
-      color: var(--text-primary);
+
+    .btn-icon.edit:hover {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      color: #3b82f6;
     }
+
     .btn-icon.delete:hover {
-      background: var(--danger-light);
+      background: #feefee;
       border-color: var(--danger);
       color: var(--danger);
     }
 
-    /* ============================================
-       FULL PAGE FORM (Add/Edit Bus)
-       ============================================ */
+    /* Modern Responsive Modals */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 21, 47, 0.6);
+      backdrop-filter: blur(5px);
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      padding: var(--space-sm);
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      width: 95vw; /* full mobile width */
+      max-height: 90vh; /* max-height 90vh */
+      overflow-y: auto;
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .modal-header h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+    }
+
+    .btn-close:hover {
+      background: #f1f5f9;
+    }
+
+    .modal-body {
+      padding: 20px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .form-group input, 
+    .form-group select {
+      width: 100%;
+      height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+      background: white;
+    }
+
+    .form-group input:focus, 
+    .form-group select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(251, 192, 45, 0.15);
+    }
+
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-soft);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-sm);
+      background: #f8fafc;
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
+    }
+
+    .btn-cancel {
+      padding: 0 20px;
+      height: 44px;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-cancel:hover {
+      background: #f8fafc;
+    }
+
+    .btn-save {
+      padding: 0 24px;
+      height: 44px;
+      border: none;
+      background: var(--accent);
+      color: var(--text-primary);
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-save:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Full Page Edit/Add Bus Page */
     .app-page {
       display: none;
       position: fixed;
       inset: 0;
       background: var(--bg-main);
-      z-index: 200;
+      z-index: 4000;
       flex-direction: column;
       overflow-y: auto;
     }
+
     .app-page.active {
       display: flex;
     }
+
     .app-page-header {
       background: white;
       border-bottom: 1px solid var(--border);
-      padding: 20px 32px;
+      padding: var(--space-md);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -606,203 +911,120 @@
       top: 0;
       z-index: 10;
     }
+
     .app-page-title {
       display: flex;
       align-items: center;
       gap: 12px;
     }
+
     .app-page-title h2 {
-      font-size: 1.3rem;
+      font-size: 1.15rem;
       font-weight: 700;
     }
+
     .app-page-body {
       flex: 1;
-      padding: 32px;
-      max-width: 900px;
-      margin: 0 auto;
+      padding: var(--space-md);
       width: 100%;
     }
+
     .app-page-footer {
       background: white;
       border-top: 1px solid var(--border);
-      padding: 20px 32px;
+      padding: var(--space-md);
       display: flex;
       justify-content: space-between;
       position: sticky;
       bottom: 0;
+      z-index: 10;
+      gap: var(--space-sm);
     }
 
-    /* Form Sections */
     .form-sections {
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: var(--space-md);
     }
+
     .form-section-card {
       background: white;
-      border-radius: var(--radius-lg);
+      border-radius: 16px;
       border: 1px solid var(--border);
       overflow: hidden;
     }
+
     .form-section-header {
-      padding: 20px 24px;
+      padding: 14px 20px;
       background: #f8fafc;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border-soft);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
-    .form-section-header i {
-      color: var(--primary);
-      font-size: 1rem;
-    }
+
     .form-section-header h3 {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       color: var(--text-secondary);
     }
+
     .form-section-body {
-      padding: 24px;
-    }
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    .form-row.single {
-      grid-template-columns: 1fr;
+      padding: 16px;
     }
 
-    /* Intermediate Stops in Form */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr; /* Stacked on mobile by default */
+      gap: 16px;
+    }
+
     .intermediate-stops-card {
       background: white;
-      border-radius: var(--radius-lg);
+      border-radius: 16px;
       border: 1px solid var(--border);
-      margin-top: 24px;
+      margin-top: var(--space-md);
     }
+
     .intermediate-stops-header {
-      padding: 16px 24px;
+      padding: 14px 20px;
       background: #f8fafc;
-      border-bottom: 1px solid var(--border);
-      font-weight: 600;
+      border-bottom: 1px solid var(--border-soft);
+      font-weight: 700;
       color: var(--text-primary);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
-    .intermediate-stops-header i {
-      color: var(--primary);
-    }
+
     .intermediate-stops-list {
-      padding: 16px 24px;
+      padding: 16px;
     }
+
     .stop-input-row {
       display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
+      flex-direction: column; /* Stacked on mobile viewports */
+      gap: 12px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border-soft);
     }
+
     .stop-input-row:last-child {
       border-bottom: none;
     }
+
     .stop-input-name {
-      flex: 1;
-      font-weight: 500;
+      font-weight: 700;
       color: var(--text-primary);
-    }
-    .stop-input-field {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .stop-input-field i {
-      color: var(--text-muted);
-    }
-    .stop-input-field input {
-      width: 130px;
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
       font-size: 0.9rem;
-      text-align: center;
-    }
-    .stop-input-field input:focus {
-      outline: none;
-      border-color: var(--primary);
     }
 
-    /* ============================================
-       RESPONSIVE DESIGN
-       ============================================ */
-    @media (max-width: 1200px) {
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .actions-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
+    .stop-input-field {
+      width: 100%;
     }
 
-    @media (max-width: 992px) {
-      .sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-      }
-      .sidebar.open {
-        transform: translateX(0);
-      }
-      .main-content {
-        margin-left: 0;
-      }
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .actions-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 768px) {
-      .content-area {
-        padding: 20px;
-      }
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-      .actions-grid {
-        grid-template-columns: 1fr;
-      }
-      .toolbar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .search-box {
-        max-width: none;
-      }
-      .fleet-container {
-        overflow-x: auto;
-      }
-      .fleet-table {
-        min-width: 800px;
-      }
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* Empty State */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-    }
-    .empty-state i {
-      font-size: 3rem;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
     .empty-state h3 {
       font-size: 1.1rem;
       font-weight: 600;
@@ -883,7 +1105,7 @@
     /* Reports Section Styling */
     .reports-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: var(--space-xl);
       margin-top: var(--space-xl);
     }
@@ -946,7 +1168,7 @@
     }
     .reports-stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
@@ -1540,6 +1762,857 @@
         grid-column: span 1;
       }
     }
+
+    /* Responsive adjustments for Navigation, Stats, and Actions */
+    @media (min-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: var(--space-md) !important;
+      }
+      .actions-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: var(--space-md) !important;
+      }
+      .action-card {
+        padding: var(--space-md) !important;
+        min-height: 110px !important;
+      }
+      .action-desc {
+        display: block !important;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .desktop-nav {
+        display: flex !important;
+      }
+      .hamburger-btn {
+        display: none !important;
+      }
+      .actions-grid {
+        grid-template-columns: repeat(6, 1fr) !important;
+      }
+    }
+
+    /* Global Responsive Resets & Accessibility Overrides */
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      overflow-x: hidden !important;
+      width: 100% !important;
+    }
+
+    img, table, select, input, textarea {
+      max-width: 100% !important;
+    }
+
+    input, select, textarea {
+      box-sizing: border-box;
+      min-height: 44px; /* Accessible touch target */
+    }
+
+    select {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Dashboard Cards Responsiveness */
+    .stats-grid {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+      gap: var(--space-sm) !important;
+      width: 100% !important;
+    }
+
+    /* Modern Responsive Modals */
+    .modal-overlay {
+      padding: var(--space-xs) !important;
+    }
+
+    .modal-content {
+      width: min(95vw, 700px) !important;
+      max-height: 90vh !important;
+      overflow: hidden !important;
+      border-radius: 16px !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    .modal-body {
+      overflow-y: auto !important;
+      flex: 1 !important;
+    }
+
+    @media (max-width: 768px) {
+      .modal-content {
+        width: 95vw !important;
+        margin: 10px !important;
+        border-radius: 16px !important;
+      }
+      .modal-footer {
+        flex-direction: column-reverse !important;
+        width: 100% !important;
+        gap: var(--space-sm) !important;
+        padding: 12px 16px !important;
+      }
+      .modal-footer button, .modal-footer a, .modal-footer .btn-cancel, .modal-footer .btn-save {
+        width: 100% !important;
+        margin: 0 !important;
+        text-align: center;
+        justify-content: center;
+        height: 44px !important;
+      }
+      .reports-toolbar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        margin-bottom: 24px !important;
+      }
+      .reports-toolbar button {
+        width: 100% !important;
+        justify-content: center !important;
+      }
+    }
+
+    /* Route Points Card/Grid Switch Layout styling */
+    .stop-grid-header {
+      display: grid;
+      grid-template-columns: 1.5fr 110px 100px 100px 70px 120px 50px;
+      gap: var(--space-xs);
+      padding: 10px;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      text-align: center;
+    }
+
+    .stop-grid-row {
+      display: grid;
+      grid-template-columns: 1.5fr 110px 100px 100px 70px 120px 50px;
+      gap: var(--space-xs);
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: center;
+      background: white;
+    }
+
+    .mobile-label {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .stop-grid-header {
+        display: none !important;
+      }
+      .stop-grid-row {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        padding: 16px !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
+        margin-bottom: 16px !important;
+        text-align: left !important;
+        align-items: flex-start !important;
+        box-shadow: var(--shadow-soft) !important;
+      }
+      .stop-input-name {
+        width: 100% !important;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        color: var(--primary) !important;
+        border-bottom: 1px solid var(--border-soft) !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px !important;
+      }
+      .stop-input-field {
+        display: flex !important;
+        align-items: center !important;
+        width: 100% !important;
+        gap: 12px !important;
+      }
+      .stop-sequence {
+        display: flex !important;
+        align-items: center !important;
+        width: 100% !important;
+        gap: 12px !important;
+        text-align: left !important;
+      }
+      .mobile-label {
+        display: inline-block !important;
+        font-weight: 600 !important;
+        font-size: 12px !important;
+        color: var(--text-secondary) !important;
+        width: 90px !important;
+        flex-shrink: 0 !important;
+      }
+      .stop-input-field input, .stop-input-field select {
+        flex: 1 !important;
+        margin: 0 !important;
+        height: 38px !important;
+        padding: 6px 12px !important;
+        font-size: 13px !important;
+      }
+      .stop-input-field input[type="checkbox"] {
+        flex: none !important;
+        width: 20px !important;
+        height: 20px !important;
+      }
+    }
+
+    /* Desktop layout columns for forms */
+    @media (min-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      .form-row.single {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    /* ============================================
+       ROUTE ANALYTICS & PERFORMANCE INTELLIGENCE
+       Premium SaaS Dashboard Styling
+       ============================================ */
+
+    /* Filter Panel */
+    .ra-filter-panel {
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,193,7,0.15);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+    }
+    .ra-filter-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ra-filter-title i { color: var(--brand-gold); }
+    .ra-filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .ra-filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .ra-filter-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .ra-filter-select {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      background: #fff;
+      font-size: 0.9rem;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667085' d='M6 8.825a.5.5 0 01-.354-.146l-4-4a.5.5 0 01.708-.708L6 7.617l3.646-3.646a.5.5 0 11.708.708l-4 4A.5.5 0 016 8.825z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ra-filter-select:focus {
+      outline: none;
+      border-color: var(--brand-yellow);
+      box-shadow: 0 0 0 3px rgba(251,191,36,0.15);
+    }
+    .ra-custom-date-panel {
+      display: none;
+      gap: 10px;
+      align-items: end;
+    }
+    .ra-custom-date-panel input[type="date"] {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      background: #fff;
+      color: var(--text-primary);
+    }
+    .ra-btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .ra-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+    .ra-btn:active { transform: scale(0.97); }
+    .ra-btn-primary {
+      background: linear-gradient(135deg, var(--brand-yellow), var(--brand-gold));
+      color: var(--text-dark);
+      box-shadow: 0 4px 14px rgba(251,191,36,0.3);
+    }
+    .ra-btn-primary:hover { box-shadow: 0 6px 20px rgba(251,191,36,0.45); transform: translateY(-1px); }
+    .ra-btn-excel {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(16,185,129,0.25);
+    }
+    .ra-btn-excel:hover { box-shadow: 0 6px 20px rgba(16,185,129,0.4); transform: translateY(-1px); }
+    .ra-btn-pdf {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(239,68,68,0.25);
+    }
+    .ra-btn-pdf:hover { box-shadow: 0 6px 20px rgba(239,68,68,0.4); transform: translateY(-1px); }
+
+    /* Results Container */
+    .ra-results-container { display: none; }
+    .ra-results-header {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid rgba(251,191,36,0.15);
+    }
+    .ra-results-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .ra-results-title i {
+      font-size: 1.8rem;
+      color: var(--brand-gold);
+    }
+    .ra-results-title h2 {
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      font-weight: 800;
+      color: var(--primary);
+      margin: 0;
+      line-height: 1.2;
+    }
+    .ra-results-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 2px;
+      display: block;
+    }
+
+    /* Loading State */
+    .ra-loading-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .ra-loading-spinner {
+      width: 48px; height: 48px;
+      border: 4px solid #e2e8f0;
+      border-top-color: var(--brand-gold);
+      border-radius: 50%;
+      animation: raSpin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes raSpin { to { transform: rotate(360deg); } }
+    .ra-loading-state p { color: var(--text-muted); font-weight: 600; font-size: 0.95rem; }
+    .ra-loading-sub { font-size: 0.82rem !important; font-weight: 400 !important; margin-top: 4px; }
+
+    /* KPI Cards Grid */
+    .ra-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .ra-kpi-card {
+      background: #fff;
+      border: 1px solid #f0f0f0;
+      border-radius: 16px;
+      padding: 20px 16px;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    .ra-kpi-card.ra-animate-in {
+      opacity: 1;
+      transform: translateY(0);
+      animation: raFadeUp 0.4s ease forwards;
+    }
+    @keyframes raFadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .ra-kpi-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    .ra-kpi-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 1.1rem;
+    }
+    .ra-kpi-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .ra-kpi-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* Section Titles */
+    .ra-section { margin-bottom: 28px; }
+    .ra-section-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .ra-section-title i { color: var(--brand-gold); }
+    .ra-subsection-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    /* Section Cards */
+    .ra-section-card {
+      background: #fff;
+      border: 1px solid #f0f0f0;
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      opacity: 0; transform: translateY(12px);
+    }
+    .ra-section-card.ra-animate-in {
+      animation: raFadeUp 0.4s ease forwards;
+    }
+
+    /* Comparison Grid (Fastest vs Slowest) */
+    .ra-comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .ra-comparison-card { overflow: hidden; padding: 0; }
+    .ra-comparison-header {
+      padding: 16px 20px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    .ra-comparison-body { padding: 20px; }
+    .ra-comparison-duration {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+    .ra-detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid #f5f5f5;
+      font-size: 0.85rem;
+    }
+    .ra-detail-row:last-child { border-bottom: none; }
+    .ra-detail-label { color: var(--text-muted); font-weight: 500; }
+    .ra-detail-value { font-weight: 600; color: var(--primary); }
+
+    /* Data Table */
+    .ra-table-wrapper { padding: 0; overflow: hidden; }
+    .ra-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .ra-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.82rem;
+    }
+    .ra-table thead th {
+      background: #f8fafc;
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--text-muted);
+      border-bottom: 2px solid #f0f0f0;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .ra-table tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f5f5f5;
+      vertical-align: middle;
+    }
+    .ra-table tbody tr:hover { background: #fefce8; }
+    .ra-table tbody tr:last-child td { border-bottom: none; }
+    .ra-center { text-align: center; }
+
+    /* Rank Badge */
+    .ra-rank {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      background: #f1f5f9;
+      color: var(--text-muted);
+    }
+    .ra-rank-1 { background: linear-gradient(135deg,#fbbf24,#f59e0b); color: #fff; }
+    .ra-rank-2 { background: linear-gradient(135deg,#94a3b8,#cbd5e1); color: #fff; }
+    .ra-rank-3 { background: linear-gradient(135deg,#d97706,#fbbf24); color: #fff; }
+
+    /* Bus Cell */
+    .ra-bus-cell { display: flex; flex-direction: column; gap: 2px; }
+    .ra-bus-name { font-weight: 700; color: var(--primary); }
+    .ra-bus-meta { font-size: 0.72rem; color: var(--text-muted); }
+
+    /* Badges */
+    .ra-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .ra-badge-gold { background: #fef9c3; color: #a16207; }
+    .ra-badge-red { background: #fee2e2; color: #b91c1c; }
+
+    /* Score Bar */
+    .ra-score-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 100px;
+    }
+    .ra-score-fill {
+      height: 8px;
+      border-radius: 4px;
+      transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+      flex: 1;
+    }
+    .ra-score-text {
+      font-size: 0.78rem;
+      font-weight: 800;
+      min-width: 28px;
+    }
+
+    /* Charts */
+    .ra-charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+    }
+    .ra-chart-card { padding: 20px; }
+    .ra-chart-wide { grid-column: 1 / -1; }
+    .ra-chart-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ra-chart-title i { color: var(--brand-gold); font-size: 0.85rem; }
+    .ra-chart-container {
+      position: relative;
+      height: 280px;
+      width: 100%;
+    }
+
+    /* Stop Delay Status Pills */
+    .ra-delay-status {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .ra-status-green { background: #dcfce7; color: #15803d; }
+    .ra-status-yellow { background: #fef9c3; color: #a16207; }
+    .ra-status-orange { background: #ffedd5; color: #c2410c; }
+    .ra-status-red { background: #fee2e2; color: #b91c1c; }
+
+    /* Mini KPI Row */
+    .ra-mini-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .ra-mini-kpi {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid #f0f0f0;
+      background: #fff;
+    }
+    .ra-mini-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .ra-mini-red .ra-mini-icon { background: #fee2e2; color: #ef4444; }
+    .ra-mini-green .ra-mini-icon { background: #dcfce7; color: #10b981; }
+    .ra-mini-blue .ra-mini-icon { background: #dbeafe; color: #3b82f6; }
+    .ra-mini-info { display: flex; flex-direction: column; min-width: 0; }
+    .ra-mini-value {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ra-mini-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Heatmap Rows */
+    .ra-heat-header {
+      display: grid;
+      grid-template-columns: 140px 1fr 100px 60px;
+      gap: 12px;
+      padding: 8px 0;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      border-bottom: 1px solid #f0f0f0;
+      margin-bottom: 6px;
+    }
+    .ra-heat-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 100px 60px;
+      gap: 12px;
+      padding: 10px 0;
+      align-items: center;
+      border-bottom: 1px solid #fafafa;
+      font-size: 0.82rem;
+    }
+    .ra-heat-name {
+      font-weight: 600;
+      color: var(--primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ra-heat-bar-wrapper {
+      height: 18px;
+      background: #f8fafc;
+      border-radius: 9px;
+      overflow: hidden;
+    }
+    .ra-heat-bar {
+      height: 100%;
+      border-radius: 9px;
+      transition: width 0.6s ease;
+    }
+    .ra-heat-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      font-size: 0.78rem;
+    }
+    .ra-heat-max { font-size: 0.68rem; color: var(--text-muted); }
+    .ra-heat-impact {
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    /* Bottleneck Items */
+    .ra-bottleneck-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .ra-bottleneck-item:last-child { border-bottom: none; }
+    .ra-bottleneck-rank {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .ra-bottleneck-info { min-width: 0; }
+    .ra-bottleneck-name { font-weight: 700; font-size: 0.85rem; color: var(--primary); display: block; }
+    .ra-bottleneck-meta { font-size: 0.72rem; color: var(--text-muted); }
+
+    /* Operator Cards */
+    .ra-leaderboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .ra-leader-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: #fff;
+      border: 1px solid #f0f0f0;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .ra-leader-icon { font-size: 1.2rem; }
+    .ra-leader-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+    .ra-leader-name { font-size: 0.88rem; font-weight: 700; color: var(--primary); }
+
+    .ra-op-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 18px;
+    }
+    .ra-op-card { padding: 0; overflow: hidden; }
+    .ra-op-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 20px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .ra-op-avatar {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .ra-op-title h4 { font-size: 0.95rem; font-weight: 700; margin: 0; }
+    .ra-op-stars { margin-top: 3px; font-size: 0.8rem; }
+    .ra-op-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+    .ra-op-metric {
+      padding: 12px 16px;
+      text-align: center;
+      border-bottom: 1px solid #f8f8f8;
+      border-right: 1px solid #f8f8f8;
+    }
+    .ra-op-metric:nth-child(3n) { border-right: none; }
+    .ra-op-metric:nth-last-child(-n+3) { border-bottom: none; }
+    .ra-op-metric-label { display: block; font-size: 0.68rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 3px; }
+    .ra-op-metric-value { display: block; font-size: 0.92rem; font-weight: 700; color: var(--primary); }
+
+    /* Empty State */
+    .ra-empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--text-muted);
+    }
+    .ra-empty-state i { font-size: 2.5rem; opacity: 0.25; display: block; margin-bottom: 12px; }
+    .ra-empty-state p { font-size: 0.9rem; font-weight: 500; }
+    .ra-empty-card { display: flex; align-items: center; justify-content: center; min-height: 200px; }
+
+    .ra-stop-name { font-weight: 600; }
+
+    /* ── Mobile Responsive ── */
+    @media (max-width: 768px) {
+      .ra-filter-panel { padding: 16px; border-radius: 16px; }
+      .ra-filter-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .ra-btn-group { flex-direction: column; }
+      .ra-btn { width: 100%; }
+      .ra-kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .ra-kpi-card { padding: 14px 10px; }
+      .ra-kpi-value { font-size: 1.25rem; }
+      .ra-kpi-icon { width: 36px; height: 36px; font-size: 0.9rem; }
+      .ra-comparison-grid { grid-template-columns: 1fr; }
+      .ra-charts-grid { grid-template-columns: 1fr; }
+      .ra-chart-container { height: 220px; }
+      .ra-mini-kpi-grid { grid-template-columns: 1fr; }
+      .ra-leaderboard-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .ra-leader-card { padding: 10px 12px; }
+      .ra-op-grid { grid-template-columns: 1fr; }
+      .ra-heat-header, .ra-heat-row { grid-template-columns: 100px 1fr 70px 40px; gap: 8px; }
+      .ra-heat-name { font-size: 0.75rem; }
+      .ra-comparison-duration { font-size: 1.5rem; }
+      .ra-results-title h2 { font-size: 1.15rem; }
+    }
+    @media (max-width: 480px) {
+      .ra-filter-grid { grid-template-columns: 1fr; }
+      .ra-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .ra-leaderboard-grid { grid-template-columns: 1fr; }
+      .ra-heat-header, .ra-heat-row { grid-template-columns: 80px 1fr 60px 36px; gap: 6px; font-size: 0.75rem; }
+    }
+
   </style>
 </head>
 <body>
@@ -1547,115 +2620,117 @@
     <!-- ============================================
          SIDEBAR
          ============================================ -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-logo">
-          <i class="fa-solid fa-bus-simple"></i>
-          WinBus
+    <!-- Sticky Responsive Top Navbar -->
+    <header class="top-navbar">
+      <div class="navbar-container">
+        <div class="navbar-left">
+          <a href="#" class="navbar-brand" onclick="showSection('fleet'); return false;">
+            <div class="brand-icon-wrapper" style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px;">
+              <i class="fa-solid fa-bus" style="color: var(--brand-yellow); font-size: 1.05rem;"></i>
+            </div>
+            <span style="color: #ffffff; font-weight: 800; letter-spacing: -0.01em;">Win<span style="color: var(--brand-yellow);">Bus</span></span>
+            <span style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); padding: 2px 6px; border-radius: 6px; margin-left: 2px; color: rgba(255, 255, 255, 0.82);">Admin</span>
+          </a>
         </div>
+        <nav class="desktop-nav">
+          <a href="#" class="nav-link" onclick="showSection('fleet'); return false;" id="navDashboardLink">
+            <i class="fa-solid fa-grid-2"></i> Dashboard
+          </a>
+          <a href="#" class="nav-link active" onclick="showSection('fleet'); return false;" id="navFleetLink">
+            <i class="fa-solid fa-bus"></i> Manage Fleet
+          </a>
+          <a href="live-buses.html" class="nav-link">
+            <i class="fa-solid fa-map-location-dot"></i> Live Tracking
+          </a>
+          <a href="#" class="nav-link" onclick="showSection('reports'); return false;" id="navReportsLink">
+            <i class="fa-solid fa-chart-bar"></i> Reports
+          </a>
+          <!-- Quick Access Modal Triggers -->
+          <a href="#" class="nav-link" onclick="openSimpleModal('route'); return false;">
+            <i class="fa-solid fa-route"></i> Routes
+          </a>
+          <a href="#" class="nav-link" onclick="openSimpleModal('operator'); return false;">
+            <i class="fa-solid fa-building"></i> Operators
+          </a>
+          <a href="live-buses.html" class="nav-link">
+            <i class="fa-solid fa-map"></i> Live Map
+          </a>
+          <a href="index.html" class="nav-link">
+            <i class="fa-solid fa-globe"></i> Main Site
+          </a>
+          <button class="nav-link logout-btn" onclick="logout()">
+            <i class="fa-solid fa-sign-out-alt"></i> Logout
+          </button>
+        </nav>
+        <button class="hamburger-btn" onclick="toggleMobileMenu()" id="menuToggle">
+          <i class="fa-solid fa-bars"></i>
+        </button>
       </div>
-      
-      <nav class="sidebar-nav">
-        <div class="nav-section">
-          <div class="nav-section-title">Main</div>
-          <a href="#" class="nav-item" onclick="showSection('fleet'); return false;" id="navDashboardLink">
-            <i class="fa-solid fa-grid-2"></i>
-            Dashboard
-          </a>
-          <a href="#" class="nav-item active" onclick="showSection('fleet'); return false;" id="navFleetLink">
-            <i class="fa-solid fa-bus"></i>
-            Manage Fleet
-          </a>
-          <a href="live-buses.html" class="nav-item">
-            <i class="fa-solid fa-map-location-dot"></i>
-            Live Tracking
-          </a>
+    </header>
+
+    <!-- Mobile Slide-in Drawer -->
+    <div class="mobile-drawer-overlay" id="mobileDrawerOverlay" onclick="closeMobileMenu()"></div>
+    <aside class="mobile-drawer" id="mobileDrawer">
+      <div class="drawer-header">
+        <div class="navbar-brand" style="color: var(--primary);">
+          <i class="fa-solid fa-bus-simple" style="color: var(--brand-gold);"></i>
+          WinBus Admin
         </div>
-        
-        <div class="nav-section">
-          <div class="nav-section-title">Management</div>
-          <a href="#" class="nav-item" onclick="openSimpleModal('route'); return false;">
-            <i class="fa-solid fa-route"></i>
-            Routes
-          </a>
-          <a href="#" class="nav-item" onclick="openSimpleModal('operator'); return false;">
-            <i class="fa-solid fa-building"></i>
-            Operators
-          </a>
-          <a href="#" class="nav-item" onclick="openSimpleModal('type'); return false;">
-            <i class="fa-solid fa-list"></i>
-            Bus Types
-          </a>
-          <a href="#" class="nav-item" onclick="openRoutePointsModal(); return false;">
-            <i class="fa-solid fa-map-pin"></i>
-            Route Points
-          </a>
-          <a href="#" class="nav-item" onclick="openStopGroupsModal(); return false;" id="navStopGroupsLink">
-            <i class="fa-solid fa-tags"></i>
-            Stop Groups
-          </a>
-        </div>
-        
-        <div class="nav-section">
-          <div class="nav-section-title">System</div>
-          <a href="#" class="nav-item" onclick="showSection('reports'); return false;" id="navReportsLink">
-            <i class="fa-solid fa-chart-bar"></i>
-            Reports
-          </a>
-          <a href="#" class="nav-item" onclick="showToast('Users - Coming Soon'); return false;">
-            <i class="fa-solid fa-users"></i>
-            Users
-          </a>
-          <a href="#" class="nav-item" onclick="showToast('Settings - Coming Soon'); return false;">
-            <i class="fa-solid fa-cog"></i>
-            Settings
-          </a>
-        </div>
+        <button class="drawer-close-btn" onclick="closeMobileMenu()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <nav class="drawer-nav">
+        <a href="#" class="drawer-link" onclick="showSection('fleet'); closeMobileMenu(); return false;" id="drawerDashboardLink">
+          <i class="fa-solid fa-grid-2"></i> Dashboard
+        </a>
+        <a href="#" class="drawer-link active" onclick="showSection('fleet'); closeMobileMenu(); return false;" id="drawerFleetLink">
+          <i class="fa-solid fa-bus"></i> Manage Fleet
+        </a>
+        <a href="live-buses.html" class="drawer-link">
+          <i class="fa-solid fa-map-location-dot"></i> Live Tracking
+        </a>
+        <a href="#" class="drawer-link" onclick="showSection('reports'); closeMobileMenu(); return false;" id="drawerReportsLink">
+          <i class="fa-solid fa-chart-bar"></i> Reports
+        </a>
+        <div class="drawer-divider"></div>
+        <a href="#" class="drawer-link" onclick="openSimpleModal('route'); closeMobileMenu(); return false;">
+          <i class="fa-solid fa-route"></i> Routes
+        </a>
+        <a href="#" class="drawer-link" onclick="openSimpleModal('operator'); closeMobileMenu(); return false;">
+          <i class="fa-solid fa-building"></i> Operators
+        </a>
+        <a href="#" class="drawer-link" onclick="openSimpleModal('type'); closeMobileMenu(); return false;">
+          <i class="fa-solid fa-list"></i> Bus Types
+        </a>
+        <a href="#" class="drawer-link" onclick="openRoutePointsModal(); closeMobileMenu(); return false;">
+          <i class="fa-solid fa-map-pin"></i> Route Points
+        </a>
+        <a href="#" class="drawer-link" onclick="openStopGroupsModal(); closeMobileMenu(); return false;" id="drawerStopGroupsLink">
+          <i class="fa-solid fa-tags"></i> Stop Groups
+        </a>
+        <div class="drawer-divider"></div>
+        <a href="live-buses.html" class="drawer-link">
+          <i class="fa-solid fa-map"></i> Live Map
+        </a>
+        <a href="index.html" class="drawer-link">
+          <i class="fa-solid fa-globe"></i> Main Site
+        </a>
+        <a href="#" class="drawer-link" onclick="showToast('Users - Coming Soon'); return false;">
+          <i class="fa-solid fa-users"></i> Users
+        </a>
+        <a href="#" class="drawer-link" onclick="showToast('Settings - Coming Soon'); return false;">
+          <i class="fa-solid fa-cog"></i> Settings
+        </a>
+        <div class="drawer-divider"></div>
+        <button class="drawer-link logout-btn-mobile" onclick="logout()">
+          <i class="fa-solid fa-sign-out-alt"></i> Logout
+        </button>
       </nav>
-      
-      <div class="sidebar-footer">
-        <div class="user-card">
-          <div class="user-avatar">
-            <i class="fa-solid fa-user"></i>
-          </div>
-          <div class="user-info">
-            <div class="user-name">Admin User</div>
-            <div class="user-role">Fleet Manager</div>
-          </div>
-        </div>
-      </div>
     </aside>
 
-    <!-- ============================================
-         MAIN CONTENT
-         ============================================ -->
+    <!-- Main Content Area -->
     <main class="main-content">
-      <!-- Top Navbar -->
-      <header class="top-navbar">
-        <div class="navbar-left">
-          <button class="nav-btn" onclick="toggleSidebar()" style="display: none;" id="menuToggle">
-            <i class="fa-solid fa-bars"></i>
-          </button>
-          <div class="navbar-brand">
-            <i class="fa-solid fa-bus-simple"></i>
-            WinBus Admin
-          </div>
-        </div>
-        <div class="navbar-right">
-          <a href="live-buses.html" class="nav-btn">
-            <i class="fa-solid fa-map"></i>
-            Live Map
-          </a>
-          <a href="index.html" class="nav-btn">
-            <i class="fa-solid fa-globe"></i>
-            Go to Main Site
-          </a>
-          <button class="nav-btn logout" onclick="logout()">
-            <i class="fa-solid fa-sign-out-alt"></i>
-            Logout
-          </button>
-        </div>
-      </header>
 
       <!-- Content Area -->
       <div class="content-area">
@@ -1785,143 +2860,228 @@
           </div>
         </div>
       </div> <!-- Closes fleetSection -->
-
       <!-- Reports Section -->
       <div id="reportsSection" class="section-content" style="display: none;">
         <!-- Page Header -->
         <div class="page-header">
-          <h1 class="page-title">Analytics & Reports</h1>
-          <p class="page-subtitle">Visual performance and fleet tracking analytics</p>
+          <h1 class="page-title">Route Analytics &amp; Intelligence</h1>
+          <p class="page-subtitle">Enterprise-grade route performance analytics, delay intelligence &amp; operator benchmarks</p>
         </div>
 
-        <!-- Reports Toolbar -->
-        <div class="reports-toolbar">
-          <div style="font-size: 0.9rem; color: var(--text-muted);">
-            Generated from synced real-time data cache (Zero database reads/writes)
+        <!-- ═══════════════════════════════════════════
+             PHASE 1: ROUTE ANALYTICS FILTER PANEL
+             ═══════════════════════════════════════════ -->
+        <div class="ra-filter-panel">
+          <div class="ra-filter-title">
+            <i class="fa-solid fa-sliders"></i> Analytics Filters
           </div>
-          <button class="nav-btn" onclick="exportReportToCSV()" style="background: linear-gradient(135deg, var(--brand-yellow) 0%, var(--brand-yellow-soft) 100%); color: var(--text-dark); border: none; font-weight: 600; display: inline-flex; align-items: center; gap: var(--space-xs); height: 40px; border-radius: 10px; cursor: pointer; padding: 0 16px;">
-            <i class="fa-solid fa-file-csv"></i> Export CSV
-          </button>
+          <div class="ra-filter-grid">
+            <div class="ra-filter-group">
+              <label class="ra-filter-label">Route</label>
+              <select class="ra-filter-select" id="raRouteFilter">
+                <option value="">All Routes</option>
+              </select>
+            </div>
+            <div class="ra-filter-group">
+              <label class="ra-filter-label">Date Range</label>
+              <select class="ra-filter-select" id="raDateRange" onchange="raToggleDateCustom()">
+                <option value="last7">Last 7 Days</option>
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="last30">Last 30 Days</option>
+                <option value="custom">Custom Range</option>
+              </select>
+            </div>
+            <div class="ra-filter-group">
+              <label class="ra-filter-label">Operator</label>
+              <select class="ra-filter-select" id="raOperatorFilter">
+                <option value="">All Operators</option>
+              </select>
+            </div>
+            <div class="ra-filter-group">
+              <label class="ra-filter-label">Bus</label>
+              <select class="ra-filter-select" id="raBusFilter">
+                <option value="">All Buses</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Custom Date Range (hidden by default) -->
+          <div class="ra-custom-date-panel" id="raCustomDatePanel">
+            <div class="ra-filter-group">
+              <label class="ra-filter-label">Start Date</label>
+              <input type="date" id="raCustomStart" />
+            </div>
+            <div class="ra-filter-group">
+              <label class="ra-filter-label">End Date</label>
+              <input type="date" id="raCustomEnd" />
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="ra-btn-group">
+            <button class="ra-btn ra-btn-primary" onclick="raGenerateReport()">
+              <i class="fa-solid fa-chart-line"></i> Generate Report
+            </button>
+            <button class="ra-btn ra-btn-excel" onclick="raExportExcel()">
+              <i class="fa-solid fa-file-excel"></i> Export Excel
+            </button>
+            <button class="ra-btn ra-btn-pdf" onclick="raExportPDF()">
+              <i class="fa-solid fa-file-pdf"></i> Export PDF
+            </button>
+          </div>
         </div>
 
-        <!-- Reports Stats Row -->
-        <div class="reports-stats-grid">
-          <div class="stat-card">
-            <div class="stat-header">
-              <div class="stat-icon blue"><i class="fa-solid fa-bus"></i></div>
-            </div>
-            <div class="stat-value" id="repTotalBuses">0</div>
-            <div class="stat-label">Total Buses</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <div class="stat-icon green"><i class="fa-solid fa-satellite-dish"></i></div>
-            </div>
-            <div class="stat-value" id="repLiveTracking">0%</div>
-            <div class="stat-label">Live Tracking Enabled</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <div class="stat-icon yellow"><i class="fa-solid fa-clock"></i></div>
-            </div>
-            <div class="stat-value" id="repActualTiming">0%</div>
-            <div class="stat-label">Actual Stop Timing</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <div class="stat-icon purple"><i class="fa-solid fa-route"></i></div>
-            </div>
-            <div class="stat-value" id="repActiveJourneys">0</div>
-            <div class="stat-label">Active Journeys</div>
-          </div>
+        <!-- ═══════════════════════════════════════════
+             ANALYTICS RESULTS (Dynamically Rendered)
+             Phases 2-8 are injected here by JS engine
+             ═══════════════════════════════════════════ -->
+        <div class="ra-results-container" id="raResultsContainer">
+          <!-- Populated by route-analytics.js -->
         </div>
 
-        <!-- Charts Grid -->
-        <div class="reports-grid">
-          <!-- Operator Share -->
-          <div class="report-card">
-            <div class="report-card-title">
-              <i class="fa-solid fa-building"></i> Operator Share
+        <!-- ═══════════════════════════════════════════
+             LEGACY FLEET OVERVIEW (Preserved)
+             ═══════════════════════════════════════════ -->
+        <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid rgba(251,191,36,0.12);">
+          <div class="page-header" style="margin-bottom: 16px;">
+            <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-bus" style="color: var(--brand-gold);"></i> Fleet Overview
+            </h2>
+            <p class="page-subtitle" style="font-size: 0.82rem;">Aggregate fleet stats from live data cache</p>
+          </div>
+
+          <!-- Reports Toolbar -->
+          <div class="reports-toolbar">
+            <div style="font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+              <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+              Generated from synced real-time data cache
             </div>
-            <div class="chart-bar-container" id="repOperatorChart">
+            <button class="nav-btn" onclick="exportReportToCSV()" style="background: linear-gradient(135deg, var(--brand-yellow) 0%, var(--brand-yellow-soft) 100%); color: var(--text-dark); border: none; font-weight: 600; display: inline-flex; align-items: center; gap: var(--space-xs); height: 40px; border-radius: 10px; cursor: pointer; padding: 0 16px;">
+              <i class="fa-solid fa-file-csv"></i> Export CSV
+            </button>
+          </div>
+
+          <!-- Reports Stats Row -->
+          <div class="reports-stats-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-icon blue"><i class="fa-solid fa-bus"></i></div>
+              </div>
+              <div class="stat-value" id="repTotalBuses">0</div>
+              <div class="stat-label">Total Buses</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-icon green"><i class="fa-solid fa-satellite-dish"></i></div>
+              </div>
+              <div class="stat-value" id="repLiveTracking">0%</div>
+              <div class="stat-label">Live Tracking Enabled</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-icon yellow"><i class="fa-solid fa-clock"></i></div>
+              </div>
+              <div class="stat-value" id="repActualTiming">0%</div>
+              <div class="stat-label">Actual Stop Timing</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-header">
+                <div class="stat-icon purple"><i class="fa-solid fa-route"></i></div>
+              </div>
+              <div class="stat-value" id="repActiveJourneys">0</div>
+              <div class="stat-label">Active Journeys</div>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="reports-grid">
+            <!-- Operator Share -->
+            <div class="report-card">
+              <div class="report-card-title">
+                <i class="fa-solid fa-building"></i> Operator Share
+              </div>
+              <div class="chart-bar-container" id="repOperatorChart">
+                <!-- Dynamically filled -->
+              </div>
+            </div>
+
+            <!-- Bus Type Share -->
+            <div class="report-card">
+              <div class="report-card-title">
+                <i class="fa-solid fa-bus-simple"></i> Bus Type Breakdown
+              </div>
+              <div class="chart-bar-container" id="repTypeChart">
+                <!-- Dynamically filled -->
+              </div>
+            </div>
+
+            <!-- Tracking Features Health -->
+            <div class="report-card">
+              <div class="report-card-title">
+                <i class="fa-solid fa-shield-halved"></i> Feature Adoption Health
+              </div>
+              <div class="chart-bar-container">
+                <div class="chart-bar-row">
+                  <div class="chart-bar-label">Live Tracking</div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar-fill" id="healthLiveFill" style="background: linear-gradient(90deg, #10b981, #34d399); width: 0%;"></div>
+                  </div>
+                  <div class="chart-bar-value" id="healthLiveVal">0%</div>
+                </div>
+                <div class="chart-bar-row">
+                  <div class="chart-bar-label">Actual Timing</div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar-fill" id="healthActualFill" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); width: 0%;"></div>
+                  </div>
+                  <div class="chart-bar-value" id="healthActualVal">0%</div>
+                </div>
+                <div class="chart-bar-row">
+                  <div class="chart-bar-label">Journey History</div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar-fill" id="healthHistoryFill" style="background: linear-gradient(90deg, #8b5cf6, #a78bfa); width: 0%;"></div>
+                  </div>
+                  <div class="chart-bar-value" id="healthHistoryVal">0%</div>
+                </div>
+                <div class="chart-bar-row">
+                  <div class="chart-bar-label">Delay Analytics</div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar-fill" id="healthAnalyticsFill" style="background: linear-gradient(90deg, #f59e0b, #fbbf24); width: 0%;"></div>
+                  </div>
+                  <div class="chart-bar-value" id="healthAnalyticsVal">0%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Route Utilization & Performance -->
+          <div class="reports-table-container">
+            <div class="route-perf-header">
+              <h3>
+                <i class="fa-solid fa-chart-line"></i>
+                Route Performance Overview
+              </h3>
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 6px; background: #f1f5f9; border-radius: 10px; padding: 5px 12px; border: 1px solid var(--border-soft);">
+                  <i class="fa-solid fa-calendar-days" style="color: var(--text-muted); font-size: 0.8rem;"></i>
+                  <input type="date" id="historyDatePicker" style="border: none; background: transparent; font-size: 0.82rem; font-weight: 600; color: var(--text-primary); outline: none; cursor: pointer;" />
+                </div>
+                <button class="route-action-btn" onclick="downloadHistoryByDate()" style="flex: none; padding: 7px 16px;">
+                  <i class="fa-solid fa-clock-rotate-left"></i> Download History
+                </button>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  <i class="fa-solid fa-circle-info" style="margin-right: 3px;"></i>
+                  Sorted by bus count
+                </div>
+              </div>
+            </div>
+            <div class="route-perf-grid" id="repRouteCardGrid">
               <!-- Dynamically filled -->
             </div>
-          </div>
-
-          <!-- Bus Type Share -->
-          <div class="report-card">
-            <div class="report-card-title">
-              <i class="fa-solid fa-bus-simple"></i> Bus Type Breakdown
-            </div>
-            <div class="chart-bar-container" id="repTypeChart">
-              <!-- Dynamically filled -->
-            </div>
-          </div>
-
-          <!-- Tracking Features Health -->
-          <div class="report-card">
-            <div class="report-card-title">
-              <i class="fa-solid fa-shield-halved"></i> Feature Adoption Health
-            </div>
-            <div class="chart-bar-container">
-              <div class="chart-bar-row">
-                <div class="chart-bar-label">Live Tracking</div>
-                <div class="chart-bar-wrapper">
-                  <div class="chart-bar-fill" id="healthLiveFill" style="background: linear-gradient(90deg, #10b981, #34d399); width: 0%;"></div>
-                </div>
-                <div class="chart-bar-value" id="healthLiveVal">0%</div>
-              </div>
-              <div class="chart-bar-row">
-                <div class="chart-bar-label">Actual Timing</div>
-                <div class="chart-bar-wrapper">
-                  <div class="chart-bar-fill" id="healthActualFill" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); width: 0%;"></div>
-                </div>
-                <div class="chart-bar-value" id="healthActualVal">0%</div>
-              </div>
-              <div class="chart-bar-row">
-                <div class="chart-bar-label">Journey History</div>
-                <div class="chart-bar-wrapper">
-                  <div class="chart-bar-fill" id="healthHistoryFill" style="background: linear-gradient(90deg, #8b5cf6, #a78bfa); width: 0%;"></div>
-                </div>
-                <div class="chart-bar-value" id="healthHistoryVal">0%</div>
-              </div>
-              <div class="chart-bar-row">
-                <div class="chart-bar-label">Delay Analytics</div>
-                <div class="chart-bar-wrapper">
-                  <div class="chart-bar-fill" id="healthAnalyticsFill" style="background: linear-gradient(90deg, #f59e0b, #fbbf24); width: 0%;"></div>
-                </div>
-                <div class="chart-bar-value" id="healthAnalyticsVal">0%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Route Utilization & Performance -->
-        <div class="reports-table-container">
-          <div class="route-perf-header">
-            <h3>
-              <i class="fa-solid fa-chart-line"></i>
-              Route Performance Overview
-            </h3>
-            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 6px; background: #f1f5f9; border-radius: 10px; padding: 5px 12px; border: 1px solid var(--border-soft);">
-                <i class="fa-solid fa-calendar-days" style="color: var(--text-muted); font-size: 0.8rem;"></i>
-                <input type="date" id="historyDatePicker" style="border: none; background: transparent; font-size: 0.82rem; font-weight: 600; color: var(--text-primary); outline: none; cursor: pointer;" />
-              </div>
-              <button class="route-action-btn" onclick="downloadHistoryByDate()" style="flex: none; padding: 7px 16px;">
-                <i class="fa-solid fa-clock-rotate-left"></i> Download History
-              </button>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">
-                <i class="fa-solid fa-circle-info" style="margin-right: 3px;"></i>
-                Sorted by bus count
-              </div>
-            </div>
-          </div>
-          <div class="route-perf-grid" id="repRouteCardGrid">
-            <!-- Dynamically filled -->
           </div>
         </div>
       </div> <!-- Closes reportsSection -->
+
     </div> <!-- Closes content-area -->
   </main>
   </div>
@@ -2330,6 +3490,198 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
+    // Custom Searchable Dropdown Class
+    class SearchableDropdown {
+      constructor(selectElement, placeholder = 'Search...') {
+        if (!selectElement) return;
+        this.select = selectElement;
+        this.placeholder = placeholder;
+        this.init();
+      }
+      
+      init() {
+        this.select.style.display = 'none';
+        
+        this.wrapper = document.createElement('div');
+        this.wrapper.className = 'custom-dropdown';
+        this.wrapper.style.position = 'relative';
+        this.wrapper.style.width = '100%';
+        
+        this.toggle = document.createElement('div');
+        this.toggle.className = 'custom-dropdown-toggle';
+        this.toggle.style.cssText = 'display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 10px; background: white; cursor: pointer; font-size: 15px; user-select: none;';
+        
+        this.toggleText = document.createElement('span');
+        this.toggleText.style.cssText = 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 20px); font-weight: 500;';
+        
+        const arrow = document.createElement('i');
+        arrow.className = 'fa-solid fa-chevron-down';
+        arrow.style.cssText = 'font-size: 12px; color: var(--text-secondary); transition: transform 0.2s;';
+        this.arrow = arrow;
+        
+        this.toggle.appendChild(this.toggleText);
+        this.toggle.appendChild(arrow);
+        this.wrapper.appendChild(this.toggle);
+        
+        this.menu = document.createElement('div');
+        this.menu.className = 'custom-dropdown-menu';
+        this.menu.style.cssText = 'display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; box-shadow: var(--shadow-lg); z-index: 99999; max-height: 250px; flex-direction: column; overflow: hidden;';
+        
+        this.searchWrapper = document.createElement('div');
+        this.searchWrapper.style.padding = '8px';
+        this.searchWrapper.style.borderBottom = '1px solid var(--border-soft)';
+        
+        this.searchInput = document.createElement('input');
+        this.searchInput.type = 'text';
+        this.searchInput.placeholder = this.placeholder;
+        this.searchInput.style.cssText = 'width: 100%; min-height: 36px; padding: 6px 12px; border: 1px solid var(--border-soft); border-radius: 6px; font-size: 14px; outline: none;';
+        this.searchWrapper.appendChild(this.searchInput);
+        this.menu.appendChild(this.searchWrapper);
+        
+        this.optionsContainer = document.createElement('div');
+        this.optionsContainer.style.cssText = 'overflow-y: auto; flex: 1; max-height: 190px;';
+        this.menu.appendChild(this.optionsContainer);
+        
+        this.wrapper.appendChild(this.menu);
+        this.select.parentNode.insertBefore(this.wrapper, this.select.nextSibling);
+        
+        this.toggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.toggleMenu();
+        });
+        
+        this.searchInput.addEventListener('input', () => this.filterOptions());
+        this.searchInput.addEventListener('click', (e) => e.stopPropagation());
+        
+        document.addEventListener('click', () => this.closeMenu());
+        
+        this.updateToggleText();
+        
+        this.observer = new MutationObserver(() => this.populateOptions());
+        this.observer.observe(this.select, { childList: true });
+        
+        this.populateOptions();
+
+        this.select.addEventListener('change', () => {
+          this.updateToggleText();
+          this.populateOptions();
+        });
+      }
+      
+      toggleMenu() {
+        const isOpen = this.menu.style.display === 'flex';
+        document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
+          if (m !== this.menu) m.style.display = 'none';
+        });
+        
+        if (isOpen) {
+          this.closeMenu();
+        } else {
+          this.menu.style.display = 'flex';
+          this.searchInput.value = '';
+          this.filterOptions();
+          if (this.select.options.length > 5) {
+            setTimeout(() => this.searchInput.focus(), 50);
+          }
+          this.arrow.style.transform = 'rotate(180deg)';
+        }
+      }
+      
+      closeMenu() {
+        this.menu.style.display = 'none';
+        if (this.arrow) this.arrow.style.transform = 'rotate(0deg)';
+      }
+      
+      populateOptions() {
+        this.optionsContainer.innerHTML = '';
+        const options = Array.from(this.select.options);
+        
+        // Hide search wrapper if list contains 5 or fewer items
+        if (options.length <= 5) {
+          this.searchWrapper.style.display = 'none';
+        } else {
+          this.searchWrapper.style.display = 'block';
+        }
+        
+        options.forEach(opt => {
+          const optionDiv = document.createElement('div');
+          optionDiv.className = 'dropdown-option';
+          optionDiv.style.cssText = 'padding: 10px 16px; font-size: 14px; cursor: pointer; white-space: normal; word-break: break-word; color: var(--text-primary); transition: background 0.15s;';
+          optionDiv.textContent = opt.textContent;
+          
+          if (opt.selected) {
+            optionDiv.style.background = 'var(--brand-yellow-light)';
+            optionDiv.style.fontWeight = '700';
+          }
+          
+          optionDiv.addEventListener('click', () => {
+            this.select.value = opt.value;
+            this.select.dispatchEvent(new Event('change', { bubbles: true }));
+            this.updateToggleText();
+            this.closeMenu();
+          });
+          
+          optionDiv.addEventListener('mouseenter', () => {
+            optionDiv.style.background = '#f1f5f9';
+          });
+          optionDiv.addEventListener('mouseleave', () => {
+            optionDiv.style.background = opt.selected ? 'var(--brand-yellow-light)' : 'transparent';
+          });
+          
+          this.optionsContainer.appendChild(optionDiv);
+        });
+        
+        this.updateToggleText();
+      }
+      
+      filterOptions() {
+        const val = this.searchInput.value.toLowerCase();
+        const optionDivs = this.optionsContainer.querySelectorAll('.dropdown-option');
+        const options = Array.from(this.select.options);
+        
+        optionDivs.forEach((div, i) => {
+          if (!options[i]) return;
+          const txt = options[i].textContent.toLowerCase();
+          if (txt.includes(val)) {
+            div.style.display = 'block';
+          } else {
+            div.style.display = 'none';
+          }
+        });
+      }
+      
+      updateToggleText() {
+        const selectedOpt = this.select.options[this.select.selectedIndex];
+        this.toggleText.textContent = selectedOpt ? selectedOpt.textContent : 'Select option...';
+      }
+    }
+
+    // Initialize Searchable Dropdowns on page elements
+    function initSearchableDropdowns() {
+      const ids = [
+        'busOpSelect', 
+        'busRouteSelect', 
+        'busTypeSelect', 
+        'routeSelectForPoints', 
+        'pointNameSelect', 
+        'groupStopNameSelect',
+        'statusFilter', 
+        'raRouteFilter', 
+        'raDateRange', 
+        'raOperatorFilter', 
+        'raBusFilter'
+      ];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.nextSibling?.classList?.contains('custom-dropdown')) {
+          new SearchableDropdown(el);
+        }
+      });
+    }
+
+    // Run custom dropdown initialization
+    setTimeout(initSearchableDropdowns, 100);
+
     // Global cache
     let cachedBuses = [];
     let cachedOperators = [];
@@ -2341,6 +3693,14 @@
     let loadedOperators = [];
     let loadedBusTypes = [];
     let existingStopTimes = [];
+
+    // Expose caches globally so external script files can read/write them dynamically
+    Object.defineProperty(window, 'cachedBuses', { get: () => cachedBuses, set: (val) => { cachedBuses = val; } });
+    Object.defineProperty(window, 'cachedOperators', { get: () => cachedOperators, set: (val) => { cachedOperators = val; } });
+    Object.defineProperty(window, 'cachedRoutes', { get: () => cachedRoutes, set: (val) => { cachedRoutes = val; } });
+    Object.defineProperty(window, 'cachedBusTypes', { get: () => cachedBusTypes, set: (val) => { cachedBusTypes = val; } });
+    Object.defineProperty(window, 'cachedRoutePoints', { get: () => cachedRoutePoints, set: (val) => { cachedRoutePoints = val; } });
+    Object.defineProperty(window, 'cachedStopGroups', { get: () => cachedStopGroups, set: (val) => { cachedStopGroups = val; } });
 
     // Auth guard - prevent redirect loops
     let authInitialized = false;
@@ -2998,6 +4358,7 @@
           inp.style.display = 'none';
           inp.value = '';
         }
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
       }
       
       setDropdownVal('busOpSelect', 'busOpCustom', op, loadedOperators);
@@ -3023,6 +4384,17 @@
       document.getElementById('intermediateStopsSection').style.display = 'none';
       document.getElementById('intermediateStopsList').innerHTML = '';
       existingStopTimes = [];
+
+      // Reset dropdown values
+      document.getElementById('busOpSelect').value = '';
+      document.getElementById('busRouteSelect').value = '';
+      document.getElementById('busTypeSelect').value = '';
+
+      // Dispatch change event to update the searchable custom dropdowns
+      document.getElementById('busOpSelect').dispatchEvent(new Event('change', { bubbles: true }));
+      document.getElementById('busRouteSelect').dispatchEvent(new Event('change', { bubbles: true }));
+      document.getElementById('busTypeSelect').dispatchEvent(new Event('change', { bubbles: true }));
+      
       handleDropdownChange('busOpSelect', 'busOpCustom');
       handleDropdownChange('busRouteSelect', 'busRouteCustom');
       handleDropdownChange('busTypeSelect', 'busTypeCustom');
@@ -3273,28 +4645,26 @@
       
       // Add header row
       const headerRow = document.createElement('div');
-      headerRow.className = 'stop-input-header';
+      headerRow.className = 'stop-grid-header';
       headerRow.innerHTML = `
-        <div style="display: grid; grid-template-columns: 1fr 100px 90px 90px 60px 110px 40px; gap: 8px; padding: 10px; background: #f8fafc; border-radius: 8px; margin-bottom: 12px; font-size: 12px; font-weight: 600; color: #64748b; text-align: center;">
-          <div style="text-align: left;">Stop Name</div>
-          <div>Time</div>
-          <div>Latitude</div>
-          <div>Longitude</div>
-          <div>Show</div>
-          <div>Point Type</div>
-          <div>Seq</div>
-        </div>
+        <div style="text-align: left;">Stop Name</div>
+        <div>Time</div>
+        <div>Latitude</div>
+        <div>Longitude</div>
+        <div>Show</div>
+        <div>Point Type</div>
+        <div>Seq</div>
       `;
       stopsList.appendChild(headerRow);
       
       points.forEach((point, index) => {
         const pointName = typeof point === 'object' ? point.name : point;
         const row = document.createElement('div');
-        row.className = 'stop-input-row';
-        row.style.cssText = 'display: grid; grid-template-columns: 1fr 100px 90px 90px 60px 110px 40px; gap: 8px; align-items: center; padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center;';
+        row.className = 'stop-grid-row';
         row.innerHTML = `
-          <div class="stop-input-name" style="font-weight: 500; color: #1e293b; text-align: left;">${pointName}</div>
+          <div class="stop-input-name" style="font-weight: 500; color: #1e293b;">${pointName}</div>
           <div class="stop-input-field">
+            <span class="mobile-label">Time:</span>
             <input type="text" 
                    class="stop-time-input" 
                    data-stop-name="${pointName.replace(/"/g, '&quot;')}" 
@@ -3303,6 +4673,7 @@
                    style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; text-align: center;">
           </div>
           <div class="stop-input-field">
+            <span class="mobile-label">Latitude:</span>
             <input type="number" 
                    class="stop-lat-input" 
                    data-stop-name="${pointName.replace(/"/g, '&quot;')}" 
@@ -3312,6 +4683,7 @@
                    style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; text-align: center;">
           </div>
           <div class="stop-input-field">
+            <span class="mobile-label">Longitude:</span>
             <input type="number" 
                    class="stop-lng-input" 
                    data-stop-name="${pointName.replace(/"/g, '&quot;')}" 
@@ -3320,13 +4692,15 @@
                    step="0.00001"
                    style="width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; text-align: center;">
           </div>
-          <div class="stop-input-field" style="display: flex; align-items: center; justify-content: center;">
+          <div class="stop-input-field">
+            <span class="mobile-label">Show:</span>
             <input type="checkbox" 
                    class="stop-show-on-card" 
                    data-stop-name="${pointName.replace(/"/g, '&quot;')}"
                    style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--brand-gold);">
           </div>
-          <div class="stop-input-field" style="display: flex; align-items: center; justify-content: center;">
+          <div class="stop-input-field">
+            <span class="mobile-label">Point Type:</span>
             <select class="stop-point-type-select" 
                     data-stop-name="${pointName.replace(/"/g, '&quot;')}"
                     style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; cursor: pointer; text-align-last: center;">
@@ -3335,7 +4709,10 @@
               <option value="dropping">Dropping</option>
             </select>
           </div>
-          <div class="stop-sequence" style="text-align: center; color: #94a3b8; font-size: 12px; font-weight: 600;">${index + 1}</div>
+          <div class="stop-sequence">
+            <span class="mobile-label">Sequence:</span>
+            <span style="color: #94a3b8; font-size: 12px; font-weight: 600;">${index + 1}</span>
+          </div>
         `;
         stopsList.appendChild(row);
       });
@@ -3861,28 +5238,54 @@
 
     window.showToast = showToast;
 
-    // Sidebar toggle for mobile
-    window.toggleSidebar = function() {
-      document.getElementById('sidebar').classList.toggle('open');
+    // Mobile menu drawer toggle
+    window.toggleMobileMenu = function() {
+      const drawer = document.getElementById('mobileDrawer');
+      const overlay = document.getElementById('mobileDrawerOverlay');
+      if (drawer && overlay) {
+        drawer.classList.toggle('open');
+        overlay.classList.toggle('open');
+      }
     };
 
+    window.closeMobileMenu = function() {
+      const drawer = document.getElementById('mobileDrawer');
+      const overlay = document.getElementById('mobileDrawerOverlay');
+      if (drawer && overlay) {
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+      }
+    };
+
+    // Alias for backwards compatibility if needed
+    window.toggleSidebar = window.toggleMobileMenu;
+
     window.showSection = function(section) {
-      // Navigation handling
-      document.querySelectorAll('.nav-item').forEach(item => {
+      // Navigation handling for desktop links
+      document.querySelectorAll('.desktop-nav .nav-link').forEach(item => {
+        item.classList.remove('active');
+      });
+      // Navigation handling for drawer links
+      document.querySelectorAll('.drawer-nav .drawer-link').forEach(item => {
         item.classList.remove('active');
       });
       
-      // Determine active nav item
-      let activeId = 'navFleetLink';
+      // Determine active nav items
+      let desktopActiveId = 'navFleetLink';
+      let drawerActiveId = 'drawerFleetLink';
       if (section === 'reports') {
-        activeId = 'navReportsLink';
+        desktopActiveId = 'navReportsLink';
+        drawerActiveId = 'drawerReportsLink';
+      } else if (section === 'fleet') {
+        desktopActiveId = 'navFleetLink';
+        drawerActiveId = 'drawerFleetLink';
       }
-      const activeEl = document.getElementById(activeId);
-      if (activeEl) {
-        activeEl.classList.add('active');
-      } else if (event && event.currentTarget) {
-        event.currentTarget.classList.add('active');
-      }
+      
+      const desktopEl = document.getElementById(desktopActiveId);
+      if (desktopEl) desktopEl.classList.add('active');
+      
+      const drawerEl = document.getElementById(drawerActiveId);
+      if (drawerEl) drawerEl.classList.add('active');
 
       // Hide both sections initially
       const fleetSec = document.getElementById('fleetSection');
@@ -4697,5 +6100,17 @@
     `;
     document.head.appendChild(style);
   </script>
+
+  <!-- External Library Dependencies for Route Analytics -->
+  <!-- ChartJS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS (Excel Generation) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- jsPDF & AutoTable (PDF Generation) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Route Analytics System Engine -->
+  <script src="js/route-analytics.js"></script>
 </body>
 </html>

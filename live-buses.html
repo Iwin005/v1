@@ -468,7 +468,7 @@
         max-height: 80vh;
         border-radius: 24px 24px 0 0;
         z-index: 1000;
-        transform: translateY(calc(100% - 64px));
+        transform: translateY(calc(100% - 180px));
         transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.15);
       }
@@ -581,6 +581,19 @@
         flex: 1;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+      }
+
+      .search-filters {
+        padding: 12px 16px !important;
+        gap: 8px !important;
+        background: #ffffff !important;
+        border-bottom: 1px solid var(--border-soft) !important;
+      }
+
+      .filter-group {
+        padding: 8px 12px !important;
+        border-radius: 10px !important;
+        background: #f8fafc !important;
       }
     }
     
@@ -761,6 +774,63 @@
         background: #fff5f5;
         color: #d84e55;
       }
+    }
+
+    /* Custom Searchable Dropdown CSS */
+    .custom-dropdown-toggle {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 44px;
+      font-size: 15px;
+      user-select: none;
+      width: 100%;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .custom-dropdown-toggle:hover {
+      border-color: var(--brand-gold);
+    }
+    .filter-group .custom-dropdown-toggle {
+      border: none !important;
+      background: transparent !important;
+      padding: 0 !important;
+      min-height: auto !important;
+      box-shadow: none !important;
+    }
+    .custom-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-top: 4px;
+      box-shadow: var(--shadow-lg);
+      z-index: 99999;
+      max-height: 250px;
+      flex-direction: column;
+      overflow: hidden;
+      animation: dropdownFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes dropdownFadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .dropdown-option {
+      padding: 10px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: normal;
+      word-break: break-word;
+      color: var(--text-primary);
+      transition: background 0.15s;
     }
   </style>
 </head>
@@ -1487,8 +1557,173 @@
     }, 1000);
   </script>
 
-  <!-- Mobile Navigation Script -->
+  <!-- Mobile Navigation & Search Dropdown Script -->
   <script>
+    // Custom Searchable Dropdown Class
+    class SearchableDropdown {
+      constructor(selectElement, placeholder = 'Search...') {
+        if (!selectElement) return;
+        this.select = selectElement;
+        this.placeholder = placeholder;
+        this.init();
+      }
+      
+      init() {
+        this.select.style.display = 'none';
+        
+        this.wrapper = document.createElement('div');
+        this.wrapper.className = 'custom-dropdown';
+        this.wrapper.style.position = 'relative';
+        this.wrapper.style.width = '100%';
+        
+        this.toggle = document.createElement('div');
+        this.toggle.className = 'custom-dropdown-toggle';
+        this.toggle.style.cssText = 'display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 10px; background: white; cursor: pointer; font-size: 15px; user-select: none;';
+        
+        this.toggleText = document.createElement('span');
+        this.toggleText.style.cssText = 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 20px); font-weight: 500;';
+        
+        const arrow = document.createElement('i');
+        arrow.className = 'fa-solid fa-chevron-down';
+        arrow.style.cssText = 'font-size: 12px; color: var(--text-secondary); transition: transform 0.2s;';
+        this.arrow = arrow;
+        
+        this.toggle.appendChild(this.toggleText);
+        this.toggle.appendChild(arrow);
+        this.wrapper.appendChild(this.toggle);
+        
+        this.menu = document.createElement('div');
+        this.menu.className = 'custom-dropdown-menu';
+        this.menu.style.cssText = 'display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; box-shadow: var(--shadow-lg); z-index: 99999; max-height: 250px; flex-direction: column; overflow: hidden;';
+        
+        const searchWrapper = document.createElement('div');
+        searchWrapper.style.padding = '8px';
+        searchWrapper.style.borderBottom = '1px solid var(--border-soft)';
+        
+        this.searchInput = document.createElement('input');
+        this.searchInput.type = 'text';
+        this.searchInput.placeholder = this.placeholder;
+        this.searchInput.style.cssText = 'width: 100%; min-height: 36px; padding: 6px 12px; border: 1px solid var(--border-soft); border-radius: 6px; font-size: 14px; outline: none;';
+        searchWrapper.appendChild(this.searchInput);
+        this.menu.appendChild(searchWrapper);
+        
+        this.optionsContainer = document.createElement('div');
+        this.optionsContainer.style.cssText = 'overflow-y: auto; flex: 1; max-height: 190px;';
+        this.menu.appendChild(this.optionsContainer);
+        
+        this.wrapper.appendChild(this.menu);
+        this.select.parentNode.insertBefore(this.wrapper, this.select.nextSibling);
+        
+        this.toggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.toggleMenu();
+        });
+        
+        this.searchInput.addEventListener('input', () => this.filterOptions());
+        this.searchInput.addEventListener('click', (e) => e.stopPropagation());
+        
+        document.addEventListener('click', () => this.closeMenu());
+        
+        this.updateToggleText();
+        
+        this.observer = new MutationObserver(() => this.populateOptions());
+        this.observer.observe(this.select, { childList: true });
+        
+        this.populateOptions();
+
+        this.select.addEventListener('change', () => {
+          this.updateToggleText();
+          this.populateOptions();
+        });
+      }
+      
+      toggleMenu() {
+        const isOpen = this.menu.style.display === 'flex';
+        document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
+          if (m !== this.menu) m.style.display = 'none';
+        });
+        
+        if (isOpen) {
+          this.closeMenu();
+        } else {
+          this.menu.style.display = 'flex';
+          this.searchInput.value = '';
+          this.filterOptions();
+          setTimeout(() => this.searchInput.focus(), 50);
+          this.arrow.style.transform = 'rotate(180deg)';
+        }
+      }
+      
+      closeMenu() {
+        this.menu.style.display = 'none';
+        if (this.arrow) this.arrow.style.transform = 'rotate(0deg)';
+      }
+      
+      populateOptions() {
+        this.optionsContainer.innerHTML = '';
+        const options = Array.from(this.select.options);
+        
+        options.forEach(opt => {
+          const optionDiv = document.createElement('div');
+          optionDiv.className = 'dropdown-option';
+          optionDiv.style.cssText = 'padding: 10px 16px; font-size: 14px; cursor: pointer; white-space: normal; word-break: break-word; color: var(--text-primary); transition: background 0.15s;';
+          optionDiv.textContent = opt.textContent;
+          
+          if (opt.selected) {
+            optionDiv.style.background = 'var(--brand-yellow-light)';
+            optionDiv.style.fontWeight = '700';
+          }
+          
+          optionDiv.addEventListener('click', () => {
+            this.select.value = opt.value;
+            this.select.dispatchEvent(new Event('change', { bubbles: true }));
+            this.updateToggleText();
+            this.closeMenu();
+          });
+          
+          optionDiv.addEventListener('mouseenter', () => {
+            optionDiv.style.background = '#f1f5f9';
+          });
+          optionDiv.addEventListener('mouseleave', () => {
+            optionDiv.style.background = opt.selected ? 'var(--brand-yellow-light)' : 'transparent';
+          });
+          
+          this.optionsContainer.appendChild(optionDiv);
+        });
+        
+        this.updateToggleText();
+      }
+      
+      filterOptions() {
+        const val = this.searchInput.value.toLowerCase();
+        const optionDivs = this.optionsContainer.querySelectorAll('.dropdown-option');
+        const options = Array.from(this.select.options);
+        
+        optionDivs.forEach((div, i) => {
+          if (!options[i]) return;
+          const txt = options[i].textContent.toLowerCase();
+          if (txt.includes(val)) {
+            div.style.display = 'block';
+          } else {
+            div.style.display = 'none';
+          }
+        });
+      }
+      
+      updateToggleText() {
+        const selectedOpt = this.select.options[this.select.selectedIndex];
+        this.toggleText.textContent = selectedOpt ? selectedOpt.textContent : 'Select option...';
+      }
+    }
+
+    // Initialize custom searchable route dropdown filter
+    document.addEventListener('DOMContentLoaded', () => {
+      const el = document.getElementById('routeFilter');
+      if (el) {
+        new SearchableDropdown(el);
+      }
+    });
+
     // Sidebar Toggle Function
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
