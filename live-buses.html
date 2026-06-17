@@ -1592,9 +1592,11 @@
         this.toggle.appendChild(arrow);
         this.wrapper.appendChild(this.toggle);
         
+        this.select.customDropdown = this;
+        
         this.menu = document.createElement('div');
         this.menu.className = 'custom-dropdown-menu';
-        this.menu.style.cssText = 'display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; box-shadow: var(--shadow-lg); z-index: 99999; max-height: 250px; flex-direction: column; overflow: hidden;';
+        this.menu.style.cssText = 'display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; box-shadow: var(--shadow-lg); z-index: 99999; max-height: 320px; overflow: hidden;';
         
         const searchWrapper = document.createElement('div');
         searchWrapper.style.padding = '8px';
@@ -1608,7 +1610,7 @@
         this.menu.appendChild(searchWrapper);
         
         this.optionsContainer = document.createElement('div');
-        this.optionsContainer.style.cssText = 'overflow-y: auto; flex: 1; max-height: 190px;';
+        this.optionsContainer.style.cssText = 'overflow-y: auto; max-height: 260px;';
         this.menu.appendChild(this.optionsContainer);
         
         this.wrapper.appendChild(this.menu);
@@ -1638,7 +1640,7 @@
       }
       
       toggleMenu() {
-        const isOpen = this.menu.style.display === 'flex';
+        const isOpen = this.menu.style.display === 'block';
         document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
           if (m !== this.menu) m.style.display = 'none';
         });
@@ -1646,7 +1648,7 @@
         if (isOpen) {
           this.closeMenu();
         } else {
-          this.menu.style.display = 'flex';
+          this.menu.style.display = 'block';
           this.searchInput.value = '';
           this.filterOptions();
           setTimeout(() => this.searchInput.focus(), 50);

@@ -3034,27 +3034,39 @@
     function getFirebaseJourney(bus) {
       const busId = extractServiceNo(bus.link);
       if (!busId) return null;
-      
+
+      const journeys = window._fbJourneys?.[busId];
+      if (!journeys) return null;
+
+      const expectedDate = getDepartureDate(bus.time);
       const activeInfo = window._fbActiveJourneys?.[busId];
-      let journeyKey = activeInfo?.journeyKey;
-      
-      if (!journeyKey && window._fbJourneys?.[busId]) {
-        const depDate = getDepartureDate(bus.time);
-        journeyKey = Object.keys(window._fbJourneys[busId]).find(k => k.startsWith(depDate));
+      const activeMatchesDate = activeInfo && (
+        activeInfo.journeyDate === expectedDate ||
+        activeInfo.journeyKey?.startsWith(expectedDate)
+      );
+      let journeyKey = activeMatchesDate ? activeInfo.journeyKey : null;
+
+      if (!journeyKey) {
+        journeyKey = Object.keys(journeys)
+          .filter(k => k.startsWith(expectedDate))
+          .sort()
+          .at(-1);
       }
       
-      if (!journeyKey || !window._fbJourneys?.[busId]?.[journeyKey]) {
+      if (!journeyKey || !journeys[journeyKey]) {
         return null;
       }
       
       return {
         journeyKey: journeyKey,
-        data: window._fbJourneys[busId][journeyKey],
-        activeStatus: activeInfo?.status || null
+        journeyDate: expectedDate,
+        data: journeys[journeyKey],
+        activeStatus: activeMatchesDate ? activeInfo.status : null
       };
     }
 
     function getFirebaseJourneyStatus(bus) {
+      const busId = extractServiceNo(bus.link);
       const journey = getFirebaseJourney(bus);
       if (!journey) return null;
       
@@ -3067,24 +3079,26 @@
       const stops = bus.stopTimes || bus.intermediateStops || [];
       if (stops.length > 0) {
         const destStopName = stops[stops.length - 1].name || stops[stops.length - 1].stopName || '';
-        const normDestName = destStopName.toLowerCase().replace(/[\s_]+/g, '');
         const foundDestKey = actualKeys.find(
-          key => key.toLowerCase().replace(/[\s_]+/g, '') === normDestName
+          key => isStopNameMatch(key, destStopName)
         );
         if (foundDestKey && actualTimes[foundDestKey] && actualTimes[foundDestKey].actual) {
           destReached = true;
         }
       }
       
-      if (status === 'COMPLETED' && (destReached || actualKeys.length === 0)) {
+      if (status === 'COMPLETED') {
+        const finalStopReached = journey.data.metadata?.finalStopReached;
+        if (finalStopReached !== true && finalStopReached !== 'true') {
+          console.warn("Invalid completed journey for bus:", busId, "— final stop not reached.");
+        }
         return 'COMPLETED';
       }
-      
-      if (actualKeys.length > 0) {
-        return 'LIVE';
-      }
-      
-      return status;
+      if (status === 'WAITING' || status === 'NOT_STARTED') return 'WAITING';
+      if (status === 'LIVE') return 'LIVE';
+      if (destReached) return 'COMPLETED';
+      if (actualKeys.length > 0) return 'LIVE';
+      return status || 'NOT_STARTED';
     }
 
 
@@ -3158,6 +3172,22 @@
     // ============================================================
     // ACTUAL TIMING HELPERS
     // ============================================================
+    function isStopNameMatch(name1, name2) {
+      if (!name1 || !name2) return false;
+      const normalize = (name) => {
+        let n = name.toLowerCase().replace(/[\s_\-\(\)]+/g, '');
+        // Remove common suffixes/descriptors
+        n = n.replace(/busstand|metro|omni|bypass|tollgate|junction|toll|village|city|terminal|terminus/g, '');
+        // Handle common variations in spelling
+        n = n.replace(/palli|pali/g, 'palli');
+        n = n.replace(/puram|poram/g, 'puram');
+        return n;
+      };
+      const n1 = normalize(name1);
+      const n2 = normalize(name2);
+      return n1 === n2 || n1.includes(n2) || n2.includes(n1);
+    }
+
     function extractServiceNo(link) {
       if (!link) return '';
       try {
@@ -3389,14 +3419,21 @@
     // ============================================================
     function getBusHistory(serviceNo, date) {
       if (!window._fbBusHistory) return null;
-      return window._fbBusHistory[serviceNo]?.[date] || null;
+      const history = window._fbBusHistory[serviceNo] || {};
+      if (history[date]) return history[date];
+      const journeyKey = Object.keys(history)
+        .filter(key => key.startsWith(date))
+        .sort()
+        .at(-1);
+      return journeyKey ? history[journeyKey] : null;
     }
 
     function getAvailableHistoryDates(serviceNo) {
       const dates = new Set();
       
       if (window._fbJourneys && window._fbJourneys[serviceNo]) {
-        Object.keys(window._fbJourneys[serviceNo]).forEach(key => {
+        Object.entries(window._fbJourneys[serviceNo]).forEach(([key, journey]) => {
+          if (journey?.metadata?.status !== 'COMPLETED') return;
           const datePart = key.split('_')[0];
           if (datePart && datePart.match(/^\d{4}-\d{2}-\d{2}$/)) {
             dates.add(datePart);
@@ -3405,7 +3442,12 @@
       }
       
       if (window._fbBusHistory && window._fbBusHistory[serviceNo]) {
-        Object.keys(window._fbBusHistory[serviceNo]).forEach(d => dates.add(d));
+        Object.keys(window._fbBusHistory[serviceNo]).forEach(key => {
+          const datePart = key.split('_')[0];
+          if (datePart && datePart.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            dates.add(datePart);
+          }
+        });
       }
       
       return Array.from(dates).sort().reverse(); // Latest first
@@ -3555,30 +3597,25 @@
 
       if (!liveMapRoutePoints || liveMapRoutePoints.length === 0) return;
 
-      const normCurrent = currentStopName ? currentStopName.toLowerCase().replace(/[\s_]+/g, '') : null;
-      const normNext = nextStopName ? nextStopName.toLowerCase().replace(/[\s_]+/g, '') : null;
-
       let currentIndex = -1;
       let nextIndex = -1;
 
       liveMapRoutePoints.forEach((pt, idx) => {
-        const normPtName = pt.name.toLowerCase().replace(/[\s_]+/g, '');
-        if (normCurrent && normPtName === normCurrent) currentIndex = idx;
-        if (normNext && normPtName === normNext) nextIndex = idx;
+        if (currentStopName && isStopNameMatch(pt.name, currentStopName)) currentIndex = idx;
+        if (nextStopName && isStopNameMatch(pt.name, nextStopName)) nextIndex = idx;
       });
 
       liveMapRoutePoints.forEach((pt, idx) => {
-        const normPtName = pt.name.toLowerCase().replace(/[\s_]+/g, '');
         const isDestination = (idx === liveMapRoutePoints.length - 1);
         
         let color = '#94a3b8'; // Default grey for upcoming stops
         let colorName = 'Upcoming';
 
         // Marker color rules
-        if (normCurrent && normPtName === normCurrent) {
+        if (idx === currentIndex) {
           color = '#2563eb'; // Blue: Current stop
           colorName = 'Current Stop';
-        } else if (normNext && normPtName === normNext) {
+        } else if (idx === nextIndex) {
           color = '#f97316'; // Orange: Next stop
           colorName = 'Next Stop';
         } else if (isDestination) {
@@ -3620,8 +3657,7 @@
         if ((busLat === null || busLng === null) && liveMapRoutePoints && liveMapRoutePoints.length > 0) {
           const fallbackStopName = data.currentStop || data.nextStop;
           if (fallbackStopName) {
-            const normFallback = fallbackStopName.toLowerCase().replace(/[\s_]+/g, '');
-            const matchedPt = liveMapRoutePoints.find(pt => pt.name.toLowerCase().replace(/[\s_]+/g, '') === normFallback);
+            const matchedPt = liveMapRoutePoints.find(pt => isStopNameMatch(pt.name, fallbackStopName));
             if (matchedPt) {
               busLat = matchedPt.lat;
               busLng = matchedPt.lng;
@@ -3673,10 +3709,8 @@
       providerStops.forEach(stop => {
         const stopName = stop.name;
         const status = stop.providerStatus || stop.status || '';
-        const normNameVal = stopName.toLowerCase().replace(/[\s_]+/g, '');
-
-        const isCurrent = currentStop && (normNameVal === currentStop.toLowerCase().replace(/[\s_]+/g, ''));
-        const isNext = nextStop && (normNameVal === nextStop.toLowerCase().replace(/[\s_]+/g, ''));
+        const isCurrent = currentStop && isStopNameMatch(stopName, currentStop);
+        const isNext = nextStop && isStopNameMatch(stopName, nextStop);
 
         const item = {
           name: stopName,
@@ -3828,55 +3862,26 @@
       return isHistoryEnabled(bus) ? "actual" : "normal";
     }
 
-    function extractServiceNo(trackingUrl) {
-      if (!trackingUrl) return null;
-      try {
-        const decoded = decodeURIComponent(trackingUrl);
-        const url = decoded.replace(/\/$/, '');
-        const parts = url.split('/');
-        const serviceNo = parts[parts.length - 1];
-        return serviceNo ? serviceNo.trim() : null;
-      } catch (e) {
-        console.error('Error extracting serviceNo:', e);
-        return null;
-      }
-    }
-
     function getTripDepartureDate(bus) {
       const serviceNo = extractServiceNo(bus.link);
       const busKey = serviceNo || `${sanitizeKey(bus.op)}_${sanitizeKey(bus.time)}`;
+      const activeInfo = serviceNo ? window._fbActiveJourneys?.[serviceNo] : null;
+      const expectedDate = getDepartureDate(bus.time);
+      if (activeInfo?.journeyDate === expectedDate) return activeInfo.journeyDate;
       if (activeTripState[busKey] && activeTripState[busKey].departureDate) {
         return activeTripState[busKey].departureDate;
       }
-
-      const now = new Date();
-      const depMins = parseTimeToMinutes(bus.time);
-      const arrMins = parseTimeToMinutes(bus.arrivalTime);
-
-      if (depMins === -1) {
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      }
-
-      const spansMidnight = (arrMins !== -1 && arrMins < depMins);
-
-      let depDate = new Date(now);
-      if (spansMidnight) {
-        depDate.setDate(now.getDate() - 1);
-      }
-
-      const year = depDate.getFullYear();
-      const month = String(depDate.getMonth() + 1).padStart(2, '0');
-      const day = String(depDate.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+      return expectedDate;
     }
 
     async function maybeCreateHistorySnapshot(bus) {
       if (!isHistoryEnabled(bus)) return;
       const serviceNo = extractServiceNo(bus.link);
       if (!serviceNo) return;
+
+      // The backend archives canonical journey data. Keep this writer only as
+      // a compatibility fallback for buses that have no backend journey.
+      if (getFirebaseJourney(bus)) return;
 
       const departureDate = getTripDepartureDate(bus);
       
@@ -4023,7 +4028,7 @@
       // 1. Check Firebase status (Source of truth)
       const fbStatus = getFirebaseJourneyStatus(bus);
       if (fbStatus) {
-        if (fbStatus === 'WAITING') return 'PRE_DEPARTURE';
+        if (fbStatus === 'WAITING' || fbStatus === 'NOT_STARTED') return 'PRE_DEPARTURE';
         if (fbStatus === 'LIVE') return 'LIVE';
         if (fbStatus === 'COMPLETED') return 'COMPLETED';
         return fbStatus;
@@ -4323,14 +4328,16 @@
             let delayText = '';
             
             if (actualTimesDataExists) {
-                const normStopName = stopName.toLowerCase().replace(/[\s_]+/g, '');
                 const actualTimeKey = Object.keys(journey.data.actualTimes).find(
-                    key => key.toLowerCase().replace(/[\s_]+/g, '') === normStopName
+                    key => isStopNameMatch(key, stopName)
                 );
                 
                 if (actualTimeKey) {
                     const timingData = journey.data.actualTimes[actualTimeKey];
-                    if (timingData && timingData.actual) {
+                    if (timingData?.status === 'Passed' && !timingData.actual) {
+                        actualTime = 'Passed';
+                        delayText = 'Passed';
+                    } else if (timingData && timingData.actual) {
                         actualTime = timingData.actual;
                         if (timingData.delayMinutes !== undefined && timingData.delayMinutes !== null) {
                             delayText = formatDelayStatus(timingData.delayMinutes).text;
@@ -4338,10 +4345,10 @@
                             delayText = timingData.status;
                         }
                     } else {
-                        actualTime = 'Pending';
+                        actualTime = trackingState === 'COMPLETED' ? 'Not Reached' : 'Pending';
                     }
                 } else {
-                    actualTime = 'Pending';
+                    actualTime = trackingState === 'COMPLETED' ? 'Not Reached' : 'Pending';
                 }
             } else {
                 // Fallback: if actualTimes data truly does not exist
@@ -4376,7 +4383,7 @@
                 }
                 
                 if (hasSubsequentReached) {
-                    resolvedStops[i].actualTime = resolvedStops[i].scheduledTime;
+                    resolvedStops[i].actualTime = 'Passed';
                     resolvedStops[i].delayText = 'Passed';
                 }
             }
@@ -4392,12 +4399,8 @@
             const isPending = actualTime === 'Waiting' || actualTime === 'Not Reached' || actualTime === 'Pending';
             
             // Live status indicators from YourBus provider
-            const normStopName = stopName.toLowerCase().replace(/[\s_]+/g, '');
-            const normLiveNext = bus._liveNextStop ? bus._liveNextStop.toLowerCase().replace(/[\s_]+/g, '') : null;
-            const normLiveLast = bus._liveLastPassedStop ? bus._liveLastPassedStop.toLowerCase().replace(/[\s_]+/g, '') : null;
-            
-            const isLiveNext = normLiveNext && (normStopName === normLiveNext);
-            const isLiveLast = normLiveLast && (normStopName === normLiveLast);
+            const isLiveNext = bus._liveNextStop && isStopNameMatch(stopName, bus._liveNextStop);
+            const isLiveLast = bus._liveLastPassedStop && isStopNameMatch(stopName, bus._liveLastPassedStop);
             
             let providerBadgeHtml = '';
             if (isLiveNext) {
@@ -4553,11 +4556,12 @@
         let dates = getAvailableHistoryDates(serviceNo);
         
         const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-        if (!dates.includes(todayDate)) {
+        const activeInfo = window._fbActiveJourneys?.[serviceNo];
+        if (activeInfo?.journeyDate === todayDate && !dates.includes(todayDate)) {
             dates.unshift(todayDate);
         }
         const savedDate = window.selectedHistoryDates && window.selectedHistoryDates[serviceNo];
-        const defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : todayDate;
+        const defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : (dates[0] || todayDate);
         const hasHistory = dates.length > 0;
         const dateOptionsHtml = dates.map(date => {
             const formatted = new Date(date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
@@ -4840,15 +4844,21 @@
       console.log('[handleSearch] Starting search...');
       
       try {
-        // Save open dropdown states
+        // Save open dropdown states and horizontal scroll positions
         const openStops = new Set();
         const openHistory = new Set();
+        const stopsScrollPositions = {};
+        
         document.querySelectorAll('.modern-bus-card').forEach(card => {
           const serviceNo = card.getAttribute('data-service-no');
           
           const stopsContent = card.querySelector('.stops-content');
           if (serviceNo && stopsContent && stopsContent.style.display === 'block') {
             openStops.add(serviceNo);
+            const stopsSec = card.querySelector('.ibc-stops-sec');
+            if (stopsSec) {
+              stopsScrollPositions[serviceNo] = stopsSec.scrollLeft;
+            }
           }
           
           const historyContent = card.querySelector('.history-content');
@@ -4998,13 +5008,17 @@
       resultsBlock.style.display = 'block';
       console.log('[handleSearch] Rendering complete - results displayed');
 
-      // Restore open dropdown states
+      // Restore open dropdown states and horizontal scroll positions
       document.querySelectorAll('.modern-bus-card').forEach(card => {
         const serviceNo = card.getAttribute('data-service-no');
         if (serviceNo && openStops.has(serviceNo)) {
           const stopsContent = card.querySelector('.stops-content');
           if (stopsContent) {
             stopsContent.style.display = 'block';
+          }
+          const stopsSec = card.querySelector('.ibc-stops-sec');
+          if (stopsSec && stopsScrollPositions[serviceNo] !== undefined) {
+            stopsSec.scrollLeft = stopsScrollPositions[serviceNo];
           }
         }
         if (serviceNo && openHistory.has(serviceNo)) {
@@ -5131,8 +5145,7 @@
               let delayMinutes = 0;
               let status = 'pending';
               
-              const normStopName = stopName.toLowerCase().replace(/[\s_]+/g, '');
-              const actualKey = Object.keys(actualTimes).find(key => key.toLowerCase().replace(/[\s_]+/g, '') === normStopName);
+              const actualKey = Object.keys(actualTimes).find(key => isStopNameMatch(key, stopName));
               
               if (actualKey) {
                 const timingData = actualTimes[actualKey];
@@ -5935,16 +5948,6 @@
             if (serviceNo && liveData[serviceNo]) {
               matchedData = liveData[serviceNo];
               matchedId = serviceNo;
-            } else {
-              // Fallback: try matching by operator name substring in bus_id
-              for (const busId of busIds) {
-                const opFirst = (bus.op || '').split(' ')[0].toUpperCase();
-                if (opFirst && busId.toUpperCase().includes(opFirst)) {
-                  matchedData = liveData[busId];
-                  matchedId = busId;
-                  break;
-                }
-              }
             }
 
             if (!matchedData) return bus;
@@ -6090,24 +6093,15 @@
               const stopsForToday = actualData[serviceNo][todayKey] || (journeyKeyForToday ? actualData[serviceNo][journeyKeyForToday] : null);
 
               if (stopsForToday) {
-                // Convert actualData keys to lowercase for case-insensitive lookup
-                const stopsForTodayLower = {};
-                Object.keys(stopsForToday).forEach(k => {
-                  stopsForTodayLower[k.toLowerCase()] = stopsForToday[k];
-                });
+                const targetStopsLists = [];
+                if (bus.stopTimes) targetStopsLists.push(bus.stopTimes);
+                if (bus.intermediateStops) targetStopsLists.push(bus.intermediateStops);
 
-              const targetStopsLists = [];
-              if (bus.stopTimes) targetStopsLists.push(bus.stopTimes);
-              if (bus.intermediateStops) targetStopsLists.push(bus.intermediateStops);
-
-              targetStopsLists.forEach(stopsList => {
-                stopsList.forEach(stop => {
-                  const getNormalizedStopName = (name) => (name || '').replace(/[\s_]+/g, '').toLowerCase();
-                  const stopNameNormalized = getNormalizedStopName(stop.name || stop.stopName);
-                  
-                  // Find the matching key from stopsForTodayLower
-                  const matchedKey = Object.keys(stopsForTodayLower).find(k => getNormalizedStopName(k) === stopNameNormalized);
-                  const stopData = matchedKey ? stopsForTodayLower[matchedKey] : null;
+                targetStopsLists.forEach(stopsList => {
+                  stopsList.forEach(stop => {
+                    const stopName = stop.name || stop.stopName;
+                    const matchedKey = Object.keys(stopsForToday).find(k => isStopNameMatch(k, stopName));
+                    const stopData = matchedKey ? stopsForToday[matchedKey] : null;
 
                   if (stopData) {
                     if (stopData.status === "Passed") {
@@ -6135,9 +6129,8 @@
         }
       }
 
-      // Load actual times initially and refresh every 10 seconds (synced with live data)
-      setTimeout(loadActualTimes, 2000);
-      setInterval(loadActualTimes, 10000);
+      // Current timings come from window._fbJourneys in refreshFirebaseData().
+      // Do not merge the legacy /actualTimes tree into live bus objects.
 
       if (window._fbBuses !== undefined) { init(); }
       else { window.addEventListener('firebaseDataReady', init, { once: true }); }
@@ -6178,6 +6171,17 @@
           window._fbStopGroups = all.stopGroups || {};
           window._fbActiveJourneys = all.activeJourneys || {};
           window._fbJourneys = all.journeys || {};
+          window.actualTimesData = Object.fromEntries(
+            Object.entries(window._fbJourneys).map(([serviceNo, journeys]) => [
+              serviceNo,
+              Object.fromEntries(
+                Object.entries(journeys || {}).map(([journeyKey, journey]) => [
+                  journeyKey,
+                  journey?.actualTimes || {}
+                ])
+              )
+            ])
+          );
           
           console.log('[Firebase Module] Processed buses:', window._fbBuses.length);
           console.log('[Firebase Module] Processed routes:', window._fbRoutes.length);
@@ -6272,7 +6276,7 @@
         const timingData = actualData[stopKey] || {};
         
         const trackingState = getTrackingState(bus);
-        const actualTime = timingData.actualTime || (trackingState === 'COMPLETED' ? 'Not Reached' : 'Waiting');
+        const actualTime = timingData.actual || (timingData.status === 'Passed' ? 'Passed' : (trackingState === 'COMPLETED' ? 'Not Reached' : 'Waiting'));
         const delayMinutes = timingData.delayMinutes;
         const status = formatDelayStatus(delayMinutes);
         

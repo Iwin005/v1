@@ -3523,9 +3523,11 @@
         this.toggle.appendChild(arrow);
         this.wrapper.appendChild(this.toggle);
         
+        this.select.customDropdown = this;
+        
         this.menu = document.createElement('div');
         this.menu.className = 'custom-dropdown-menu';
-        this.menu.style.cssText = 'display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; box-shadow: var(--shadow-lg); z-index: 99999; max-height: 250px; flex-direction: column; overflow: hidden;';
+        this.menu.style.cssText = 'display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; box-shadow: var(--shadow-lg); z-index: 99999; max-height: 320px; overflow: hidden;';
         
         this.searchWrapper = document.createElement('div');
         this.searchWrapper.style.padding = '8px';
@@ -3539,7 +3541,7 @@
         this.menu.appendChild(this.searchWrapper);
         
         this.optionsContainer = document.createElement('div');
-        this.optionsContainer.style.cssText = 'overflow-y: auto; flex: 1; max-height: 190px;';
+        this.optionsContainer.style.cssText = 'overflow-y: auto; max-height: 260px;';
         this.menu.appendChild(this.optionsContainer);
         
         this.wrapper.appendChild(this.menu);
@@ -3569,7 +3571,7 @@
       }
       
       toggleMenu() {
-        const isOpen = this.menu.style.display === 'flex';
+        const isOpen = this.menu.style.display === 'block';
         document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
           if (m !== this.menu) m.style.display = 'none';
         });
@@ -3577,7 +3579,7 @@
         if (isOpen) {
           this.closeMenu();
         } else {
-          this.menu.style.display = 'flex';
+          this.menu.style.display = 'block';
           this.searchInput.value = '';
           this.filterOptions();
           if (this.select.options.length > 5) {
@@ -3593,6 +3595,7 @@
       }
       
       populateOptions() {
+        console.log('[DEBUG] populateOptions for:', this.select.id, 'options count:', this.select.options.length, 'options:', Array.from(this.select.options).map(o => o.textContent));
         this.optionsContainer.innerHTML = '';
         const options = Array.from(this.select.options);
         
@@ -3746,6 +3749,7 @@
         cachedBuses = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
         updateStats();
         renderFleetTable();
+        window.raPopulateFilters?.();
         
         // Auto-refresh reports if open
         const reportsSec = document.getElementById('reportsSection');
@@ -3760,6 +3764,7 @@
         cachedOperators = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
         loadAllData();
         updateStats();
+        window.raPopulateFilters?.();
         if (document.getElementById('simpleModal').classList.contains('open') && currentSimpleType === 'operator') {
           renderSimpleItemsList();
         }
@@ -3772,6 +3777,7 @@
         loadAllData();
         populateRouteSelectForPoints();
         updateStats();
+        window.raPopulateFilters?.();
         if (document.getElementById('simpleModal').classList.contains('open') && currentSimpleType === 'route') {
           renderSimpleItemsList();
         }
@@ -3780,7 +3786,9 @@
       // Bus Types
       onValue(ref(db, '/types'), snapshot => {
         const data = snapshot.val() || {};
+        console.log('[DEBUG] types snapshot data:', data);
         cachedBusTypes = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+        console.log('[DEBUG] cachedBusTypes:', cachedBusTypes);
         loadAllData();
         if (document.getElementById('simpleModal').classList.contains('open') && currentSimpleType === 'type') {
           renderSimpleItemsList();
@@ -4202,6 +4210,7 @@
     // DROPDOWN HELPERS
     // ============================================
     function updateDropdown(selectId, dataList, defaultLabel, customLabel) {
+      console.log('[DEBUG] updateDropdown starting for:', selectId, 'with dataList:', dataList);
       const select = document.getElementById(selectId);
       if (!select) return;
       const currentVal = select.value;
@@ -4211,6 +4220,12 @@
       });
       select.innerHTML += `<option value="__custom__">${customLabel}</option>`;
       if (currentVal && dataList.includes(currentVal)) select.value = currentVal;
+      
+      // Explicitly trigger update for the custom searchable dropdown
+      if (select.customDropdown) {
+        select.customDropdown.updateToggleText();
+        select.customDropdown.populateOptions();
+      }
     }
 
     function loadAllData() {
@@ -5748,9 +5763,18 @@
               // No stop data, write a single row for the journey
               csv += `"${serviceNo}","${busOp}","${busRoute}","${busDep}","${busDest}","${selectedDate}","${depTime}","${status}","","","","","",""\n`;
             } else {
+              const stopsList = matchedBus.intermediateStops || matchedBus.stopTimes || [];
+              const configuredStopNames = new Set(stopsList.map(s => (s.name || s.stopName || '').toLowerCase().trim()));
+
               actualTimesEntries.forEach(([stopKey, stopData]) => {
-                totalStopsRecorded++;
                 const stopName = stopKey.replace(/_/g, ' ');
+                const normStopName = stopName.toLowerCase().trim();
+                const isConfigured = [...configuredStopNames].some(name => 
+                  normStopName.includes(name) || name.includes(normStopName)
+                );
+                if (!isConfigured) return;
+
+                totalStopsRecorded++;
                 const scheduled = stopData.scheduled || '';
                 const actual = stopData.actual || '';
                 const delayMin = stopData.delayMinutes !== undefined ? stopData.delayMinutes : '';
