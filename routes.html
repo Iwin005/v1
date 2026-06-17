@@ -512,13 +512,66 @@
         gap: 16px;
       }
     }
+
+    /* Route slideshow styles */
+    .route-slideshow {
+      position: relative;
+      width: 100%;
+      height: 160px;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+      background: #f1f5f9;
+    }
+    
+    @media (min-width: 768px) {
+      .route-slideshow {
+        height: 180px;
+      }
+    }
+    
+    .route-slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+    
+    .route-slide.active {
+      opacity: 1;
+    }
+    
+    .slide-indicators {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      z-index: 10;
+    }
+    
+    .slide-indicators .indicator {
+      width: 6.5px;
+      height: 6.5px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      transition: background 0.3s, width 0.3s;
+    }
+    
+    .slide-indicators .indicator.active {
+      background: #ffffff;
+      width: 12px;
+      border-radius: 3px;
+    }
   </style>
 </head>
 <body>
 
   <nav class="app-nav">
     <a class="nav-brand" href="index.html">
-      <i class="fa-solid fa-bus"></i>
+      <img src="assets/logo.jpg" alt="WinBus Logo" class="brand-logo-img">
       <div>Win<span>Bus</span> Tracker</div>
     </a>
     <div class="nav-links">
@@ -539,7 +592,7 @@
   <div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-labelledby="mobileNavTitle">
     <div class="mobile-nav-header">
       <div class="mobile-nav-brand" id="mobileNavTitle">
-        <i class="fa-solid fa-bus" aria-hidden="true"></i>
+        <img src="assets/logo.jpg" alt="WinBus Logo" class="brand-logo-img" style="height: 32px; width: 32px; border: 1px solid rgba(255,255,255,0.6);">
         <span>WinBus Tracker</span>
       </div>
       <button class="mobile-nav-close" onclick="closeMobileNav()" aria-label="Close navigation menu">
@@ -765,12 +818,35 @@
 
         const routeName = route.name;
 
-        // Use local fallback when imageUrl is empty
-        if (!imageUrl) {
-          imageUrl = 'chennai-nazareth.jpg';
+        // Build image or slideshow
+        let imgHtml = '';
+        let imgList = [];
+        if (route.images && Array.isArray(route.images)) {
+          imgList = route.images.filter(Boolean);
+        } else if (imageUrl) {
+          imgList = [imageUrl];
         }
 
-        const imgHtml = `<img src="${imageUrl}" alt="${routeName}" class="route-image" onerror="this.src='chennai-nazareth.jpg'">`;
+        if (imgList.length === 0) {
+          imgList = ['chennai-nazareth.jpg'];
+        }
+
+        if (imgList.length > 1) {
+          const slides = imgList.map((img, idx) => `
+            <div class="route-slide ${idx === 0 ? 'active' : ''}" style="background-image: url('${img}');"></div>
+          `).join('');
+          
+          imgHtml = `
+            <div class="route-slideshow">
+              ${slides}
+              <div class="slide-indicators">
+                ${imgList.map((_, idx) => `<span class="indicator ${idx === 0 ? 'active' : ''}"></span>`).join('')}
+              </div>
+            </div>
+          `;
+        } else {
+          imgHtml = `<img src="${imgList[0]}" alt="${routeName}" class="route-image" onerror="this.src='chennai-nazareth.jpg'">`;
+        }
 
         const routeLink = `results.html?route=${encodeURIComponent(route.name)}`;
 
@@ -812,6 +888,25 @@
       function init() {
         applyFirebaseData();
         renderRoutes();
+        
+        // Cycle slideshow slides
+        setInterval(() => {
+          document.querySelectorAll('.route-slideshow').forEach(slideshow => {
+            const slides = slideshow.querySelectorAll('.route-slide');
+            const indicators = slideshow.querySelectorAll('.indicator');
+            if (slides.length <= 1) return;
+            
+            let activeIdx = Array.from(slides).findIndex(s => s.classList.contains('active'));
+            if (activeIdx === -1) activeIdx = 0;
+            
+            slides[activeIdx].classList.remove('active');
+            if (indicators[activeIdx]) indicators[activeIdx].classList.remove('active');
+            
+            let nextIdx = (activeIdx + 1) % slides.length;
+            slides[nextIdx].classList.add('active');
+            if (indicators[nextIdx]) indicators[nextIdx].classList.add('active');
+          });
+        }, 4000);
       }
       if (window._fbBuses !== undefined) { init(); }
       else { window.addEventListener('firebaseDataReady', init, { once: true }); }

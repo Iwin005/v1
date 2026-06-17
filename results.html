@@ -2630,7 +2630,7 @@
   <!-- Navbar -->
   <nav class="app-nav">
     <a class="nav-brand" href="index.html" id="navLogo">
-      <i class="fa-solid fa-bus"></i>
+      <img src="assets/logo.jpg" alt="WinBus Logo" class="brand-logo-img">
       <div>Win<span>Bus</span> Tracker</div>
     </a>
     <div class="nav-links">
@@ -2653,7 +2653,7 @@
   <div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-labelledby="mobileNavTitle">
     <div class="mobile-nav-header">
       <div class="mobile-nav-brand" id="mobileNavTitle">
-        <i class="fa-solid fa-bus" aria-hidden="true"></i>
+        <img src="assets/logo.jpg" alt="WinBus Logo" class="brand-logo-img" style="height: 32px; width: 32px; border: 1px solid rgba(255,255,255,0.6);">
         <span>WinBus Tracker</span>
       </div>
       <button class="mobile-nav-close" onclick="closeMobileNav()" aria-label="Close navigation menu">
@@ -2877,6 +2877,14 @@
       </div>
     </div>
   </footer>
+
+  <!-- Image Lightbox Modal -->
+  <div id="imageModal" class="modal-overlay" onclick="if(event.target===this) closeImageModal()" style="display: none; justify-content: center; align-items: center; z-index: 9999;">
+    <div class="modal-content" style="max-width: 90vw; background: transparent; box-shadow: none; border: none; display: flex; justify-content: center; align-items: center; position: relative;">
+      <button onclick="closeImageModal()" style="position: absolute; top: -45px; right: 0; background: rgba(0,0,0,0.6); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
+      <img id="lightboxImg" src="" alt="Enlarged Image" style="max-width: 100%; max-height: 80vh; border-radius: 12px; object-fit: contain; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+    </div>
+  </div>
 
   <!-- Map Modal -->
   <div id="mapModal" class="modal-overlay">
@@ -3811,6 +3819,18 @@
 
     window.onclick = function (e) {
       if (e.target === document.getElementById('mapModal')) closeModal();
+      if (e.target === document.getElementById('imageModal')) closeImageModal();
+    };
+
+    window.openImageLightbox = function(url) {
+      document.getElementById('lightboxImg').src = url;
+      document.getElementById('imageModal').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closeImageModal = function() {
+      document.getElementById('imageModal').style.display = 'none';
+      document.body.style.overflow = 'auto';
     };
 
     function isTrackingEnabled(bus) {
@@ -4226,10 +4246,18 @@
             trackingStatusBadgeHtml = `<span class="tracking-state-badge state-waiting"><i class="fa-solid fa-clock"></i> Waiting for Departure</span>`;
         }
         
+        // Find operator logo
+        const dbOp = cachedOperators ? cachedOperators.find(o => sanitizeKey(o.name) === sanitizeKey(bus.op)) : null;
+        const opImageUrl = dbOp ? (dbOp.image || (dbOp.images && dbOp.images.length > 0 ? dbOp.images[0] : '')) : '';
+        
+        const logoHtml = opImageUrl 
+            ? `<img src="${opImageUrl}" alt="${bus.op}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`
+            : `<i class="fa-solid fa-bus"></i>`;
+
         return `
             <div class="ibc-header">
-                <div class="ibc-icon-wrap">
-                <i class="fa-solid fa-bus"></i>
+                <div class="ibc-icon-wrap" style="display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1.5px solid #e2e8f0; border-radius: 50%;">
+                ${logoHtml}
                 </div>
                 <div class="ibc-info">
                 <div class="ibc-title">${bus.op || 'SBM TRANSPORT'} ${trackingStatusBadgeHtml}</div>
@@ -4620,6 +4648,30 @@
         `;
     }
 
+    function renderBusImages(bus) {
+        // Support both bus.images array or bus.image string
+        let imgList = [];
+        if (bus.images && Array.isArray(bus.images)) {
+            imgList = bus.images.filter(Boolean);
+        } else if (bus.image) {
+            imgList = [bus.image];
+        }
+        if (imgList.length === 0) return '';
+        
+        return `
+        <div class="bus-gallery-container" style="margin-top: 12px; border-top: 1px dashed #e2e8f0; padding-top: 12px;">
+            <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-images" style="color: var(--brand-gold);"></i> Bus Gallery
+            </div>
+            <div class="bus-image-scroll" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin;">
+                ${imgList.map(img => `
+                    <img src="${img}" alt="Bus Image" style="height: 80px; width: 120px; border-radius: 10px; object-fit: cover; border: 1px solid #e2e8f0; cursor: pointer; transition: transform 0.2s;" onclick="openImageLightbox('${img}')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                `).join('')}
+            </div>
+        </div>
+        `;
+    }
+
     function renderSimpleCard(bus) {
         const serviceNoForCard = extractServiceNo(bus.link);
         return `
@@ -4631,6 +4683,7 @@
                     </div>
                     ${renderTrackButton(bus)}
                 </div>
+                ${renderBusImages(bus)}
                 ${renderIntermediateStops(bus)}
                 ${renderHistoryPanel(bus)}
             </div>
@@ -4650,6 +4703,7 @@
                 </div>
                 ${renderTrackButton(bus)}
             </div>
+            ${renderBusImages(bus)}
             ${renderIntermediateStops(bus)}
             ${renderHistoryPanel(bus)}
         </div>
@@ -4668,6 +4722,7 @@
                     </div>
                     <div class="card-actions-placeholder"></div>
                 </div>
+                ${renderBusImages(bus)}
                 ${renderIntermediateStops(bus)}
                 ${renderHistoryPanel(bus)}
             </div>

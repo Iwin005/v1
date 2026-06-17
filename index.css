@@ -472,6 +472,20 @@ nav.app-nav {
   font-size: 22px;
 }
 
+.brand-logo-img {
+  height: 38px;
+  width: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.25);
+  transition: transform 0.3s ease;
+}
+
+.nav-brand:hover .brand-logo-img {
+  transform: rotate(360deg);
+}
+
 .nav-brand span {
   color: var(--accent);
 }

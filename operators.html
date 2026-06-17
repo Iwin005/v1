@@ -553,7 +553,7 @@
 
   <nav class="app-nav">
     <a class="nav-brand" href="index.html">
-      <i class="fa-solid fa-bus"></i>
+      <img src="assets/logo.jpg" alt="WinBus Logo" class="brand-logo-img">
       <div>Win<span>Bus</span> Tracker</div>
     </a>
     <div class="nav-links">
@@ -574,7 +574,7 @@
   <div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-labelledby="mobileNavTitle">
     <div class="mobile-nav-header">
       <div class="mobile-nav-brand" id="mobileNavTitle">
-        <i class="fa-solid fa-bus" aria-hidden="true"></i>
+        <img src="assets/logo.jpg" alt="WinBus Logo" class="brand-logo-img" style="height: 32px; width: 32px; border: 1px solid rgba(255,255,255,0.6);">
         <span>WinBus Tracker</span>
       </div>
       <button class="mobile-nav-close" onclick="closeMobileNav()" aria-label="Close navigation menu">
@@ -751,6 +751,10 @@
       return (route || '').trim().replace(/Tuty/gi, 'Tuticorin');
     }
 
+    function sanitizeKey(str) {
+      return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '_');
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       function init() {
         applyFirebaseData();
@@ -766,7 +770,16 @@
             }
           });
           allOperators = Object.entries(opMap)
-            .map(([name, info]) => ({ name, busCount: info.busCount, routes: Array.from(info.routes) }))
+            .map(([name, info]) => {
+              const dbOp = window._fbOperators ? window._fbOperators.find(o => sanitizeKey(o.name) === sanitizeKey(name)) : null;
+              return { 
+                name, 
+                busCount: info.busCount, 
+                routes: Array.from(info.routes),
+                image: dbOp ? dbOp.image : '',
+                images: dbOp ? dbOp.images : null
+              };
+            })
             .sort((a, b) => a.name.localeCompare(b.name));
           renderOps(allOperators);
         };
@@ -797,11 +810,18 @@
         const routeText = op.routes.length
           ? op.routes.join(' · ')
           : 'Multiple routes';
+
+        const opImageUrl = op.image || (op.images && op.images.length > 0 ? op.images[0] : '');
+        const avatarHtml = opImageUrl
+          ? `<img src="${opImageUrl}" alt="${op.name}" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 1.5px solid var(--accent); flex-shrink: 0;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+             <div class="op-avatar" style="display:none;">${getInitials(op.name)}</div>`
+          : `<div class="op-avatar">${getInitials(op.name)}</div>`;
+
         return `
           <div class="op-card" onclick="window.location='results.html?op=${encodeURIComponent(op.name)}'"
                style="animation-delay: ${Math.min(i * 40, 400)}ms">
             <div style="display:flex;align-items:center;gap:16px;">
-              <div class="op-avatar">${getInitials(op.name)}</div>
+              ${avatarHtml}
               <div class="op-info">
                 <div class="op-name">${op.name}</div>
               </div>

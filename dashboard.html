@@ -2624,10 +2624,8 @@
     <header class="top-navbar">
       <div class="navbar-container">
         <div class="navbar-left">
-          <a href="#" class="navbar-brand" onclick="showSection('fleet'); return false;">
-            <div class="brand-icon-wrapper" style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px;">
-              <i class="fa-solid fa-bus" style="color: var(--brand-yellow); font-size: 1.05rem;"></i>
-            </div>
+          <a href="#" class="navbar-brand" onclick="showSection('fleet'); return false;" style="display: flex; align-items: center; gap: 8px;">
+            <img src="assets/logo.jpg" alt="WinBus Logo" style="height: 34px; width: 34px; border-radius: 50%; border: 1.5px solid var(--brand-yellow); object-fit: cover;">
             <span style="color: #ffffff; font-weight: 800; letter-spacing: -0.01em;">Win<span style="color: var(--brand-yellow);">Bus</span></span>
             <span style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); padding: 2px 6px; border-radius: 6px; margin-left: 2px; color: rgba(255, 255, 255, 0.82);">Admin</span>
           </a>
@@ -2672,8 +2670,8 @@
     <div class="mobile-drawer-overlay" id="mobileDrawerOverlay" onclick="closeMobileMenu()"></div>
     <aside class="mobile-drawer" id="mobileDrawer">
       <div class="drawer-header">
-        <div class="navbar-brand" style="color: var(--primary);">
-          <i class="fa-solid fa-bus-simple" style="color: var(--brand-gold);"></i>
+        <div class="navbar-brand" style="color: var(--primary); display: flex; align-items: center; gap: 8px;">
+          <img src="assets/logo.jpg" alt="WinBus Logo" style="height: 30px; width: 30px; border-radius: 50%; border: 1.5px solid var(--brand-gold); object-fit: cover;">
           WinBus Admin
         </div>
         <button class="drawer-close-btn" onclick="closeMobileMenu()">
@@ -3136,10 +3134,13 @@
             <div class="form-row single" style="margin-top: 20px;">
               <div class="form-group">
                 <label>Bus Type</label>
-                <select id="busTypeSelect" onchange="handleDropdownChange('busTypeSelect', 'busTypeCustom')">
-                  <option value="">-- Select Bus Type --</option>
-                  <option value="__custom__">+ Add New Bus Type</option>
-                </select>
+                <div style="position:relative;">
+                  <select id="busTypeSelect" onchange="handleDropdownChange('busTypeSelect', 'busTypeCustom')" style="appearance:none; -webkit-appearance:none; padding-right:36px; cursor:pointer;">
+                    <option value="">-- Select Bus Type --</option>
+                    <option value="__custom__">+ Add New Bus Type</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:12px;color:var(--text-secondary);"></i>
+                </div>
                 <input type="text" id="busTypeCustom" placeholder="Type new bus type..." style="display:none; margin-top:8px;">
               </div>
             </div>
@@ -3197,6 +3198,22 @@
               <div class="form-group">
                 <label>Tracking Link</label>
                 <input type="url" id="busLink" placeholder="https://...">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bus Images -->
+        <div class="form-section-card">
+          <div class="form-section-header">
+            <i class="fa-solid fa-images"></i>
+            <h3>Bus Images</h3>
+          </div>
+          <div class="form-section-body">
+            <div class="form-row single">
+              <div class="form-group">
+                <label>Image URLs (comma-separated for multiple)</label>
+                <input type="text" id="busImages" placeholder="e.g. https://domain.com/img1.jpg, https://domain.com/img2.jpg">
               </div>
             </div>
           </div>
@@ -3659,19 +3676,23 @@
       }
     }
 
-    // Initialize Searchable Dropdowns on page elements
+    // Initialize Searchable Dropdowns on page elements.
+    // NOTE: busTypeSelect is deliberately excluded here — it lives inside the
+    // Add/Edit Bus form panel which is hidden at startup, so its data would be
+    // stale (only the placeholder option exists before Firebase loads).  It is
+    // instead initialized lazily inside openBusForm() after the live Firebase
+    // cache is injected into the <select> element.
     function initSearchableDropdowns() {
       const ids = [
-        'busOpSelect', 
-        'busRouteSelect', 
-        'busTypeSelect', 
-        'routeSelectForPoints', 
-        'pointNameSelect', 
+        'busOpSelect',
+        'busRouteSelect',
+        'routeSelectForPoints',
+        'pointNameSelect',
         'groupStopNameSelect',
-        'statusFilter', 
-        'raRouteFilter', 
-        'raDateRange', 
-        'raOperatorFilter', 
+        'statusFilter',
+        'raRouteFilter',
+        'raDateRange',
+        'raOperatorFilter',
         'raBusFilter'
       ];
       ids.forEach(id => {
@@ -4272,6 +4293,15 @@
       document.getElementById('busDeparturePoint').value = departurePoint;
       document.getElementById('busDestinationPoint').value = destinationPoint;
       document.getElementById('busLink').value = link;
+      
+      // Prefill bus images
+      if (busObj && busObj.images && Array.isArray(busObj.images)) {
+        document.getElementById('busImages').value = busObj.images.join(', ');
+      } else if (busObj && busObj.image) {
+        document.getElementById('busImages').value = busObj.image;
+      } else {
+        document.getElementById('busImages').value = '';
+      }
 
       // Prefill toggles with backward compatibility defaults
       const tracking = busObj ? (busObj.trackingEnabled ?? true) : true;
@@ -4376,9 +4406,47 @@
         sel.dispatchEvent(new Event('change', { bubbles: true }));
       }
       
+      // Re-populate operator and route dropdowns from Firebase cache
+      loadedOperators = cachedOperators.map(o => o.name).sort();
+      updateDropdown('busOpSelect', loadedOperators, '-- Select Operator --', '+ Add New Operator');
+
+      loadedRoutes = cachedRoutes.map(r => r.name).sort();
+      updateDropdown('busRouteSelect', loadedRoutes, '-- Select Route --', '+ Add New Route');
+
+      // --- Bus Type: directly populate the native <select> from Firebase cache ---
+      // We do NOT use SearchableDropdown here because the form panel is display:none
+      // at this point and the custom widget cannot render inside a hidden container.
+      // The native <select> is already correctly styled by .form-group select CSS.
+      loadedBusTypes = cachedBusTypes.map(t => t.name).sort();
+      (function populateBusTypeSelect() {
+        const sel = document.getElementById('busTypeSelect');
+        if (!sel) return;
+        // Remove any stale SearchableDropdown widget that may still exist
+        const next = sel.nextSibling;
+        if (next && next.classList && next.classList.contains('custom-dropdown')) {
+          next.remove();
+          sel.customDropdown = null;
+        }
+        // Make the native select visible (SearchableDropdown hides it with display:none)
+        sel.style.display = '';
+        // Rebuild options from current Firebase cache
+        sel.innerHTML = '<option value="">-- Select Bus Type --</option>';
+        loadedBusTypes.forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          sel.appendChild(opt);
+        });
+        const custom = document.createElement('option');
+        custom.value = '__custom__';
+        custom.textContent = '+ Add New Bus Type';
+        sel.appendChild(custom);
+      })();
+
       setDropdownVal('busOpSelect', 'busOpCustom', op, loadedOperators);
       setDropdownVal('busRouteSelect', 'busRouteCustom', route, loadedRoutes);
       setDropdownVal('busTypeSelect', 'busTypeCustom', type, loadedBusTypes);
+
       
       document.getElementById('busFormPage').classList.add('active');
       document.body.style.overflow = 'hidden';
@@ -4538,6 +4606,10 @@
       const historyTrackingEnabled = actualTimingEnabled && document.getElementById('busHistoryTrackingEnabled').checked;
       const delayAnalyticsEnabled = historyTrackingEnabled && document.getElementById('busDelayAnalyticsEnabled').checked;
 
+      const imagesVal = document.getElementById('busImages').value.trim();
+      const images = imagesVal ? imagesVal.split(',').map(url => url.trim()).filter(Boolean) : [];
+      const image = images.length > 0 ? images[0] : '';
+
       const busData = { 
         op, 
         time, 
@@ -4552,7 +4624,9 @@
         trackingEnabled,
         actualTimingEnabled,
         historyTrackingEnabled,
-        delayAnalyticsEnabled
+        delayAnalyticsEnabled,
+        images,
+        image
       };
 
       // Check if in edit mode
@@ -4834,7 +4908,15 @@
       document.getElementById('simpleModalEditKey').value = key;
       document.getElementById('simpleModalInput').value = name;
       if (currentSimpleType === 'route' || currentSimpleType === 'operator') {
-        document.getElementById('simpleModalImageInput').value = image || '';
+        let item = null;
+        if (currentSimpleType === 'route') item = cachedRoutes.find(r => (r.id || sanitizeKey(r.name)) === key);
+        else if (currentSimpleType === 'operator') item = cachedOperators.find(o => (o.id || sanitizeKey(o.name)) === key);
+        
+        if (item && item.images && Array.isArray(item.images)) {
+          document.getElementById('simpleModalImageInput').value = item.images.join(', ');
+        } else {
+          document.getElementById('simpleModalImageInput').value = image || '';
+        }
       }
       document.getElementById('simpleModalSaveBtn').textContent = 'Update';
     };
@@ -4885,7 +4967,9 @@
       path = `/${typeNode}/${key}`;
       if (currentSimpleType === 'route' || currentSimpleType === 'operator') {
         const imageVal = document.getElementById('simpleModalImageInput').value.trim();
-        data = { name: value, image: imageVal };
+        const images = imageVal ? imageVal.split(',').map(url => url.trim()).filter(Boolean) : [];
+        const image = images.length > 0 ? images[0] : '';
+        data = { name: value, image: image, images: images };
       } else {
         data = { name: value };
       }
