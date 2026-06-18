@@ -581,6 +581,7 @@
       <a href="operators.html" class="nav-link">Operator</a>
       <a href="live-buses.html" class="nav-link">Live Buses</a>
       <a href="agent-login.html" class="nav-link">Agent Login</a>
+      <span id="userNavContainer"></span>
     </div>
     <div class="nav-time" id="realTimeClock">--:--:--</div>
     <button class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavDrawer" id="mobileMenuBtn">
@@ -621,6 +622,7 @@
         <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
         <span>Agent Login</span>
       </a>
+      <span id="userMobileNavContainer"></span>
     </nav>
   </div>
 
@@ -683,6 +685,9 @@
   </footer>
 
   <script>
+    if (localStorage.getItem('win_user_logged_in') !== 'true') {
+      window.location.replace('user.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
+    }
     // One-time cleanup of old seed data
     if (!localStorage.getItem('win_db_cleared_v2')) {
       localStorage.removeItem('win_buses');
@@ -909,6 +914,47 @@
           });
         }, 4000);
       }
+      function setupUserNav() {
+        const isLoggedIn = localStorage.getItem('win_user_logged_in') === 'true';
+        const userNavContainer = document.getElementById('userNavContainer');
+        const userMobileNavContainer = document.getElementById('userMobileNavContainer');
+        
+        if (userNavContainer) {
+          if (isLoggedIn) {
+            const userName = localStorage.getItem('win_user_name') || 'User';
+            userNavContainer.style.display = 'inline-flex';
+            userNavContainer.style.alignItems = 'center';
+            userNavContainer.style.gap = '16px';
+            userNavContainer.style.height = '100%';
+            userNavContainer.innerHTML = `
+              <span class="nav-welcome-text" style="color: #64748b; font-size: 14px; font-weight: 500; align-items: center; gap: 4px; display: inline-flex; white-space: nowrap;">
+                Welcome, <strong style="color: #0f172a;">${userName}</strong>
+              </span>
+              <a href="user.html?action=logout" class="nav-link" style="color: var(--danger);">Logout</a>`;
+          } else {
+            userNavContainer.style.display = '';
+            userNavContainer.innerHTML = `<a href="user.html" class="nav-link">Login</a>`;
+          }
+        }
+        
+        if (userMobileNavContainer) {
+          if (isLoggedIn) {
+            userMobileNavContainer.innerHTML = `
+              <a href="user.html?action=logout" class="mobile-nav-link" style="color: var(--danger);">
+                <i class="fa-solid fa-sign-out-alt" aria-hidden="true"></i>
+                <span>Logout</span>
+              </a>`;
+          } else {
+            userMobileNavContainer.innerHTML = `
+              <a href="user.html" class="mobile-nav-link">
+                <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+                <span>Login</span>
+              </a>`;
+          }
+        }
+      }
+      setupUserNav();
+
       if (window._fbBuses !== undefined) { init(); }
       else { window.addEventListener('firebaseDataReady', init, { once: true }); }
     });

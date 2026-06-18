@@ -1712,10 +1712,11 @@
     </a>
     <div class="nav-links">
       <a href="index.html" class="nav-link active" id="homeLink">Home</a>
-      <a href="routes.html" class="nav-link" target="_blank">Route</a>
+      <a href="routes.html" class="nav-link">Route</a>
       <a href="operators.html" class="nav-link">Operator</a>
       <a href="live-buses.html" class="nav-link">Live Buses</a>
       <a href="agent-login.html" class="nav-link">Agent Login</a>
+      <span id="userNavContainer"></span>
     </div>
     <div class="nav-time" id="realTimeClock">
       --:--:--
@@ -1758,6 +1759,7 @@
         <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
         <span>Agent Login</span>
       </a>
+      <span id="userMobileNavContainer"></span>
     </nav>
   </div>
 
@@ -2101,9 +2103,25 @@
       const boarding = document.getElementById('boardingInput').value.trim();
       const dropping = document.getElementById('droppingInput').value.trim();
 
+      if (!boarding) {
+        showToast('⚠️ Please enter boarding point', true);
+        document.getElementById('boardingInput').focus();
+        return;
+      }
+      if (!dropping) {
+        showToast('⚠️ Please enter destination', true);
+        document.getElementById('droppingInput').focus();
+        return;
+      }
+
       const params = new URLSearchParams();
-      if (boarding) params.append('boarding', boarding);
-      if (dropping) params.append('dropping', dropping);
+      params.append('boarding', boarding);
+      params.append('dropping', dropping);
+
+      if (localStorage.getItem('win_user_logged_in') !== 'true') {
+        window.location.href = 'user.html?redirect=' + encodeURIComponent('results.html?' + params.toString());
+        return;
+      }
 
       window.location.href = 'results.html?' + params.toString();
     }
@@ -2199,13 +2217,6 @@
     const navLogo = document.getElementById('navLogo');
     if (homeLink) homeLink.addEventListener('click', scrollToSearch);
     if (navLogo) navLogo.addEventListener('click', scrollToSearch);
-
-    document.getElementById('boardingInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleSearch();
-    });
-    document.getElementById('droppingInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleSearch();
-    });
 
     // ============================================================
     // ADD BUS FLOATING BUTTON / MODAL LOGIC
@@ -2376,15 +2387,23 @@
           window.handleSearch = function() {
             const boarding = document.getElementById('boardingInput').value.trim();
             const dropping = document.getElementById('droppingInput').value.trim();
-            if (boarding || dropping) {
-              saveRecentSearch(boarding, dropping);
+            if (!boarding) {
+              showToast('⚠️ Please enter boarding point', true);
+              document.getElementById('boardingInput').focus();
+              return;
             }
+            if (!dropping) {
+              showToast('⚠️ Please enter destination', true);
+              document.getElementById('droppingInput').focus();
+              return;
+            }
+            saveRecentSearch(boarding, dropping);
             if (typeof originalHandleSearch === 'function') {
               originalHandleSearch();
             } else {
               const params = new URLSearchParams();
-              if (boarding) params.append('boarding', boarding);
-              if (dropping) params.append('dropping', dropping);
+              params.append('boarding', boarding);
+              params.append('dropping', dropping);
               window.location.href = 'results.html?' + params.toString();
             }
           };
@@ -2556,7 +2575,34 @@
 
             input.addEventListener('keydown', (e) => {
               const items = dropdown.getElementsByClassName('custom-dropdown-item');
-              if (dropdown.style.display !== 'none' && items.length > 0) {
+              if (e.key === 'Enter') {
+                if (dropdown.style.display !== 'none' && items.length > 0) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const clickedItem = (currentFocusIndex > -1 && items[currentFocusIndex]) ? items[currentFocusIndex] : items[0];
+                  const strongEl = clickedItem.querySelector('strong');
+                  if (strongEl) {
+                    input.value = strongEl.textContent.trim();
+                  }
+                  if (clearBtn) clearBtn.style.display = 'flex';
+                  dropdown.style.display = 'none';
+                }
+                
+                if (inputId === 'boardingInput') {
+                  const droppingInput = document.getElementById('droppingInput');
+                  if (droppingInput && !droppingInput.value.trim()) {
+                    droppingInput.focus();
+                    return;
+                  }
+                } else if (inputId === 'droppingInput') {
+                  const boardingInput = document.getElementById('boardingInput');
+                  if (boardingInput && !boardingInput.value.trim()) {
+                    boardingInput.focus();
+                    return;
+                  }
+                }
+                handleSearch();
+              } else if (dropdown.style.display !== 'none' && items.length > 0) {
                 if (e.key === 'ArrowDown') {
                   currentFocusIndex++;
                   addActive(items);
@@ -2565,11 +2611,6 @@
                   currentFocusIndex--;
                   addActive(items);
                   e.preventDefault();
-                } else if (e.key === 'Enter') {
-                  if (currentFocusIndex > -1 && items[currentFocusIndex]) {
-                    e.preventDefault();
-                    items[currentFocusIndex].click();
-                  }
                 } else if (e.key === 'Escape') {
                   dropdown.style.display = 'none';
                 }
@@ -2593,6 +2634,47 @@
         };
         window.syncCustomBuses();
       }
+
+      function setupUserNav() {
+        const isLoggedIn = localStorage.getItem('win_user_logged_in') === 'true';
+        const userNavContainer = document.getElementById('userNavContainer');
+        const userMobileNavContainer = document.getElementById('userMobileNavContainer');
+        
+        if (userNavContainer) {
+          if (isLoggedIn) {
+            const userName = localStorage.getItem('win_user_name') || 'User';
+            userNavContainer.style.display = 'inline-flex';
+            userNavContainer.style.alignItems = 'center';
+            userNavContainer.style.gap = '16px';
+            userNavContainer.style.height = '100%';
+            userNavContainer.innerHTML = `
+              <span class="nav-welcome-text" style="color: #64748b; font-size: 14px; font-weight: 500; align-items: center; gap: 4px; display: inline-flex; white-space: nowrap;">
+                Welcome, <strong style="color: #0f172a;">${userName}</strong>
+              </span>
+              <a href="user.html?action=logout" class="nav-link" style="color: var(--danger);">Logout</a>`;
+          } else {
+            userNavContainer.style.display = '';
+            userNavContainer.innerHTML = `<a href="user.html" class="nav-link">Login</a>`;
+          }
+        }
+        
+        if (userMobileNavContainer) {
+          if (isLoggedIn) {
+            userMobileNavContainer.innerHTML = `
+              <a href="user.html?action=logout" class="mobile-nav-link" style="color: var(--danger);">
+                <i class="fa-solid fa-sign-out-alt" aria-hidden="true"></i>
+                <span>Logout</span>
+              </a>`;
+          } else {
+            userMobileNavContainer.innerHTML = `
+              <a href="user.html" class="mobile-nav-link">
+                <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+                <span>Login</span>
+              </a>`;
+          }
+        }
+      }
+      setupUserNav();
 
       if (window._fbBuses !== undefined) { init(); }
       else { window.addEventListener('firebaseDataReady', init, { once: true }); }

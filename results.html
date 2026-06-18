@@ -2636,10 +2636,11 @@
     </a>
     <div class="nav-links">
       <a href="index.html" class="nav-link" id="homeLink">Home</a>
-      <a href="routes.html" class="nav-link" target="_blank">Route</a>
+      <a href="routes.html" class="nav-link">Route</a>
       <a href="operators.html" class="nav-link">Operator</a>
       <a href="live-buses.html" class="nav-link">Live Buses</a>
       <a href="agent-login.html" class="nav-link">Agent Login</a>
+      <span id="userNavContainer"></span>
     </div>
     <div class="nav-time" id="realTimeClock">
       --:--:--
@@ -2682,6 +2683,7 @@
         <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
         <span>Agent Login</span>
       </a>
+      <span id="userMobileNavContainer"></span>
     </nav>
   </div>
 
@@ -2823,6 +2825,7 @@
       <!-- Main Content on Right -->
       <div class="results-main">
         <div class="results-container" id="resultsContainer" style="display: none; width: 100%; margin: 0;">
+          <div id="resultsCount" style="font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;"></div>
           <div id="gridContainer" style="text-align: left; width: 100%;">
           </div>
         </div>
@@ -2928,6 +2931,9 @@
   <div id="toast" class="toast-msg"></div>
 
   <script>
+    if (localStorage.getItem('win_user_logged_in') !== 'true') {
+      window.location.replace('user.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
+    }
     const API_BASE = "https://live-server-production.up.railway.app";
     // One-time cleanup of old seed data
     if (!localStorage.getItem('win_db_cleared_v2')) {
@@ -4048,8 +4054,7 @@
     function getTrackingState(bus) {
       // 1. Check Firebase status (Source of truth)
       const fbStatus = getFirebaseJourneyStatus(bus);
-      if (fbStatus) {
-        if (fbStatus === 'WAITING' || fbStatus === 'NOT_STARTED') return 'PRE_DEPARTURE';
+      if (fbStatus && fbStatus !== 'WAITING' && fbStatus !== 'NOT_STARTED') {
         if (fbStatus === 'LIVE') return 'LIVE';
         if (fbStatus === 'COMPLETED') return 'COMPLETED';
         return fbStatus;
@@ -4243,8 +4248,6 @@
             trackingStatusBadgeHtml = `<span class="tracking-state-badge state-active"><i class="fa-solid fa-satellite-dish"></i> Live Tracking</span>`;
         } else if (trackingState === 'COMPLETED') {
             trackingStatusBadgeHtml = `<span class="tracking-state-badge state-completed"><i class="fa-solid fa-check-circle"></i> Trip Completed</span>`;
-        } else {
-            trackingStatusBadgeHtml = `<span class="tracking-state-badge state-waiting"><i class="fa-solid fa-clock"></i> Waiting for Departure</span>`;
         }
         
         // Find operator logo
@@ -4549,9 +4552,9 @@
             btnStyle = 'background:#f1f5f9;color:#94a3b8;box-shadow:none;cursor:not-allowed;';
         } else if (state === 'PRE_DEPARTURE') {
             btnClass += ' track-btn-disabled';
-            btnContent = '<i class="fa-solid fa-clock"></i> Waiting for Departure';
+            btnContent = `Bus Departing <span class="countdown-timer" data-departure-time="${bus.time}">--:--:--</span>`;
             btnOnclick = 'onclick="event.preventDefault()"';
-            btnStyle = 'background:#e2e8f0;color:#64748b;box-shadow:none;cursor:not-allowed;';
+            btnStyle = 'background:#fff5f5;color:#d84e55;border:1px solid #fecaca;box-shadow:none;cursor:not-allowed;font-variant-numeric:tabular-nums;font-weight:700;';
         } else if (state === 'COMPLETED') {
             btnClass += ' track-btn-disabled';
             btnContent = '<i class="fa-solid fa-circle-check"></i> Trip Completed';
@@ -4888,9 +4891,20 @@
     function getSortTimeMins(bus, selectedBoardingCity) {
       if (selectedBoardingCity) {
         const stops = getBusStops(bus);
-        const stop = stops.find(s => (s.city || '').toLowerCase() === selectedBoardingCity.toLowerCase());
-        if (stop && stop.time) {
-          return parseTimeMins(stop.time);
+        const boardingQuery = selectedBoardingCity.toLowerCase().trim();
+        const group = Object.values(cachedStopGroups || {}).find(g => (g.name || '').toLowerCase() === boardingQuery);
+        const groupStops = group ? (group.stops || []).map(s => s.toLowerCase().trim()) : [];
+        const getStopCity = s => (s.city || s.name || '').toLowerCase().trim();
+        
+        let stop = null;
+        if (groupStops.length > 0) {
+          stop = stops.find(s => groupStops.includes(getStopCity(s)));
+        } else {
+          stop = stops.find(s => getStopCity(s) === boardingQuery);
+        }
+        
+        if (stop && (stop.time || stop.scheduledTime)) {
+          return parseTimeMins(stop.time || stop.scheduledTime);
         }
       }
       return parseTimeMins(bus.time);
@@ -4900,10 +4914,14 @@
       console.log('[handleSearch] Starting search...');
       
       try {
-        // Save open dropdown states and horizontal scroll positions
+        // Save viewport scroll position
+        const currentScrollY = window.scrollY;
+        
+        // Save open dropdown states and horizontal/vertical scroll positions
         const openStops = new Set();
         const openHistory = new Set();
         const stopsScrollPositions = {};
+        const historyScrollPositions = {};
         
         document.querySelectorAll('.modern-bus-card').forEach(card => {
           const serviceNo = card.getAttribute('data-service-no');
@@ -4920,10 +4938,15 @@
           const historyContent = card.querySelector('.history-content');
           if (serviceNo && historyContent && historyContent.style.display === 'block') {
             openHistory.add(serviceNo);
+            const historyPanel = card.querySelector('.premium-history-panel');
+            if (historyPanel) {
+              historyScrollPositions[serviceNo] = historyPanel.scrollTop;
+            }
           }
         });
         window.openStopsSet = openStops;
         window.openHistorySet = openHistory;
+        window.historyScrollPositions = historyScrollPositions;
 
         const safeCustomBuses = Array.isArray(customBuses) ? customBuses : [];
         console.log('[handleSearch] customBuses count:', safeCustomBuses.length);
@@ -4931,6 +4954,18 @@
         const operator = document.getElementById('operatorInput').value.trim().toLowerCase();
         const boarding = document.getElementById('boardingInput').value.trim();
         const dropping = document.getElementById('droppingInput').value.trim();
+
+        if (!boarding) {
+          showToast('⚠️ Please enter boarding point', true);
+          document.getElementById('boardingInput').focus();
+          return;
+        }
+        if (!dropping) {
+          showToast('⚠️ Please enter destination', true);
+          document.getElementById('droppingInput').focus();
+          return;
+        }
+
         const type = document.getElementById('typeSelect').value;
         const sortBtn = document.querySelector('.sort-btn.active');
         const sort = sortBtn ? sortBtn.id : 'sortEarly';
@@ -5009,14 +5044,18 @@
         
         console.log('[handleSearch] Filtered buses count:', buses.length);
 
+        const countEl = document.getElementById('resultsCount');
+        if (countEl) {
+          if (buses.length === 0) {
+            countEl.style.display = 'none';
+          } else {
+            countEl.style.display = 'flex';
+            countEl.innerHTML = `<i class="fa-solid fa-bus-simple" style="color: #d84e55;"></i> Found ${buses.length} ${buses.length === 1 ? 'bus' : 'buses'} matching your search`;
+          }
+        }
+
       if (sort === 'sortEarly') buses.sort((a, b) => getSortTimeMins(a, boarding) - getSortTimeMins(b, boarding));
       else buses.sort((a, b) => getSortTimeMins(b, boarding) - getSortTimeMins(a, boarding));
-
-      const grouped = {};
-      buses.forEach(b => {
-        if (!grouped[b.route]) grouped[b.route] = [];
-        grouped[b.route].push(b);
-      });
 
       const container = document.getElementById('gridContainer');
       const resultsBlock = document.getElementById('resultsContainer');
@@ -5040,24 +5079,20 @@
                <p style="font-size:12px;margin-top:8px;opacity:0.6">${totalBuses} total buses available. Try adjusting filters.</p>
              </div>`;
       } else {
-        Object.keys(grouped).forEach(r => {
-          const rLabel = r === 'Tuticorin-Chennai' ? 'Tuticorin &rarr; Chennai'
-            : r === 'Chennai-Tuticorin' ? 'Chennai &rarr; Tuticorin' : r;
-          html += `<div class="section-badge">${rLabel}</div><div class="grid">`;
-          grouped[r].forEach(bus => {
-            const state = getTrackingState(bus);
-            let cardHtml = "";
-            if (state === "PRE_DEPARTURE") {
-                cardHtml = renderSimpleCard(bus);
-            } else if (state === "LIVE") {
-                cardHtml = renderLiveCard(bus);
-            } else {
-                cardHtml = renderCompletedCard(bus);
-            }
-            html += cardHtml;
-          });
-          html += `</div>`;
+        html += `<div class="grid">`;
+        buses.forEach(bus => {
+          const state = getTrackingState(bus);
+          let cardHtml = "";
+          if (state === "PRE_DEPARTURE") {
+              cardHtml = renderSimpleCard(bus);
+          } else if (state === "LIVE") {
+              cardHtml = renderLiveCard(bus);
+          } else {
+              cardHtml = renderCompletedCard(bus);
+          }
+          html += cardHtml;
         });
+        html += `</div>`;
       }
 
       container.innerHTML = html;
@@ -5085,7 +5120,8 @@
         }
       });
 
-
+      // Restore viewport scroll position
+      window.scrollTo(0, currentScrollY);
 
       // Cards are rendered with correct button state from the start
       // No need for post-render UI updates - prevents layout shift
@@ -5116,10 +5152,78 @@
     }
 
     function setSort(btn) {
-      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.sort-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.background = '#ffffff';
+        b.style.color = '#475569';
+        b.style.borderColor = '#e2e8f0';
+      });
+      
       btn.classList.add('active');
+      if (btn.id === 'sortEarly') {
+        btn.style.background = '#fff5f5';
+        btn.style.color = '#d84e55';
+        btn.style.borderColor = '#d84e55';
+      } else {
+        btn.style.background = '#0f172a';
+        btn.style.color = '#ffffff';
+        btn.style.borderColor = '#0f172a';
+      }
+      
       handleSearch();
     }
+
+    // ============================================================
+    // DYNAMIC DEPARTURE COUNTDOWN TIMER
+    // ============================================================
+    function getDepartureTimestamp(busTime) {
+      const dateStr = getDepartureDate(busTime); // "YYYY-MM-DD"
+      const timeStr = busTime.trim().toUpperCase();
+      const isPM = timeStr.includes("PM");
+      const isAM = timeStr.includes("AM");
+      let [hours, minutes] = timeStr.replace(/AM|PM/g, "").trim().split(":").map(Number);
+      if (isPM && hours !== 12) hours += 12;
+      if (isAM && hours === 12) hours = 0;
+      
+      const [year, month, day] = dateStr.split("-").map(Number);
+      const targetDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+      return targetDate.getTime();
+    }
+
+    function updateCountdownTimers() {
+      const now = new Date().getTime();
+      let hasFinished = false;
+      document.querySelectorAll('.countdown-timer').forEach(el => {
+        const busTime = el.getAttribute('data-departure-time');
+        if (!busTime) return;
+        
+        const target = getDepartureTimestamp(busTime);
+        const diff = target - now;
+        
+        if (diff <= 0) {
+          el.innerHTML = "00:00:00";
+          if (el.getAttribute('data-refreshed') !== 'true') {
+            el.setAttribute('data-refreshed', 'true');
+            hasFinished = true;
+          }
+        } else {
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+          
+          const pad = (num) => String(num).padStart(2, '0');
+          el.innerHTML = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        }
+      });
+
+      if (hasFinished) {
+        setTimeout(() => { handleSearch(); }, 2000);
+      }
+    }
+
+    // Set interval and run immediately
+    setInterval(updateCountdownTimers, 1000);
+    setTimeout(updateCountdownTimers, 100);
 
     function toggleHistoryAccordion(btn) {
       btn.classList.toggle('expanded');
@@ -5165,6 +5269,11 @@
     function renderPremiumHistory(busKey, serviceNo, selectedDate) {
       if (!window.selectedHistoryDates) {
         window.selectedHistoryDates = {};
+      }
+      const prevDate = window.selectedHistoryDates[serviceNo];
+      const isDateChanged = prevDate && prevDate !== selectedDate;
+      if (isDateChanged && window.historyScrollPositions) {
+        delete window.historyScrollPositions[serviceNo];
       }
       if (serviceNo) {
         window.selectedHistoryDates[serviceNo] = selectedDate;
@@ -5481,6 +5590,14 @@
       }).join('');
       
       contentDiv.innerHTML = metaHtml + stopsHtml;
+      
+      // Restore history panel scroll position
+      if (window.historyScrollPositions && window.historyScrollPositions[serviceNo] !== undefined) {
+        const panel = document.getElementById(`history-panel-${busKey}`);
+        if (panel) {
+          panel.scrollTop = window.historyScrollPositions[serviceNo];
+        }
+      }
     }
     window.renderPremiumHistory = renderPremiumHistory;
 
@@ -5613,12 +5730,6 @@
       handleSearch();
     });
     document.getElementById('operatorInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleSearch();
-    });
-    document.getElementById('boardingInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleSearch();
-    });
-    document.getElementById('droppingInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') handleSearch();
     });
 
@@ -5852,7 +5963,36 @@
 
             input.addEventListener('keydown', (e) => {
               const items = dropdown.getElementsByClassName('custom-dropdown-item');
-              if (dropdown.style.display !== 'none' && items.length > 0) {
+              if (e.key === 'Enter') {
+                if (dropdown.style.display !== 'none' && items.length > 0) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const clickedItem = (currentFocusIndex > -1 && items[currentFocusIndex]) ? items[currentFocusIndex] : items[0];
+                  const strongEl = clickedItem.querySelector('strong');
+                  if (strongEl) {
+                    input.value = strongEl.textContent.trim();
+                  }
+                  const clearBtnId = inputId === 'boardingInput' ? 'clearBoarding' : (inputId === 'droppingInput' ? 'clearDropping' : null);
+                  const clearBtn = clearBtnId ? document.getElementById(clearBtnId) : null;
+                  if (clearBtn) clearBtn.style.display = 'flex';
+                  dropdown.style.display = 'none';
+                }
+                
+                if (inputId === 'boardingInput') {
+                  const droppingInput = document.getElementById('droppingInput');
+                  if (droppingInput && !droppingInput.value.trim()) {
+                    droppingInput.focus();
+                    return;
+                  }
+                } else if (inputId === 'droppingInput') {
+                  const boardingInput = document.getElementById('boardingInput');
+                  if (boardingInput && !boardingInput.value.trim()) {
+                    boardingInput.focus();
+                    return;
+                  }
+                }
+                handleSearch();
+              } else if (dropdown.style.display !== 'none' && items.length > 0) {
                 if (e.key === 'ArrowDown') {
                   currentFocusIndex++;
                   addActive(items);
@@ -5861,11 +6001,6 @@
                   currentFocusIndex--;
                   addActive(items);
                   e.preventDefault();
-                } else if (e.key === 'Enter') {
-                  if (currentFocusIndex > -1 && items[currentFocusIndex]) {
-                    e.preventDefault();
-                    items[currentFocusIndex].click();
-                  }
                 } else if (e.key === 'Escape') {
                   dropdown.style.display = 'none';
                 }
@@ -6187,6 +6322,47 @@
 
       // Current timings come from window._fbJourneys in refreshFirebaseData().
       // Do not merge the legacy /actualTimes tree into live bus objects.
+
+      function setupUserNav() {
+        const isLoggedIn = localStorage.getItem('win_user_logged_in') === 'true';
+        const userNavContainer = document.getElementById('userNavContainer');
+        const userMobileNavContainer = document.getElementById('userMobileNavContainer');
+        
+        if (userNavContainer) {
+          if (isLoggedIn) {
+            const userName = localStorage.getItem('win_user_name') || 'User';
+            userNavContainer.style.display = 'inline-flex';
+            userNavContainer.style.alignItems = 'center';
+            userNavContainer.style.gap = '16px';
+            userNavContainer.style.height = '100%';
+            userNavContainer.innerHTML = `
+              <span class="nav-welcome-text" style="color: #64748b; font-size: 14px; font-weight: 500; align-items: center; gap: 4px; display: inline-flex; white-space: nowrap;">
+                Welcome, <strong style="color: #0f172a;">${userName}</strong>
+              </span>
+              <a href="user.html?action=logout" class="nav-link" style="color: var(--danger);">Logout</a>`;
+          } else {
+            userNavContainer.style.display = '';
+            userNavContainer.innerHTML = `<a href="user.html" class="nav-link">Login</a>`;
+          }
+        }
+        
+        if (userMobileNavContainer) {
+          if (isLoggedIn) {
+            userMobileNavContainer.innerHTML = `
+              <a href="user.html?action=logout" class="mobile-nav-link" style="color: var(--danger);">
+                <i class="fa-solid fa-sign-out-alt" aria-hidden="true"></i>
+                <span>Logout</span>
+              </a>`;
+          } else {
+            userMobileNavContainer.innerHTML = `
+              <a href="user.html" class="mobile-nav-link">
+                <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+                <span>Login</span>
+              </a>`;
+          }
+        }
+      }
+      setupUserNav();
 
       if (window._fbBuses !== undefined) { init(); }
       else { window.addEventListener('firebaseDataReady', init, { once: true }); }

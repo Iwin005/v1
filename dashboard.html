@@ -4486,43 +4486,51 @@
 
     function populateExistingStopTimes() {
       console.log('[DEBUG] populateExistingStopTimes starting. existingStopTimes:', existingStopTimes);
-      if (!existingStopTimes || existingStopTimes.length === 0) return;
+      if (!existingStopTimes) return;
       
-      existingStopTimes.forEach(stop => {
-        const stopName = stop.name || stop.stopName;
-        if (!stopName) return;
+      const stopsArray = Array.isArray(existingStopTimes) 
+        ? existingStopTimes 
+        : Object.values(existingStopTimes || {});
+
+      if (stopsArray.length === 0) return;
+
+      const rows = document.querySelectorAll('#intermediateStopsList .stop-grid-row');
+      rows.forEach(row => {
+        const nameEl = row.querySelector('.stop-input-name');
+        if (!nameEl) return;
+        const currentStopName = nameEl.textContent.trim().toLowerCase();
         
-        // Find the row for this stop
-        const timeInput = document.querySelector(`.stop-time-input[data-stop-name="${stopName.replace(/"/g, '\\"')}"]`);
-        if (!timeInput) {
-          console.warn('[DEBUG] No time input found for stop:', stopName);
-          return;
-        }
+        const matchedStop = stopsArray.find(s => {
+          const sName = (s.name || s.stopName || '').trim().toLowerCase();
+          return sName === currentStopName;
+        });
         
-        const row = timeInput.closest('.stop-input-row');
-        if (!row) return;
-        
-        // Populate time
-        timeInput.value = stop.time || stop.scheduledTime || '';
-        
-        // Populate GPS fields if they exist
-        const latInput = row.querySelector('.stop-lat-input');
-        const lngInput = row.querySelector('.stop-lng-input');
-        const radiusInput = row.querySelector('.stop-radius-input');
-        const showInput = row.querySelector('.stop-show-on-card');
-        const typeSelect = row.querySelector('.stop-point-type-select');
-        
-        if (latInput && stop.lat) latInput.value = stop.lat;
-        if (lngInput && stop.lng) lngInput.value = stop.lng;
-        if (radiusInput && stop.radius) radiusInput.value = stop.radius;
-        if (showInput) {
-          const isChecked = (stop.showOnCard === true || stop.showOnCard === "true" || stop.showOnCard === undefined);
-          showInput.checked = isChecked;
-          console.log('[DEBUG] Stop:', stopName, 'showOnCard:', stop.showOnCard, 'setting checked:', isChecked);
-        }
-        if (typeSelect) {
-          typeSelect.value = stop.pointType || 'both';
-          console.log('[DEBUG] Stop:', stopName, 'pointType:', stop.pointType, 'setting value:', typeSelect.value);
+        if (matchedStop) {
+          const timeInput = row.querySelector('.stop-time-input');
+          const latInput = row.querySelector('.stop-lat-input');
+          const lngInput = row.querySelector('.stop-lng-input');
+          const radiusInput = row.querySelector('.stop-radius-input');
+          const showInput = row.querySelector('.stop-show-on-card');
+          const typeSelect = row.querySelector('.stop-point-type-select');
+          
+          if (timeInput) {
+            timeInput.value = matchedStop.time || matchedStop.scheduledTime || '';
+          }
+          if (latInput && matchedStop.lat !== undefined && matchedStop.lat !== null) {
+            latInput.value = matchedStop.lat;
+          }
+          if (lngInput && matchedStop.lng !== undefined && matchedStop.lng !== null) {
+            lngInput.value = matchedStop.lng;
+          }
+          if (radiusInput && matchedStop.radius) {
+            radiusInput.value = matchedStop.radius;
+          }
+          if (showInput) {
+            showInput.checked = (matchedStop.showOnCard === true || matchedStop.showOnCard === "true" || matchedStop.showOnCard === undefined);
+          }
+          if (typeSelect) {
+            typeSelect.value = matchedStop.pointType || 'both';
+          }
         }
       });
     }
